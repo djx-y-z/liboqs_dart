@@ -145,7 +145,8 @@ jobs:
           path: bin/macos-${{ matrix.arch }}/liboqs.dylib
 
   # ============================================
-  # iOS (device + simulator)
+  # iOS (device + simulator) - STATIC LIBRARIES
+  # iOS apps cannot load arbitrary dylibs, must use static linking
   # ============================================
   build-ios:
     needs: read-version
@@ -188,14 +189,15 @@ jobs:
           echo "sdk_path=$SDK_PATH" >> $GITHUB_OUTPUT
           echo "iOS SDK (${{ matrix.sdk }}): $SDK_PATH"
 
-      - name: Build liboqs for iOS ${{ matrix.target }} ${{ matrix.arch }}
+      - name: Build liboqs STATIC for iOS ${{ matrix.target }} ${{ matrix.arch }}
         run: |
           mkdir -p /tmp/liboqs/build
           cd /tmp/liboqs/build
           cmake .. \
-            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_SHARED_LIBS=OFF \
             -DOQS_BUILD_ONLY_LIB=ON \
             -DOQS_USE_OPENSSL=OFF \
+            -DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_SYSTEM_NAME=iOS \
             -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.processor }} \
@@ -205,19 +207,18 @@ jobs:
             -G Ninja
           ninja
 
-      - name: Fix install name and copy
+      - name: Copy static library
         run: |
           mkdir -p bin/ios-${{ matrix.target }}-${{ matrix.arch }}
-          cp /tmp/liboqs/build/lib/liboqs.dylib bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.dylib
-          install_name_tool -id "@rpath/liboqs.dylib" bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.dylib
+          cp /tmp/liboqs/build/lib/liboqs.a bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
           ls -la bin/ios-${{ matrix.target }}-${{ matrix.arch }}/
-          file bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.dylib
+          file bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: liboqs-ios-${{ matrix.target }}-${{ matrix.arch }}
-          path: bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.dylib
+          path: bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
 
   # ============================================
   # Android (all architectures)
@@ -372,6 +373,7 @@ jobs:
           # Flutter platform binaries
           rm -rf macos/Libraries/
           rm -rf ios/Frameworks/
+          rm -rf ios/Libraries/
           rm -rf android/src/main/jniLibs/
           echo "Done"
 
@@ -400,25 +402,25 @@ jobs:
           lipo -info bin/macos/liboqs.dylib
           otool -L bin/macos/liboqs.dylib | head -2
 
-      - name: Create iOS XCFramework (ios/Frameworks/)
+      - name: Create iOS XCFramework with static libraries (ios/Frameworks/)
         run: |
-          # Create iOS Simulator universal binary (temp)
+          # Create iOS Simulator universal static library (temp)
           mkdir -p tmp/ios-simulator
           lipo -create \
-            artifacts/liboqs-ios-simulator-arm64/liboqs.dylib \
-            artifacts/liboqs-ios-simulator-x86_64/liboqs.dylib \
-            -output tmp/ios-simulator/liboqs.dylib
-          install_name_tool -id "@rpath/liboqs.dylib" tmp/ios-simulator/liboqs.dylib
+            artifacts/liboqs-ios-simulator-arm64/liboqs.a \
+            artifacts/liboqs-ios-simulator-x86_64/liboqs.a \
+            -output tmp/ios-simulator/liboqs.a
 
-          # Create XCFramework directly in ios/Frameworks/
+          # Create XCFramework with static libraries
           mkdir -p ios/Frameworks
           xcodebuild -create-xcframework \
-            -library artifacts/liboqs-ios-device-arm64/liboqs.dylib \
-            -library tmp/ios-simulator/liboqs.dylib \
+            -library artifacts/liboqs-ios-device-arm64/liboqs.a \
+            -library tmp/ios-simulator/liboqs.a \
             -output ios/Frameworks/liboqs.xcframework
 
-          echo "=== iOS XCFramework ==="
-          find ios/Frameworks/liboqs.xcframework -name "*.dylib" -exec file {} \;
+          echo "=== iOS XCFramework (static) ==="
+          find ios/Frameworks/liboqs.xcframework -name "*.a" -exec file {} \;
+          cat ios/Frameworks/liboqs.xcframework/Info.plist
 
       - name: Create Android libraries (android/src/main/jniLibs/)
         run: |
@@ -459,14 +461,14 @@ jobs:
           - Windows x86_64
 
           Flutter:
-          - iOS XCFramework (device + simulator)
+          - iOS XCFramework with STATIC libraries (device + simulator)
           - Android (arm64-v8a, armeabi-v7a, x86_64)
           - macOS (copy from bin/)
 
           Built by GitHub Actions" || echo "No changes to commit"
           git push
 
-      - name: Package XCFramework for release
+      - name: Package iOS XCFramework for release
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           cd ios/Frameworks
@@ -500,7 +502,7 @@ jobs:
             ### Flutter
             | Platform | Architecture | File |
             |----------|--------------|------|
-            | iOS | XCFramework (device + simulator) | `liboqs.xcframework.zip` |
+            | iOS | XCFramework (static, device + simulator) | `liboqs.xcframework.zip` |
             | Android | arm64-v8a, armeabi-v7a, x86_64 | `liboqs.so` |
 
             ### Usage
