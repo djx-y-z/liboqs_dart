@@ -60,7 +60,6 @@ jobs:
           cmake .. \
             -DBUILD_SHARED_LIBS=ON \
             -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
             -DOQS_USE_OPENSSL=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -G Ninja
@@ -101,7 +100,6 @@ jobs:
           cmake .. \
             -DBUILD_SHARED_LIBS=ON \
             -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
             -DOQS_USE_OPENSSL=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_ARCHITECTURES="arm64" \
@@ -144,7 +142,6 @@ jobs:
           cmake .. \
             -DBUILD_SHARED_LIBS=ON \
             -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
             -DOQS_USE_OPENSSL=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_ARCHITECTURES="x86_64" \
@@ -187,7 +184,6 @@ jobs:
           cmake .. \
             -DBUILD_SHARED_LIBS=ON \
             -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
             -DOQS_USE_OPENSSL=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_SYSTEM_NAME=iOS \
@@ -245,7 +241,6 @@ jobs:
           cmake .. \
             -DBUILD_SHARED_LIBS=ON \
             -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
             -DOQS_USE_OPENSSL=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
@@ -293,7 +288,6 @@ jobs:
           cmake .. `
             -DBUILD_SHARED_LIBS=ON `
             -DOQS_BUILD_ONLY_LIB=ON `
-            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" `
             -DOQS_USE_OPENSSL=OFF `
             -DCMAKE_BUILD_TYPE=Release `
             -G Ninja
