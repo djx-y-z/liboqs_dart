@@ -388,6 +388,8 @@ jobs:
             artifacts/liboqs-macos-arm64/liboqs.dylib \
             artifacts/liboqs-macos-x86_64/liboqs.dylib \
             -output bin/macos/liboqs.dylib
+          # Fix install name (liboqs.9.dylib -> liboqs.dylib)
+          install_name_tool -id "@rpath/liboqs.dylib" bin/macos/liboqs.dylib
 
           # Windows
           cp artifacts/liboqs-windows-x86_64/oqs.dll bin/windows/
@@ -396,6 +398,7 @@ jobs:
           find bin -type f -exec ls -lh {} \;
           echo "=== macOS Universal Binary ==="
           lipo -info bin/macos/liboqs.dylib
+          otool -L bin/macos/liboqs.dylib | head -2
 
       - name: Create iOS XCFramework (ios/Frameworks/)
         run: |
