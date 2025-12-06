@@ -303,15 +303,26 @@ jobs:
             -DOQS_USE_OPENSSL=OFF `
             -DCMAKE_BUILD_TYPE=Release `
             -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON `
-            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=C:\liboqs\output `
-            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\liboqs\output `
             -G Ninja
           ninja
 
-      - name: Copy library
+      - name: Find and copy library
         run: |
+          echo "=== Searching for built files ==="
+          Get-ChildItem -Path C:\liboqs\build -Recurse -Include *.dll,*.lib | ForEach-Object { $_.FullName }
+
           New-Item -ItemType Directory -Force -Path bin\windows
-          Copy-Item C:\liboqs\output\oqs.dll -Destination bin\windows\oqs.dll
+
+          # Find the DLL wherever it was placed
+          $dll = Get-ChildItem -Path C:\liboqs\build -Recurse -Filter "oqs.dll" | Select-Object -First 1
+          if ($dll) {
+            Copy-Item $dll.FullName -Destination bin\windows\oqs.dll
+            echo "Copied from: $($dll.FullName)"
+          } else {
+            echo "ERROR: oqs.dll not found in build directory"
+            exit 1
+          }
+
           dir bin\windows
 
       - name: Upload artifact
