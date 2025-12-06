@@ -41,11 +41,47 @@ A Dart FFI wrapper for [liboqs](https://github.com/open-quantum-safe/liboqs), pr
 - Cryptographically secure list shuffling
 - Seed generation for key derivation
 
-## Using Prebuilt Binaries
+## Pre-built Native Libraries
 
-For convenience, some prebuilt liboqs binaries (v0.14.0) are available for common platforms. You can download them from the [liboqs-prebuilt-binaries](https://github.com/bardiakz/liboqs-prebuilt-binaries-v0.14.0) repository.
+This package includes pre-built liboqs binaries for all supported platforms in the `bin/` directory. The libraries are automatically built via GitHub Actions when the `LIBOQS_VERSION` file is updated.
 
-### Quick Setup with Prebuilt Binaries
+### Current Version
+
+Check `LIBOQS_VERSION` file for the current liboqs version.
+
+### Updating liboqs Version
+
+To update to a new liboqs version:
+
+```bash
+# Update version file - CI will build automatically on push
+echo "0.16.0" > LIBOQS_VERSION
+git add LIBOQS_VERSION
+git commit -m "Update liboqs to 0.16.0"
+git push
+```
+
+### Supported Platforms
+
+| Platform | Architecture | Library Path |
+|----------|--------------|--------------|
+| Linux | x86_64 | `bin/linux/liboqs.so` |
+| macOS | arm64 (Apple Silicon) | `bin/macos/liboqs.dylib` |
+| macOS | x86_64 (Intel) | `bin/macos-x86_64/liboqs.dylib` |
+| iOS | arm64 | `bin/ios/liboqs.dylib` |
+| Android | arm64-v8a | `bin/android/arm64-v8a/liboqs.so` |
+| Android | armeabi-v7a | `bin/android/armeabi-v7a/liboqs.so` |
+| Android | x86_64 | `bin/android/x86_64/liboqs.so` |
+| Windows | x86_64 | `bin/windows/oqs.dll` |
+
+### Manual Build
+
+You can also trigger a manual build via GitHub Actions:
+1. Go to Actions tab
+2. Select "Build liboqs Native Libraries"
+3. Click "Run workflow"
+
+### Quick Setup
 
 **For Dart projects you can just place the bin directory in root of your project and you will be good to go:**
    ```
