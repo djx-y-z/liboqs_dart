@@ -364,73 +364,77 @@ jobs:
           echo "=== Downloaded artifacts ==="
           find artifacts -type f -exec ls -lh {} \;
 
-      - name: Create macOS Universal Binary
+      - name: Clean old binaries
         run: |
-          mkdir -p bin/macos
+          echo "=== Removing old binaries ==="
+          # Server binaries
+          rm -rf bin/
+          # Flutter platform binaries
+          rm -rf macos/Libraries/
+          rm -rf ios/Frameworks/
+          rm -rf android/src/main/jniLibs/
+          echo "Done"
+
+      - name: Create server binaries (bin/)
+        run: |
+          # Create directories for server platforms only
+          mkdir -p bin/{linux,macos,windows}
+
+          # Linux
+          cp artifacts/liboqs-linux-x86_64/liboqs.so bin/linux/
+
+          # macOS Universal Binary
           lipo -create \
             artifacts/liboqs-macos-arm64/liboqs.dylib \
             artifacts/liboqs-macos-x86_64/liboqs.dylib \
             -output bin/macos/liboqs.dylib
+
+          # Windows
+          cp artifacts/liboqs-windows-x86_64/oqs.dll bin/windows/
+
+          echo "=== Server binaries (bin/) ==="
+          find bin -type f -exec ls -lh {} \;
           echo "=== macOS Universal Binary ==="
-          file bin/macos/liboqs.dylib
           lipo -info bin/macos/liboqs.dylib
 
-      - name: Create iOS Simulator Universal Binary
+      - name: Create iOS XCFramework (ios/Frameworks/)
         run: |
+          # Create iOS Simulator universal binary (temp)
           mkdir -p tmp/ios-simulator
           lipo -create \
             artifacts/liboqs-ios-simulator-arm64/liboqs.dylib \
             artifacts/liboqs-ios-simulator-x86_64/liboqs.dylib \
             -output tmp/ios-simulator/liboqs.dylib
-          # Fix install name for the fat binary
           install_name_tool -id "@rpath/liboqs.dylib" tmp/ios-simulator/liboqs.dylib
-          echo "=== iOS Simulator Universal Binary ==="
-          file tmp/ios-simulator/liboqs.dylib
-          lipo -info tmp/ios-simulator/liboqs.dylib
 
-      - name: Create iOS XCFramework
-        run: |
-          mkdir -p bin/ios
+          # Create XCFramework directly in ios/Frameworks/
+          mkdir -p ios/Frameworks
           xcodebuild -create-xcframework \
             -library artifacts/liboqs-ios-device-arm64/liboqs.dylib \
             -library tmp/ios-simulator/liboqs.dylib \
-            -output bin/ios/liboqs.xcframework
+            -output ios/Frameworks/liboqs.xcframework
+
           echo "=== iOS XCFramework ==="
-          ls -la bin/ios/liboqs.xcframework/
-          find bin/ios/liboqs.xcframework -name "*.dylib" -exec file {} \;
+          find ios/Frameworks/liboqs.xcframework -name "*.dylib" -exec file {} \;
 
-      - name: Organize remaining binaries
+      - name: Create Android libraries (android/src/main/jniLibs/)
         run: |
-          # Create bin directories
-          mkdir -p bin/{linux,windows}
-          mkdir -p bin/android/{arm64-v8a,armeabi-v7a,x86_64}
+          mkdir -p android/src/main/jniLibs/{arm64-v8a,armeabi-v7a,x86_64}
 
-          # Copy artifacts
-          cp artifacts/liboqs-linux-x86_64/liboqs.so bin/linux/
-          cp artifacts/liboqs-android-arm64-v8a/liboqs.so bin/android/arm64-v8a/
-          cp artifacts/liboqs-android-armeabi-v7a/liboqs.so bin/android/armeabi-v7a/
-          cp artifacts/liboqs-android-x86_64/liboqs.so bin/android/x86_64/
-          cp artifacts/liboqs-windows-x86_64/oqs.dll bin/windows/
+          cp artifacts/liboqs-android-arm64-v8a/liboqs.so android/src/main/jniLibs/arm64-v8a/
+          cp artifacts/liboqs-android-armeabi-v7a/liboqs.so android/src/main/jniLibs/armeabi-v7a/
+          cp artifacts/liboqs-android-x86_64/liboqs.so android/src/main/jniLibs/x86_64/
 
-          # Show results
-          echo "=== All built libraries ==="
-          find bin -type f \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" \) -exec ls -lh {} \;
-          echo "=== XCFramework structure ==="
-          find bin/ios/liboqs.xcframework -type f
+          echo "=== Android libraries ==="
+          find android/src/main/jniLibs -type f -exec ls -lh {} \;
 
-      - name: Copy libraries to platform plugin directories
+      - name: Copy macOS library to plugin directory
         run: |
-          # Copy macOS universal binary to plugin directory
+          # macOS needs copy in both bin/ (server) and macos/Libraries/ (Flutter)
           mkdir -p macos/Libraries
           cp bin/macos/liboqs.dylib macos/Libraries/
           echo "=== macOS plugin library ==="
           file macos/Libraries/liboqs.dylib
-
-          # Copy iOS XCFramework to plugin directory
-          mkdir -p ios/Frameworks
-          cp -R bin/ios/liboqs.xcframework ios/Frameworks/
-          echo "=== iOS plugin framework ==="
-          ls -la ios/Frameworks/liboqs.xcframework/
 
       - name: Create version file
         run: |
@@ -443,15 +447,18 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add bin/ macos/Libraries/ ios/Frameworks/
+          git add bin/ macos/Libraries/ ios/Frameworks/ android/src/main/jniLibs/
           git commit -m "Build liboqs ${{ env.LIBOQS_VERSION }} native libraries
 
-          Platforms:
+          Server (bin/):
           - Linux x86_64
           - macOS Universal (arm64 + x86_64)
-          - iOS XCFramework (device arm64 + simulator arm64/x86_64)
-          - Android arm64-v8a, armeabi-v7a, x86_64
           - Windows x86_64
+
+          Flutter:
+          - iOS XCFramework (device + simulator)
+          - Android (arm64-v8a, armeabi-v7a, x86_64)
+          - macOS (copy from bin/)
 
           Built by GitHub Actions" || echo "No changes to commit"
           git push
@@ -459,7 +466,7 @@ jobs:
       - name: Package XCFramework for release
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cd bin/ios
+          cd ios/Frameworks
           zip -r liboqs.xcframework.zip liboqs.xcframework
           ls -la
 
@@ -470,27 +477,30 @@ jobs:
           files: |
             bin/linux/liboqs.so
             bin/macos/liboqs.dylib
-            bin/ios/liboqs.xcframework.zip
-            bin/android/arm64-v8a/liboqs.so
-            bin/android/armeabi-v7a/liboqs.so
-            bin/android/x86_64/liboqs.so
             bin/windows/oqs.dll
+            ios/Frameworks/liboqs.xcframework.zip
+            android/src/main/jniLibs/arm64-v8a/liboqs.so
+            android/src/main/jniLibs/armeabi-v7a/liboqs.so
+            android/src/main/jniLibs/x86_64/liboqs.so
           body: |
             ## liboqs ${{ env.LIBOQS_VERSION }} Native Libraries
 
             Pre-built native libraries for all supported platforms.
 
-            ### Platforms
+            ### Server (Dart CLI)
             | Platform | Architecture | File |
             |----------|--------------|------|
             | Linux | x86_64 | `liboqs.so` |
             | macOS | Universal (arm64 + x86_64) | `liboqs.dylib` |
-            | iOS | XCFramework (device + simulator) | `liboqs.xcframework.zip` |
-            | Android | arm64-v8a | `liboqs.so` |
-            | Android | armeabi-v7a | `liboqs.so` |
-            | Android | x86_64 | `liboqs.so` |
             | Windows | x86_64 | `oqs.dll` |
 
+            ### Flutter
+            | Platform | Architecture | File |
+            |----------|--------------|------|
+            | iOS | XCFramework (device + simulator) | `liboqs.xcframework.zip` |
+            | Android | arm64-v8a, armeabi-v7a, x86_64 | `liboqs.so` |
+
             ### Usage
-            - **macOS/Linux/Windows/Android**: Place the library in your project's `bin/` directory
-            - **iOS**: Extract and place XCFramework in `ios/Frameworks/`
+            - **Server**: Place library in `bin/{platform}/`
+            - **Flutter iOS**: Extract XCFramework to `ios/Frameworks/`
+            - **Flutter Android**: Place in `android/src/main/jniLibs/{abi}/`
