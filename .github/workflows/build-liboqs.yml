@@ -1,0 +1,410 @@
+# Build liboqs native libraries for all platforms
+#
+# This workflow builds liboqs 0.15.0 for:
+# - Linux x86_64
+# - macOS arm64 (Apple Silicon)
+# - macOS x86_64 (Intel)
+# - iOS arm64
+# - Android (arm64-v8a, armeabi-v7a, x86_64)
+# - Windows x86_64
+#
+# Trigger:
+# - Manual dispatch (workflow_dispatch)
+# - Push to main with changes to this file
+# - New tags matching 'v*' or 'liboqs-*'
+
+name: Build liboqs Native Libraries
+
+on:
+  workflow_dispatch:
+    inputs:
+      liboqs_version:
+        description: 'liboqs version to build'
+        required: true
+        default: '0.15.0'
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-liboqs.yml'
+    tags:
+      - 'v*'
+      - 'liboqs-*'
+
+env:
+  LIBOQS_VERSION: ${{ github.event.inputs.liboqs_version || '0.15.0' }}
+
+jobs:
+  # ============================================
+  # Linux x86_64
+  # ============================================
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc g++
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Build liboqs
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G Ninja
+          ninja
+
+      - name: Copy library
+        run: |
+          mkdir -p bin/linux
+          cp /tmp/liboqs/build/lib/liboqs.so bin/linux/
+          ls -la bin/linux/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-linux-x86_64
+          path: bin/linux/liboqs.so
+
+  # ============================================
+  # macOS arm64 (Apple Silicon)
+  # ============================================
+  build-macos-arm64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Build liboqs
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="arm64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="11.0" \
+            -G Ninja
+          ninja
+
+      - name: Copy library
+        run: |
+          mkdir -p bin/macos
+          cp /tmp/liboqs/build/lib/liboqs.dylib bin/macos/liboqs.dylib
+          ls -la bin/macos/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-macos-arm64
+          path: bin/macos/liboqs.dylib
+
+  # ============================================
+  # macOS x86_64 (Intel)
+  # ============================================
+  build-macos-x86_64:
+    runs-on: macos-13  # Intel runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Build liboqs
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" \
+            -G Ninja
+          ninja
+
+      - name: Copy library
+        run: |
+          mkdir -p bin/macos-x86_64
+          cp /tmp/liboqs/build/lib/liboqs.dylib bin/macos-x86_64/liboqs.dylib
+          ls -la bin/macos-x86_64/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-macos-x86_64
+          path: bin/macos-x86_64/liboqs.dylib
+
+  # ============================================
+  # iOS arm64
+  # ============================================
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Build liboqs for iOS
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_OSX_ARCHITECTURES="arm64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0" \
+            -G Ninja
+          ninja
+
+      - name: Fix install name and copy
+        run: |
+          mkdir -p bin/ios
+          cp /tmp/liboqs/build/lib/liboqs.dylib bin/ios/liboqs.dylib
+          install_name_tool -id "@rpath/liboqs.dylib" bin/ios/liboqs.dylib
+          ls -la bin/ios/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-ios-arm64
+          path: bin/ios/liboqs.dylib
+
+  # ============================================
+  # Android (all architectures)
+  # ============================================
+  build-android:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Setup Android NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: |
+          sdkmanager --install "ndk;26.3.11579264"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> $GITHUB_ENV
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Build liboqs for Android ${{ matrix.abi }}
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=${{ matrix.abi }} \
+            -DANDROID_PLATFORM=android-21 \
+            -DANDROID_STL=c++_shared \
+            -G Ninja
+          ninja
+
+      - name: Copy library
+        run: |
+          mkdir -p bin/android/${{ matrix.abi }}
+          cp /tmp/liboqs/build/lib/liboqs.so bin/android/${{ matrix.abi }}/
+          ls -la bin/android/${{ matrix.abi }}/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-android-${{ matrix.abi }}
+          path: bin/android/${{ matrix.abi }}/liboqs.so
+
+  # ============================================
+  # Windows x86_64
+  # ============================================
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} `
+            https://github.com/open-quantum-safe/liboqs.git C:\liboqs
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build liboqs
+        run: |
+          mkdir C:\liboqs\build
+          cd C:\liboqs\build
+          cmake .. `
+            -DBUILD_SHARED_LIBS=ON `
+            -DOQS_BUILD_ONLY_LIB=ON `
+            -DOQS_MINIMAL_BUILD="OQS_ENABLE_SIG_ml_dsa_65" `
+            -DOQS_USE_OPENSSL=OFF `
+            -DCMAKE_BUILD_TYPE=Release `
+            -G Ninja
+          ninja
+
+      - name: Copy library
+        run: |
+          mkdir -p bin\windows
+          copy C:\liboqs\build\lib\oqs.dll bin\windows\oqs.dll
+          dir bin\windows
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-windows-x86_64
+          path: bin/windows/oqs.dll
+
+  # ============================================
+  # Combine all artifacts and commit
+  # ============================================
+  commit-binaries:
+    needs: [build-linux, build-macos-arm64, build-macos-x86_64, build-ios, build-android, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Organize binaries
+        run: |
+          # Create bin directories
+          mkdir -p bin/{linux,macos,macos-x86_64,ios,windows}
+          mkdir -p bin/android/{arm64-v8a,armeabi-v7a,x86_64}
+
+          # Copy artifacts
+          cp artifacts/liboqs-linux-x86_64/liboqs.so bin/linux/
+          cp artifacts/liboqs-macos-arm64/liboqs.dylib bin/macos/
+          cp artifacts/liboqs-macos-x86_64/liboqs.dylib bin/macos-x86_64/
+          cp artifacts/liboqs-ios-arm64/liboqs.dylib bin/ios/
+          cp artifacts/liboqs-android-arm64-v8a/liboqs.so bin/android/arm64-v8a/
+          cp artifacts/liboqs-android-armeabi-v7a/liboqs.so bin/android/armeabi-v7a/
+          cp artifacts/liboqs-android-x86_64/liboqs.so bin/android/x86_64/
+          cp artifacts/liboqs-windows-x86_64/oqs.dll bin/windows/
+
+          # Show results
+          echo "=== Built libraries ==="
+          find bin -type f -exec ls -lh {} \;
+
+      - name: Create version file
+        run: |
+          echo "liboqs_version: ${{ env.LIBOQS_VERSION }}" > bin/VERSION
+          echo "build_date: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> bin/VERSION
+          echo "commit: ${{ github.sha }}" >> bin/VERSION
+          cat bin/VERSION
+
+      - name: Commit binaries
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bin/
+          git commit -m "Build liboqs ${{ env.LIBOQS_VERSION }} native libraries
+
+          Platforms:
+          - Linux x86_64
+          - macOS arm64 (Apple Silicon)
+          - macOS x86_64 (Intel)
+          - iOS arm64
+          - Android arm64-v8a
+          - Android armeabi-v7a
+          - Android x86_64
+          - Windows x86_64
+
+          Built by GitHub Actions" || echo "No changes to commit"
+          git push
+
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/linux/liboqs.so
+            bin/macos/liboqs.dylib
+            bin/macos-x86_64/liboqs.dylib
+            bin/ios/liboqs.dylib
+            bin/android/arm64-v8a/liboqs.so
+            bin/android/armeabi-v7a/liboqs.so
+            bin/android/x86_64/liboqs.so
+            bin/windows/oqs.dll
+          body: |
+            ## liboqs ${{ env.LIBOQS_VERSION }} Native Libraries
+
+            Pre-built native libraries for all supported platforms.
+
+            ### Platforms
+            | Platform | Architecture | File |
+            |----------|--------------|------|
+            | Linux | x86_64 | `liboqs.so` |
+            | macOS | arm64 | `liboqs.dylib` |
+            | macOS | x86_64 | `liboqs.dylib` |
+            | iOS | arm64 | `liboqs.dylib` |
+            | Android | arm64-v8a | `liboqs.so` |
+            | Android | armeabi-v7a | `liboqs.so` |
+            | Android | x86_64 | `liboqs.so` |
+            | Windows | x86_64 | `oqs.dll` |
+
+            ### Usage
+            Place the appropriate library in your project's `bin/` directory.
