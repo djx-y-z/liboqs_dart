@@ -1,6 +1,6 @@
 # Build liboqs native libraries for all platforms
 #
-# This workflow builds liboqs 0.15.0 for:
+# Platforms:
 # - Linux x86_64
 # - macOS arm64 (Apple Silicon)
 # - macOS x86_64 (Intel)
@@ -10,36 +10,49 @@
 #
 # Trigger:
 # - Manual dispatch (workflow_dispatch)
-# - Push to main with changes to this file
+# - Push to main when LIBOQS_VERSION file changes
 # - New tags matching 'v*' or 'liboqs-*'
+#
+# Version is read from LIBOQS_VERSION file in repository root
 
 name: Build liboqs Native Libraries
 
 on:
   workflow_dispatch:
-    inputs:
-      liboqs_version:
-        description: 'liboqs version to build'
-        required: true
-        default: '0.15.0'
-        type: string
   push:
     branches: [main]
     paths:
-      - '.github/workflows/build-liboqs.yml'
+      - 'LIBOQS_VERSION'
     tags:
       - 'v*'
       - 'liboqs-*'
 
-env:
-  LIBOQS_VERSION: ${{ github.event.inputs.liboqs_version || '0.15.0' }}
-
 jobs:
+  # ============================================
+  # Read version from file
+  # ============================================
+  read-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read liboqs version
+        id: version
+        run: |
+          VERSION=$(cat LIBOQS_VERSION | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building liboqs version: $VERSION"
+
   # ============================================
   # Linux x86_64
   # ============================================
   build-linux:
+    needs: read-version
     runs-on: ubuntu-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -81,7 +94,10 @@ jobs:
   # macOS arm64 (Apple Silicon)
   # ============================================
   build-macos-arm64:
+    needs: read-version
     runs-on: macos-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -123,7 +139,10 @@ jobs:
   # macOS x86_64 (Intel)
   # ============================================
   build-macos-x86_64:
+    needs: read-version
     runs-on: macos-13  # Intel runner
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -165,7 +184,10 @@ jobs:
   # iOS arm64
   # ============================================
   build-ios:
+    needs: read-version
     runs-on: macos-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -221,7 +243,10 @@ jobs:
   # Android (all architectures)
   # ============================================
   build-android:
+    needs: read-version
     runs-on: ubuntu-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     strategy:
       matrix:
         abi: [arm64-v8a, armeabi-v7a, x86_64]
@@ -278,7 +303,10 @@ jobs:
   # Windows x86_64
   # ============================================
   build-windows:
+    needs: read-version
     runs-on: windows-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -335,8 +363,10 @@ jobs:
   # Combine all artifacts and commit
   # ============================================
   commit-binaries:
-    needs: [build-linux, build-macos-arm64, build-macos-x86_64, build-ios, build-android, build-windows]
+    needs: [read-version, build-linux, build-macos-arm64, build-macos-x86_64, build-ios, build-android, build-windows]
     runs-on: ubuntu-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     permissions:
       contents: write
     steps:
