@@ -2,9 +2,8 @@
 #
 # Platforms:
 # - Linux x86_64
-# - macOS arm64 (Apple Silicon)
-# - macOS x86_64 (Intel)
-# - iOS arm64
+# - macOS Universal (arm64 + x86_64)
+# - iOS XCFramework (device arm64 + simulator arm64/x86_64)
 # - Android (arm64-v8a, armeabi-v7a, x86_64)
 # - Windows x86_64
 #
@@ -236,8 +235,122 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: liboqs-ios-arm64
+          name: liboqs-ios-device
           path: bin/ios/liboqs.dylib
+
+  # ============================================
+  # iOS Simulator arm64 (Apple Silicon Mac)
+  # ============================================
+  build-ios-simulator-arm64:
+    needs: read-version
+    runs-on: macos-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Get iOS Simulator SDK path
+        id: ios-sim-sdk
+        run: |
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "sdk_path=$SDK_PATH" >> $GITHUB_OUTPUT
+          echo "iOS Simulator SDK: $SDK_PATH"
+
+      - name: Build liboqs for iOS Simulator arm64
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_OSX_ARCHITECTURES="arm64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0" \
+            -DCMAKE_OSX_SYSROOT="${{ steps.ios-sim-sdk.outputs.sdk_path }}" \
+            -G Ninja
+          ninja
+
+      - name: Fix install name and copy
+        run: |
+          mkdir -p bin/ios-simulator-arm64
+          cp /tmp/liboqs/build/lib/liboqs.dylib bin/ios-simulator-arm64/liboqs.dylib
+          install_name_tool -id "@rpath/liboqs.dylib" bin/ios-simulator-arm64/liboqs.dylib
+          ls -la bin/ios-simulator-arm64/
+          file bin/ios-simulator-arm64/liboqs.dylib
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-ios-simulator-arm64
+          path: bin/ios-simulator-arm64/liboqs.dylib
+
+  # ============================================
+  # iOS Simulator x86_64 (Intel Mac)
+  # ============================================
+  build-ios-simulator-x86_64:
+    needs: read-version
+    runs-on: macos-13  # Intel runner
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Clone liboqs
+        run: |
+          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
+            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+
+      - name: Get iOS Simulator SDK path
+        id: ios-sim-sdk
+        run: |
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "sdk_path=$SDK_PATH" >> $GITHUB_OUTPUT
+          echo "iOS Simulator SDK: $SDK_PATH"
+
+      - name: Build liboqs for iOS Simulator x86_64
+        run: |
+          mkdir -p /tmp/liboqs/build
+          cd /tmp/liboqs/build
+          cmake .. \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_USE_OPENSSL=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_SYSTEM_PROCESSOR=x86_64 \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0" \
+            -DCMAKE_OSX_SYSROOT="${{ steps.ios-sim-sdk.outputs.sdk_path }}" \
+            -G Ninja
+          ninja
+
+      - name: Fix install name and copy
+        run: |
+          mkdir -p bin/ios-simulator-x86_64
+          cp /tmp/liboqs/build/lib/liboqs.dylib bin/ios-simulator-x86_64/liboqs.dylib
+          install_name_tool -id "@rpath/liboqs.dylib" bin/ios-simulator-x86_64/liboqs.dylib
+          ls -la bin/ios-simulator-x86_64/
+          file bin/ios-simulator-x86_64/liboqs.dylib
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-ios-simulator-x86_64
+          path: bin/ios-simulator-x86_64/liboqs.dylib
 
   # ============================================
   # Android (all architectures)
@@ -363,8 +476,8 @@ jobs:
   # Combine all artifacts and commit
   # ============================================
   commit-binaries:
-    needs: [read-version, build-linux, build-macos-arm64, build-macos-x86_64, build-ios, build-android, build-windows]
-    runs-on: ubuntu-latest
+    needs: [read-version, build-linux, build-macos-arm64, build-macos-x86_64, build-ios, build-ios-simulator-arm64, build-ios-simulator-x86_64, build-android, build-windows]
+    runs-on: macos-latest  # Need macOS for lipo and xcodebuild
     env:
       LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     permissions:
@@ -379,25 +492,78 @@ jobs:
         with:
           path: artifacts
 
-      - name: Organize binaries
+      - name: List downloaded artifacts
+        run: |
+          echo "=== Downloaded artifacts ==="
+          find artifacts -type f -exec ls -lh {} \;
+
+      - name: Create macOS Universal Binary
+        run: |
+          mkdir -p bin/macos
+          lipo -create \
+            artifacts/liboqs-macos-arm64/liboqs.dylib \
+            artifacts/liboqs-macos-x86_64/liboqs.dylib \
+            -output bin/macos/liboqs.dylib
+          echo "=== macOS Universal Binary ==="
+          file bin/macos/liboqs.dylib
+          lipo -info bin/macos/liboqs.dylib
+
+      - name: Create iOS Simulator Universal Binary
+        run: |
+          mkdir -p tmp/ios-simulator
+          lipo -create \
+            artifacts/liboqs-ios-simulator-arm64/liboqs.dylib \
+            artifacts/liboqs-ios-simulator-x86_64/liboqs.dylib \
+            -output tmp/ios-simulator/liboqs.dylib
+          # Fix install name for the fat binary
+          install_name_tool -id "@rpath/liboqs.dylib" tmp/ios-simulator/liboqs.dylib
+          echo "=== iOS Simulator Universal Binary ==="
+          file tmp/ios-simulator/liboqs.dylib
+          lipo -info tmp/ios-simulator/liboqs.dylib
+
+      - name: Create iOS XCFramework
+        run: |
+          mkdir -p bin/ios
+          xcodebuild -create-xcframework \
+            -library artifacts/liboqs-ios-device/liboqs.dylib \
+            -library tmp/ios-simulator/liboqs.dylib \
+            -output bin/ios/liboqs.xcframework
+          echo "=== iOS XCFramework ==="
+          ls -la bin/ios/liboqs.xcframework/
+          find bin/ios/liboqs.xcframework -name "*.dylib" -exec file {} \;
+
+      - name: Organize remaining binaries
         run: |
           # Create bin directories
-          mkdir -p bin/{linux,macos,macos-x86_64,ios,windows}
+          mkdir -p bin/{linux,windows}
           mkdir -p bin/android/{arm64-v8a,armeabi-v7a,x86_64}
 
           # Copy artifacts
           cp artifacts/liboqs-linux-x86_64/liboqs.so bin/linux/
-          cp artifacts/liboqs-macos-arm64/liboqs.dylib bin/macos/
-          cp artifacts/liboqs-macos-x86_64/liboqs.dylib bin/macos-x86_64/
-          cp artifacts/liboqs-ios-arm64/liboqs.dylib bin/ios/
           cp artifacts/liboqs-android-arm64-v8a/liboqs.so bin/android/arm64-v8a/
           cp artifacts/liboqs-android-armeabi-v7a/liboqs.so bin/android/armeabi-v7a/
           cp artifacts/liboqs-android-x86_64/liboqs.so bin/android/x86_64/
           cp artifacts/liboqs-windows-x86_64/oqs.dll bin/windows/
 
           # Show results
-          echo "=== Built libraries ==="
-          find bin -type f -exec ls -lh {} \;
+          echo "=== All built libraries ==="
+          find bin -type f \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" \) -exec ls -lh {} \;
+          echo "=== XCFramework structure ==="
+          find bin/ios/liboqs.xcframework -type f
+
+      - name: Copy libraries to platform plugin directories
+        run: |
+          # Copy macOS universal binary to plugin directory
+          mkdir -p macos/Libraries
+          cp bin/macos/liboqs.dylib macos/Libraries/
+          echo "=== macOS plugin library ==="
+          file macos/Libraries/liboqs.dylib
+
+          # Copy iOS XCFramework to plugin directory
+          mkdir -p ios/Frameworks
+          cp -R bin/ios/liboqs.xcframework ios/Frameworks/
+          echo "=== iOS plugin framework ==="
+          ls -la ios/Frameworks/liboqs.xcframework/
 
       - name: Create version file
         run: |
@@ -410,21 +576,25 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add bin/
+          git add bin/ macos/Libraries/ ios/Frameworks/
           git commit -m "Build liboqs ${{ env.LIBOQS_VERSION }} native libraries
 
           Platforms:
           - Linux x86_64
-          - macOS arm64 (Apple Silicon)
-          - macOS x86_64 (Intel)
-          - iOS arm64
-          - Android arm64-v8a
-          - Android armeabi-v7a
-          - Android x86_64
+          - macOS Universal (arm64 + x86_64)
+          - iOS XCFramework (device arm64 + simulator arm64/x86_64)
+          - Android arm64-v8a, armeabi-v7a, x86_64
           - Windows x86_64
 
           Built by GitHub Actions" || echo "No changes to commit"
           git push
+
+      - name: Package XCFramework for release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd bin/ios
+          zip -r liboqs.xcframework.zip liboqs.xcframework
+          ls -la
 
       - name: Create Release (on tag)
         if: startsWith(github.ref, 'refs/tags/')
@@ -433,8 +603,7 @@ jobs:
           files: |
             bin/linux/liboqs.so
             bin/macos/liboqs.dylib
-            bin/macos-x86_64/liboqs.dylib
-            bin/ios/liboqs.dylib
+            bin/ios/liboqs.xcframework.zip
             bin/android/arm64-v8a/liboqs.so
             bin/android/armeabi-v7a/liboqs.so
             bin/android/x86_64/liboqs.so
@@ -448,13 +617,13 @@ jobs:
             | Platform | Architecture | File |
             |----------|--------------|------|
             | Linux | x86_64 | `liboqs.so` |
-            | macOS | arm64 | `liboqs.dylib` |
-            | macOS | x86_64 | `liboqs.dylib` |
-            | iOS | arm64 | `liboqs.dylib` |
+            | macOS | Universal (arm64 + x86_64) | `liboqs.dylib` |
+            | iOS | XCFramework (device + simulator) | `liboqs.xcframework.zip` |
             | Android | arm64-v8a | `liboqs.so` |
             | Android | armeabi-v7a | `liboqs.so` |
             | Android | x86_64 | `liboqs.so` |
             | Windows | x86_64 | `oqs.dll` |
 
             ### Usage
-            Place the appropriate library in your project's `bin/` directory.
+            - **macOS/Linux/Windows/Android**: Place the library in your project's `bin/` directory
+            - **iOS**: Extract and place XCFramework in `ios/Frameworks/`
