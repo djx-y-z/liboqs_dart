@@ -177,6 +177,13 @@ jobs:
           git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
             https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
 
+      - name: Get iOS SDK path
+        id: ios-sdk
+        run: |
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "sdk_path=$SDK_PATH" >> $GITHUB_OUTPUT
+          echo "iOS SDK: $SDK_PATH"
+
       - name: Build liboqs for iOS
         run: |
           mkdir -p /tmp/liboqs/build
@@ -187,8 +194,11 @@ jobs:
             -DOQS_USE_OPENSSL=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
             -DCMAKE_OSX_ARCHITECTURES="arm64" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0" \
+            -DCMAKE_OSX_SYSROOT="${{ steps.ios-sdk.outputs.sdk_path }}" \
+            -DCMAKE_C_FLAGS="-fembed-bitcode" \
             -G Ninja
           ninja
 
@@ -198,6 +208,8 @@ jobs:
           cp /tmp/liboqs/build/lib/liboqs.dylib bin/ios/liboqs.dylib
           install_name_tool -id "@rpath/liboqs.dylib" bin/ios/liboqs.dylib
           ls -la bin/ios/
+          # Verify it's built for iOS
+          file bin/ios/liboqs.dylib
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -290,13 +302,16 @@ jobs:
             -DOQS_BUILD_ONLY_LIB=ON `
             -DOQS_USE_OPENSSL=OFF `
             -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON `
+            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=C:\liboqs\output `
+            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\liboqs\output `
             -G Ninja
           ninja
 
       - name: Copy library
         run: |
-          mkdir -p bin\windows
-          copy C:\liboqs\build\lib\oqs.dll bin\windows\oqs.dll
+          New-Item -ItemType Directory -Force -Path bin\windows
+          Copy-Item C:\liboqs\output\oqs.dll -Destination bin\windows\oqs.dll
           dir bin\windows
 
       - name: Upload artifact
