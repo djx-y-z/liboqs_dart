@@ -65,7 +65,7 @@ setup:
 	fvm install
 	@echo ""
 	@echo "Getting dependencies..."
-	fvm dart pub get
+	fvm dart pub get --no-example
 	@echo ""
 	@echo "Setup complete! You can now use 'make help' to see available commands."
 
@@ -110,11 +110,11 @@ format-check:
 # =============================================================================
 
 get:
-	fvm dart pub get
+	fvm dart pub get --no-example
 
 clean:
 	rm -rf .dart_tool build
-	fvm dart pub get
+	fvm dart pub get --no-example
 
 version:
 	@cat LIBOQS_VERSION
