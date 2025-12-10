@@ -161,7 +161,10 @@ class PackageDirectoryStrategy extends LibraryLoadStrategy {
         );
 
         if (packageConfigFile.existsSync()) {
-          final packageDir = _parsePackageConfig(packageConfigFile, current.path);
+          final packageDir = _parsePackageConfig(
+            packageConfigFile,
+            current.path,
+          );
           if (packageDir != null) {
             return packageDir;
           }
@@ -201,7 +204,9 @@ class PackageDirectoryStrategy extends LibraryLoadStrategy {
           } else if (rootUri.startsWith('../') || rootUri.startsWith('./')) {
             // Relative path from .dart_tool directory
             // IMPORTANT: Must use absolute path AND Uri.directory for proper resolution
-            final dartToolAbsPath = Directory(configFile.parent.path).absolute.path;
+            final dartToolAbsPath = Directory(
+              configFile.parent.path,
+            ).absolute.path;
             final baseUri = Uri.directory(dartToolAbsPath);
             final resolved = baseUri.resolve(rootUri);
             return resolved.toFilePath();

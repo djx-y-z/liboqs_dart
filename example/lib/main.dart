@@ -118,25 +118,31 @@ class _HomePageState extends State<HomePage> {
                   label: 'KEM Demo',
                   icon: Icons.vpn_key,
                   isRunning: _isRunning,
-                  onPressed: () => _runDemo('Key Encapsulation (ML-KEM-768)', _runKemDemo),
+                  onPressed: () =>
+                      _runDemo('Key Encapsulation (ML-KEM-768)', _runKemDemo),
                 ),
                 _DemoButton(
                   label: 'Signature Demo',
                   icon: Icons.verified,
                   isRunning: _isRunning,
-                  onPressed: () => _runDemo('Digital Signatures (ML-DSA-65)', _runSignatureDemo),
+                  onPressed: () => _runDemo(
+                    'Digital Signatures (ML-DSA-65)',
+                    _runSignatureDemo,
+                  ),
                 ),
                 _DemoButton(
                   label: 'Random Demo',
                   icon: Icons.casino,
                   isRunning: _isRunning,
-                  onPressed: () => _runDemo('Random Generation', _runRandomDemo),
+                  onPressed: () =>
+                      _runDemo('Random Generation', _runRandomDemo),
                 ),
                 _DemoButton(
                   label: 'All Algorithms',
                   icon: Icons.list,
                   isRunning: _isRunning,
-                  onPressed: () => _runDemo('Supported Algorithms', _runAlgorithmsDemo),
+                  onPressed: () =>
+                      _runDemo('Supported Algorithms', _runAlgorithmsDemo),
                 ),
               ],
             ),
@@ -275,7 +281,9 @@ class _HomePageState extends State<HomePage> {
 
     // Random doubles
     final doubles = List.generate(5, (_) => OQSRandom.generateDouble());
-    _appendOutput('5 random doubles: ${doubles.map((d) => d.toStringAsFixed(4)).toList()}');
+    _appendOutput(
+      '5 random doubles: ${doubles.map((d) => d.toStringAsFixed(4)).toList()}',
+    );
 
     // Shuffle demo
     final list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -286,7 +294,9 @@ class _HomePageState extends State<HomePage> {
 
     // Available algorithms
     _appendOutput('');
-    _appendOutput('Available RNG algorithms: ${OQSRandom.getAvailableAlgorithms()}');
+    _appendOutput(
+      'Available RNG algorithms: ${OQSRandom.getAvailableAlgorithms()}',
+    );
   }
 
   Future<void> _runAlgorithmsDemo() async {

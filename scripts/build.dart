@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+
 /// Build liboqs native libraries for all platforms
 ///
 /// Usage:

@@ -155,11 +155,9 @@ Future<void> runCommandOrFail(
 /// Check if a command exists
 Future<bool> commandExists(String command) async {
   try {
-    final result = await Process.run(
-      Platform.isWindows ? 'where' : 'which',
-      [command],
-      runInShell: true,
-    );
+    final result = await Process.run(Platform.isWindows ? 'where' : 'which', [
+      command,
+    ], runInShell: true);
     return result.exitCode == 0;
   } catch (_) {
     return false;
@@ -233,13 +231,7 @@ String getTempBuildDir() {
 // Platform detection
 // ============================================
 
-enum BuildPlatform {
-  linux,
-  macos,
-  ios,
-  android,
-  windows,
-}
+enum BuildPlatform { linux, macos, ios, android, windows }
 
 /// Get available build platforms for current OS
 List<BuildPlatform> getAvailablePlatforms() {

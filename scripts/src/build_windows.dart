@@ -84,11 +84,12 @@ Future<void> buildWindows() async {
   if (useNinja) {
     await runCommandOrFail('ninja', [], workingDirectory: buildDir);
   } else {
-    await runCommandOrFail(
-      'cmake',
-      ['--build', '.', '--config', 'Release'],
-      workingDirectory: buildDir,
-    );
+    await runCommandOrFail('cmake', [
+      '--build',
+      '.',
+      '--config',
+      'Release',
+    ], workingDirectory: buildDir);
   }
 
   // Find and copy DLL

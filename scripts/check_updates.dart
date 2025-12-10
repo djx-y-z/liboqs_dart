@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+
 /// Check for liboqs updates
 ///
 /// This script checks for new liboqs releases and optionally updates

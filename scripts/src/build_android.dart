@@ -121,12 +121,13 @@ Future<String> _findNDK() async {
     final ndkDir = Directory('$basePath/ndk');
     if (ndkDir.existsSync()) {
       // Find newest version
-      final versions = ndkDir
-          .listSync()
-          .whereType<Directory>()
-          .map((d) => d.path.split('/').last)
-          .toList()
-        ..sort();
+      final versions =
+          ndkDir
+              .listSync()
+              .whereType<Directory>()
+              .map((d) => d.path.split('/').last)
+              .toList()
+            ..sort();
 
       if (versions.isNotEmpty) {
         return '${ndkDir.path}/${versions.last}';

@@ -37,7 +37,9 @@ void main() {
       expect(keyPair.publicKey.length, equals(1952));
       expect(keyPair.secretKey.length, equals(4032));
 
-      final message = Uint8List.fromList('Test message for ML-DSA-65'.codeUnits);
+      final message = Uint8List.fromList(
+        'Test message for ML-DSA-65'.codeUnits,
+      );
       final signature = sig.sign(message, keyPair.secretKey);
       expect(signature.length, lessThanOrEqualTo(3309));
 
@@ -54,7 +56,9 @@ void main() {
       expect(keyPair.publicKey.length, equals(2592));
       expect(keyPair.secretKey.length, equals(4896));
 
-      final message = Uint8List.fromList('Test message for ML-DSA-87'.codeUnits);
+      final message = Uint8List.fromList(
+        'Test message for ML-DSA-87'.codeUnits,
+      );
       final signature = sig.sign(message, keyPair.secretKey);
       expect(signature.length, lessThanOrEqualTo(4627));
 

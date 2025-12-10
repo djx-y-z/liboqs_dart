@@ -14,12 +14,7 @@ import 'dart:io';
 import 'common.dart';
 
 /// iOS build target
-enum IOSTarget {
-  device,
-  simulatorArm64,
-  simulatorX86_64,
-  all,
-}
+enum IOSTarget { device, simulatorArm64, simulatorX86_64, all }
 
 /// Build liboqs for iOS
 Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
@@ -143,8 +138,18 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
     // Build single target
     final (targetName, arch, sdk, processor) = switch (target) {
       IOSTarget.device => ('device', 'arm64', 'iphoneos', 'aarch64'),
-      IOSTarget.simulatorArm64 => ('simulator', 'arm64', 'iphonesimulator', 'aarch64'),
-      IOSTarget.simulatorX86_64 => ('simulator', 'x86_64', 'iphonesimulator', 'x86_64'),
+      IOSTarget.simulatorArm64 => (
+        'simulator',
+        'arm64',
+        'iphonesimulator',
+        'aarch64',
+      ),
+      IOSTarget.simulatorX86_64 => (
+        'simulator',
+        'x86_64',
+        'iphonesimulator',
+        'x86_64',
+      ),
       IOSTarget.all => throw Exception('Unreachable'),
     };
 
@@ -186,11 +191,11 @@ Future<String> _buildIOSTarget({
   logPlatform('iOS', 'Building for $target $arch...');
 
   // Get SDK path
-  final sdkResult = await runCommand(
-    'xcrun',
-    ['--sdk', sdk, '--show-sdk-path'],
-    printOutput: false,
-  );
+  final sdkResult = await runCommand('xcrun', [
+    '--sdk',
+    sdk,
+    '--show-sdk-path',
+  ], printOutput: false);
   final sdkPath = sdkResult.stdout.toString().trim();
   logInfo('SDK: $sdkPath');
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+
 /// Regenerate Dart FFI bindings for liboqs
 ///
 /// This script downloads liboqs, builds it to generate headers,
@@ -86,11 +87,10 @@ Future<void> _checkRequirements() async {
 
   if (!result.stdout.toString().contains('ffigen')) {
     logWarn('ffigen not found in dependencies, running dart pub get...');
-    await runCommandOrFail(
-      'dart',
-      ['pub', 'get'],
-      workingDirectory: _packageDir.path,
-    );
+    await runCommandOrFail('dart', [
+      'pub',
+      'get',
+    ], workingDirectory: _packageDir.path);
   }
 
   logInfo('All requirements satisfied');
@@ -202,18 +202,19 @@ Future<void> _fixCyclicIncludes() async {
 Future<void> _generateBindings() async {
   logStep('Generating Dart FFI bindings...');
 
-  final result = await runCommand(
-    'dart',
-    ['run', 'ffigen'],
-    workingDirectory: _packageDir.path,
-  );
+  final result = await runCommand('dart', [
+    'run',
+    'ffigen',
+  ], workingDirectory: _packageDir.path);
 
   if (result.exitCode != 0) {
     throw Exception('ffigen failed');
   }
 
   // Verify bindings were generated
-  final bindingsFile = File('${_packageDir.path}/lib/src/bindings/liboqs_bindings.dart');
+  final bindingsFile = File(
+    '${_packageDir.path}/lib/src/bindings/liboqs_bindings.dart',
+  );
   if (!bindingsFile.existsSync()) {
     throw Exception('Bindings file was not generated');
   }
@@ -239,11 +240,10 @@ Future<bool> _runTests() async {
     return true;
   }
 
-  final result = await runCommand(
-    'dart',
-    ['test', 'test/quick_test.dart'],
-    workingDirectory: _packageDir.path,
-  );
+  final result = await runCommand('dart', [
+    'test',
+    'test/quick_test.dart',
+  ], workingDirectory: _packageDir.path);
 
   if (result.exitCode == 0) {
     logInfo('Quick test passed!');

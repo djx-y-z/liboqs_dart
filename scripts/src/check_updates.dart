@@ -29,12 +29,12 @@ class UpdateCheckResult {
   });
 
   Map<String, dynamic> toJson() => {
-        'current_version': currentVersion,
-        'latest_version': latestVersion,
-        'needs_update': needsUpdate,
-        'is_prerelease': isPrerelease,
-        'release_url': releaseUrl,
-      };
+    'current_version': currentVersion,
+    'latest_version': latestVersion,
+    'needs_update': needsUpdate,
+    'is_prerelease': isPrerelease,
+    'release_url': releaseUrl,
+  };
 }
 
 /// Result of package version calculation
@@ -52,11 +52,11 @@ class PackageVersionResult {
   });
 
   Map<String, dynamic> toJson() => {
-        'current_version': currentVersion,
-        'new_version': newVersion,
-        'bump_type': bumpType,
-        'is_prerelease': isPrerelease,
-      };
+    'current_version': currentVersion,
+    'new_version': newVersion,
+    'bump_type': bumpType,
+    'is_prerelease': isPrerelease,
+  };
 }
 
 /// Check for liboqs updates
@@ -107,7 +107,8 @@ Future<UpdateCheckResult> checkForUpdates({
     needsUpdate: needsUpdate,
     isPrerelease: isPrerelease,
     releaseNotes: releaseNotes,
-    releaseUrl: releaseUrl ??
+    releaseUrl:
+        releaseUrl ??
         'https://github.com/open-quantum-safe/liboqs/releases/tag/$latestVersion',
   );
 }
@@ -180,8 +181,10 @@ PackageVersionResult calculatePackageVersion({
   // Read current package version from pubspec.yaml
   final pubspecFile = File('${packageDir.path}/pubspec.yaml');
   final pubspecContent = pubspecFile.readAsStringSync();
-  final versionMatch =
-      RegExp(r'^version:\s*(.+)$', multiLine: true).firstMatch(pubspecContent);
+  final versionMatch = RegExp(
+    r'^version:\s*(.+)$',
+    multiLine: true,
+  ).firstMatch(pubspecContent);
 
   if (versionMatch == null) {
     throw Exception('Could not find version in pubspec.yaml');
@@ -191,7 +194,9 @@ PackageVersionResult calculatePackageVersion({
   if (!silent) logInfo('Current package version: $currentPkgVersion');
 
   // Extract base versions
-  final currentLiboqsBase = currentLiboqs.replaceFirst(RegExp(r'^v'), '').split('-')[0];
+  final currentLiboqsBase = currentLiboqs
+      .replaceFirst(RegExp(r'^v'), '')
+      .split('-')[0];
   final newLiboqsBase = newLiboqs.replaceFirst(RegExp(r'^v'), '').split('-')[0];
   final ourBaseVersion = currentPkgVersion.split('-')[0];
 
@@ -243,7 +248,8 @@ PackageVersionResult calculatePackageVersion({
     newVersion = '$newVersion$suffix';
   }
 
-  if (!silent) logInfo('New package version: $newVersion (bump: $actualBumpType)');
+  if (!silent)
+    logInfo('New package version: $newVersion (bump: $actualBumpType)');
 
   return PackageVersionResult(
     currentVersion: currentPkgVersion,
@@ -333,10 +339,13 @@ Future<void> _updateChangelog({
       : '';
 
   // Build release URL
-  final releaseLink = releaseUrl ?? 'https://github.com/open-quantum-safe/liboqs/releases/tag/$newLiboqs';
+  final releaseLink =
+      releaseUrl ??
+      'https://github.com/open-quantum-safe/liboqs/releases/tag/$newLiboqs';
 
   // Create new entry
-  final newEntry = '''
+  final newEntry =
+      '''
 ## $newVersion
 $prereleaseNote
 $sectionHeader

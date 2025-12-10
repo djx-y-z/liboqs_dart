@@ -82,7 +82,10 @@ void main() {
       final encResult = kem.encapsulate(keyPair1.publicKey);
 
       // Decapsulate with wrong secret key - should produce different shared secret
-      final wrongSecret = kem.decapsulate(encResult.ciphertext, keyPair2.secretKey);
+      final wrongSecret = kem.decapsulate(
+        encResult.ciphertext,
+        keyPair2.secretKey,
+      );
       expect(wrongSecret, isNot(equals(encResult.sharedSecret)));
 
       kem.dispose();
@@ -214,10 +217,16 @@ void main() {
 
       for (final algName in algorithms) {
         final kem = KEM.create(algName);
-        expect(kem.supportsDeterministicGeneration, isTrue,
-            reason: '$algName should support deterministic generation');
-        expect(kem.seedLength, equals(64),
-            reason: '$algName seed length should be 64');
+        expect(
+          kem.supportsDeterministicGeneration,
+          isTrue,
+          reason: '$algName should support deterministic generation',
+        );
+        expect(
+          kem.seedLength,
+          equals(64),
+          reason: '$algName seed length should be 64',
+        );
         kem.dispose();
       }
     });
@@ -229,10 +238,16 @@ void main() {
         if (!KEM.isSupported(algName)) continue;
 
         final kem = KEM.create(algName);
-        expect(kem.supportsDeterministicGeneration, isFalse,
-            reason: '$algName should not support deterministic generation');
-        expect(kem.seedLength, isNull,
-            reason: '$algName seed length should be null');
+        expect(
+          kem.supportsDeterministicGeneration,
+          isFalse,
+          reason: '$algName should not support deterministic generation',
+        );
+        expect(
+          kem.seedLength,
+          isNull,
+          reason: '$algName seed length should be null',
+        );
 
         // Verify that calling generateKeyPairDerand throws
         expect(

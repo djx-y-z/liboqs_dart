@@ -12,11 +12,7 @@ import 'dart:io';
 import 'common.dart';
 
 /// Architecture to build for
-enum MacOSArch {
-  arm64,
-  x86_64,
-  universal,
-}
+enum MacOSArch { arm64, x86_64, universal }
 
 /// Build liboqs for macOS
 Future<void> buildMacOS({MacOSArch arch = MacOSArch.universal}) async {
@@ -141,7 +137,10 @@ Future<String> _buildArch({
   required String tempDir,
   required String buildTool,
 }) async {
-  logPlatform('macOS', 'Building for $arch (deployment target: $deploymentTarget)...');
+  logPlatform(
+    'macOS',
+    'Building for $arch (deployment target: $deploymentTarget)...',
+  );
 
   final buildDir = '$tempDir/build-macos-$arch';
   await ensureDir(buildDir);

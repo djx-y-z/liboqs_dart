@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+
 /// Combine build artifacts from CI into final binaries
 ///
 /// This script is used by CI after all platform builds complete.
@@ -122,7 +123,10 @@ Future<void> _copyLinux(String artifactsDir, String packageDir) async {
 }
 
 /// Create macOS Universal Binary
-Future<void> _createMacOSUniversal(String artifactsDir, String packageDir) async {
+Future<void> _createMacOSUniversal(
+  String artifactsDir,
+  String packageDir,
+) async {
   final arm64 = '$artifactsDir/liboqs-macos-arm64/liboqs.dylib';
   final x86_64 = '$artifactsDir/liboqs-macos-x86_64/liboqs.dylib';
 
@@ -153,14 +157,20 @@ Future<void> _createMacOSUniversal(String artifactsDir, String packageDir) async
 
   // Copy to Flutter plugin directory
   await ensureDir('$packageDir/macos/Libraries');
-  await copyFile('$outputDir/liboqs.dylib', '$packageDir/macos/Libraries/liboqs.dylib');
+  await copyFile(
+    '$outputDir/liboqs.dylib',
+    '$packageDir/macos/Libraries/liboqs.dylib',
+  );
 
   logInfo('macOS Universal Binary created');
   await runCommand('lipo', ['-info', '$outputDir/liboqs.dylib']);
 }
 
 /// Create iOS XCFramework
-Future<void> _createIOSXCFramework(String artifactsDir, String packageDir) async {
+Future<void> _createIOSXCFramework(
+  String artifactsDir,
+  String packageDir,
+) async {
   final device = '$artifactsDir/liboqs-ios-device-arm64/liboqs.a';
   final simArm64 = '$artifactsDir/liboqs-ios-simulator-arm64/liboqs.a';
   final simX86_64 = '$artifactsDir/liboqs-ios-simulator-x86_64/liboqs.a';
