@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
@@ -106,16 +107,152 @@ class PackageRelativeStrategy extends LibraryLoadStrategy {
   String get description => 'Package-relative paths';
 }
 
+/// Strategy that loads library from the oqs_dart package directory.
+///
+/// This strategy finds the actual package location by reading the
+/// .dart_tool/package_config.json file, which works for both local
+/// development and pub-cached packages.
+class PackageDirectoryStrategy extends LibraryLoadStrategy {
+  @override
+  DynamicLibrary? tryLoad() {
+    final packageDir = _findOqsPackageDirectory();
+    if (packageDir == null) return null;
+
+    final libPath = _getPlatformLibraryPath(packageDir);
+    if (libPath == null) return null;
+
+    try {
+      if (File(libPath).existsSync()) {
+        return DynamicLibrary.open(libPath);
+      }
+    } catch (e) {
+      // Continue to next strategy
+    }
+    return null;
+  }
+
+  /// Finds the oqs_dart package directory by reading package_config.json
+  String? _findOqsPackageDirectory() {
+    // Try multiple starting points to find package_config.json
+    final searchDirs = <Directory>[];
+
+    // 1. Current working directory (most reliable for dart test and dart run)
+    searchDirs.add(Directory.current);
+
+    // 2. Script location (works for dart run, but NOT for dart test)
+    // dart test puts compiled .dill in temp directory, so skip temp paths
+    try {
+      final scriptPath = Platform.script.toFilePath();
+      if (!scriptPath.contains('/var/folders/') &&
+          !scriptPath.contains('\\Temp\\') &&
+          !scriptPath.endsWith('.dill')) {
+        searchDirs.add(File(scriptPath).parent);
+      }
+    } catch (_) {
+      // Ignore if script path cannot be determined
+    }
+
+    // Search from each starting point
+    for (final startDir in searchDirs) {
+      Directory? current = startDir;
+      while (current != null) {
+        final packageConfigFile = File(
+          '${current.path}/.dart_tool/package_config.json',
+        );
+
+        if (packageConfigFile.existsSync()) {
+          final packageDir = _parsePackageConfig(packageConfigFile, current.path);
+          if (packageDir != null) {
+            return packageDir;
+          }
+        }
+
+        // Move up one directory
+        final parent = current.parent;
+        if (parent.path == current.path) break; // Reached root
+        current = parent;
+      }
+    }
+
+    return null;
+  }
+
+  /// Parses package_config.json and returns the path to oqs_dart package
+  String? _parsePackageConfig(File configFile, String projectRoot) {
+    try {
+      final content = configFile.readAsStringSync();
+      final json = jsonDecode(content) as Map<String, dynamic>;
+
+      final packages = json['packages'] as List<dynamic>?;
+      if (packages == null) return null;
+
+      for (final pkg in packages) {
+        final pkgMap = pkg as Map<String, dynamic>;
+        final name = pkgMap['name'] as String?;
+
+        // Look for 'liboqs' package (the package name, not directory name)
+        if (name == 'liboqs') {
+          final rootUri = pkgMap['rootUri'] as String?;
+          if (rootUri == null) continue;
+
+          // rootUri can be relative or absolute
+          if (rootUri.startsWith('file://')) {
+            return Uri.parse(rootUri).toFilePath();
+          } else if (rootUri.startsWith('../') || rootUri.startsWith('./')) {
+            // Relative path from .dart_tool directory
+            // IMPORTANT: Must use absolute path AND Uri.directory for proper resolution
+            final dartToolAbsPath = Directory(configFile.parent.path).absolute.path;
+            final baseUri = Uri.directory(dartToolAbsPath);
+            final resolved = baseUri.resolve(rootUri);
+            return resolved.toFilePath();
+          } else if (rootUri.startsWith('/')) {
+            return rootUri;
+          }
+        }
+      }
+    } catch (_) {
+      // Failed to parse, continue to next strategy
+    }
+    return null;
+  }
+
+  /// Returns the platform-specific library path within the package.
+  String? _getPlatformLibraryPath(String packageDir) {
+    if (Platform.isWindows) {
+      return '$packageDir/bin/windows/oqs.dll';
+    } else if (Platform.isLinux) {
+      return '$packageDir/bin/linux/liboqs.so';
+    } else if (Platform.isMacOS) {
+      return '$packageDir/bin/macos/liboqs.dylib';
+    } else if (Platform.isAndroid) {
+      final archPaths = [
+        '$packageDir/bin/android/arm64-v8a/liboqs.so',
+        '$packageDir/bin/android/armeabi-v7a/liboqs.so',
+        '$packageDir/bin/android/x86_64/liboqs.so',
+      ];
+      for (final path in archPaths) {
+        if (File(path).existsSync()) {
+          return path;
+        }
+      }
+    }
+    // iOS uses dynamic framework via Flutter plugin, not this strategy
+    return null;
+  }
+
+  @override
+  String get description => 'Package directory (oqs_dart/bin/)';
+}
+
 /// Strategy that loads library from platform-specific system locations.
 class SystemLocationStrategy extends LibraryLoadStrategy {
   @override
   DynamicLibrary? tryLoad() {
     try {
       if (Platform.isIOS) {
-        // On iOS, use process() for static linking
-        return DynamicLibrary.process();
+        // iOS: Load oqs.framework bundled in the app's Frameworks/ directory
+        return DynamicLibrary.open('oqs.framework/oqs');
       } else {
-        // Try to load from system library paths
         return DynamicLibrary.open(_getLibraryFileName());
       }
     } catch (e) {
@@ -124,7 +261,7 @@ class SystemLocationStrategy extends LibraryLoadStrategy {
   }
 
   @override
-  String get description => 'System library locations';
+  String get description => 'System locations';
 }
 
 /// Strategy that loads library from platform-specific default locations.
@@ -216,19 +353,16 @@ class LibOQSLoader {
   /// Optional custom path to the library, set this before calling loadLibrary to use a custom path.
   static String? customPath;
 
-  /// Loads the liboqs dynamic library using a strategy pattern with multiple fallbacks.
+  /// Loads the liboqs dynamic library using a strategy pattern with fallbacks.
   ///
-  /// The loading strategies are tried in the following order:
+  /// Strategies are tried in order:
   /// 1. Explicit path (if provided)
   /// 2. Custom path (if set via LibOQSLoader.customPath)
   /// 3. Environment variable (LIBOQS_PATH)
-  /// 4. Package-relative paths
-  /// 5. System library locations
-  /// 6. Default platform-specific locations
-  ///
-  /// [explicitPath] - Optional explicit path to the library
-  /// [useCache] - Whether to cache the loaded library (default: true)
-  /// [envVarName] - Name of environment variable to check (default: 'LIBOQS_PATH')
+  /// 4. System locations (iOS framework, Android bundled)
+  /// 5. Package directory (oqs_dart/bin/)
+  /// 6. Package-relative paths
+  /// 7. Default platform locations
   ///
   /// Returns a [DynamicLibrary] instance on success.
   /// Throws [LibraryLoadException] if all strategies fail.
@@ -246,8 +380,9 @@ class LibOQSLoader {
       if (explicitPath != null) ExplicitPathStrategy(explicitPath),
       if (customPath != null) ExplicitPathStrategy(customPath!),
       EnvironmentVariableStrategy(envVarName),
-      PackageRelativeStrategy(),
       SystemLocationStrategy(),
+      PackageDirectoryStrategy(),
+      PackageRelativeStrategy(),
       DefaultLocationStrategy(),
     ];
 

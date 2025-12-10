@@ -1,5 +1,8 @@
 # Build liboqs native libraries for all platforms
 #
+# This workflow uses cross-platform Dart scripts from scripts/ directory.
+# The same scripts can be run locally on any OS with Dart SDK.
+#
 # Platforms:
 # - Linux x86_64
 # - macOS Universal (arm64 + x86_64)
@@ -50,38 +53,32 @@ jobs:
   build-linux:
     needs: read-version
     runs-on: ubuntu-latest
-    env:
-      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install FVM
+        run: |
+          dart pub global activate fvm
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Cache FVM
+        uses: actions/cache@v4
+        with:
+          path: ~/.fvm
+          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+          restore-keys: |
+            fvm-${{ runner.os }}-
+
+      - name: Install Flutter via FVM
+        run: fvm install
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build gcc g++
 
-      - name: Clone liboqs
-        run: |
-          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
-            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
-
-      - name: Build liboqs
-        run: |
-          mkdir -p /tmp/liboqs/build
-          cd /tmp/liboqs/build
-          cmake .. \
-            -DBUILD_SHARED_LIBS=ON \
-            -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_USE_OPENSSL=OFF \
-            -DCMAKE_BUILD_TYPE=Release \
-            -G Ninja
-          ninja
-
-      - name: Copy library
-        run: |
-          mkdir -p bin/linux
-          cp /tmp/liboqs/build/lib/liboqs.so bin/linux/
-          ls -la bin/linux/
+      - name: Build liboqs for Linux
+        run: make build linux
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -90,7 +87,7 @@ jobs:
           path: bin/linux/liboqs.so
 
   # ============================================
-  # macOS (arm64 + x86_64)
+  # macOS (arm64 + x86_64 on separate runners)
   # ============================================
   build-macos:
     needs: read-version
@@ -99,54 +96,42 @@ jobs:
         include:
           - arch: arm64
             runner: macos-latest
-            deployment_target: "11.0"
           - arch: x86_64
             runner: macos-13
-            deployment_target: "10.15"
     runs-on: ${{ matrix.runner }}
-    env:
-      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install FVM
+        run: |
+          dart pub global activate fvm
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Cache FVM
+        uses: actions/cache@v4
+        with:
+          path: ~/.fvm
+          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+          restore-keys: |
+            fvm-${{ runner.os }}-
+
+      - name: Install Flutter via FVM
+        run: fvm install
 
       - name: Install dependencies
         run: brew install cmake ninja
 
-      - name: Clone liboqs
-        run: |
-          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
-            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
-
       - name: Build liboqs for macOS ${{ matrix.arch }}
-        run: |
-          mkdir -p /tmp/liboqs/build
-          cd /tmp/liboqs/build
-          cmake .. \
-            -DBUILD_SHARED_LIBS=ON \
-            -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_USE_OPENSSL=OFF \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET="${{ matrix.deployment_target }}" \
-            -G Ninja
-          ninja
-
-      - name: Copy library
-        run: |
-          mkdir -p bin/macos-${{ matrix.arch }}
-          cp /tmp/liboqs/build/lib/liboqs.dylib bin/macos-${{ matrix.arch }}/liboqs.dylib
-          ls -la bin/macos-${{ matrix.arch }}/
-          file bin/macos-${{ matrix.arch }}/liboqs.dylib
+        run: make build macos --arch ${{ matrix.arch }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: liboqs-macos-${{ matrix.arch }}
-          path: bin/macos-${{ matrix.arch }}/liboqs.dylib
+          path: bin/macos/liboqs.dylib
 
   # ============================================
-  # iOS (device + simulator) - STATIC LIBRARIES
-  # iOS apps cannot load arbitrary dylibs, must use static linking
+  # iOS (device + simulator on separate runners)
   # ============================================
   build-ios:
     needs: read-version
@@ -156,69 +141,46 @@ jobs:
           - target: device
             arch: arm64
             runner: macos-latest
-            sdk: iphoneos
-            processor: aarch64
+            dart_target: device
           - target: simulator
             arch: arm64
             runner: macos-latest
-            sdk: iphonesimulator
-            processor: aarch64
+            dart_target: simulator-arm64
           - target: simulator
             arch: x86_64
             runner: macos-13
-            sdk: iphonesimulator
-            processor: x86_64
+            dart_target: simulator-x86_64
     runs-on: ${{ matrix.runner }}
-    env:
-      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install FVM
+        run: |
+          dart pub global activate fvm
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Cache FVM
+        uses: actions/cache@v4
+        with:
+          path: ~/.fvm
+          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+          restore-keys: |
+            fvm-${{ runner.os }}-
+
+      - name: Install Flutter via FVM
+        run: fvm install
 
       - name: Install dependencies
         run: brew install cmake ninja
 
-      - name: Clone liboqs
-        run: |
-          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
-            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
-
-      - name: Get iOS SDK path
-        id: ios-sdk
-        run: |
-          SDK_PATH=$(xcrun --sdk ${{ matrix.sdk }} --show-sdk-path)
-          echo "sdk_path=$SDK_PATH" >> $GITHUB_OUTPUT
-          echo "iOS SDK (${{ matrix.sdk }}): $SDK_PATH"
-
-      - name: Build liboqs STATIC for iOS ${{ matrix.target }} ${{ matrix.arch }}
-        run: |
-          mkdir -p /tmp/liboqs/build
-          cd /tmp/liboqs/build
-          cmake .. \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_USE_OPENSSL=OFF \
-            -DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_SYSTEM_NAME=iOS \
-            -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.processor }} \
-            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0" \
-            -DCMAKE_OSX_SYSROOT="${{ steps.ios-sdk.outputs.sdk_path }}" \
-            -G Ninja
-          ninja
-
-      - name: Copy static library
-        run: |
-          mkdir -p bin/ios-${{ matrix.target }}-${{ matrix.arch }}
-          cp /tmp/liboqs/build/lib/liboqs.a bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
-          ls -la bin/ios-${{ matrix.target }}-${{ matrix.arch }}/
-          file bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
+      - name: Build liboqs for iOS ${{ matrix.target }} ${{ matrix.arch }}
+        run: make build ios --target ${{ matrix.dart_target }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: liboqs-ios-${{ matrix.target }}-${{ matrix.arch }}
-          path: bin/ios-${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
+          path: ios/Libraries/${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
 
   # ============================================
   # Android (all architectures)
@@ -226,13 +188,27 @@ jobs:
   build-android:
     needs: read-version
     runs-on: ubuntu-latest
-    env:
-      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     strategy:
       matrix:
         abi: [arm64-v8a, armeabi-v7a, x86_64]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install FVM
+        run: |
+          dart pub global activate fvm
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Cache FVM
+        uses: actions/cache@v4
+        with:
+          path: ~/.fvm
+          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+          restore-keys: |
+            fvm-${{ runner.os }}-
+
+      - name: Install Flutter via FVM
+        run: fvm install
 
       - name: Install dependencies
         run: |
@@ -247,38 +223,14 @@ jobs:
           sdkmanager --install "ndk;26.3.11579264"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> $GITHUB_ENV
 
-      - name: Clone liboqs
-        run: |
-          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} \
-            https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
-
       - name: Build liboqs for Android ${{ matrix.abi }}
-        run: |
-          mkdir -p /tmp/liboqs/build
-          cd /tmp/liboqs/build
-          cmake .. \
-            -DBUILD_SHARED_LIBS=ON \
-            -DOQS_BUILD_ONLY_LIB=ON \
-            -DOQS_USE_OPENSSL=OFF \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
-            -DANDROID_ABI=${{ matrix.abi }} \
-            -DANDROID_PLATFORM=android-21 \
-            -DANDROID_STL=c++_shared \
-            -G Ninja
-          ninja
-
-      - name: Copy library
-        run: |
-          mkdir -p bin/android/${{ matrix.abi }}
-          cp /tmp/liboqs/build/lib/liboqs.so bin/android/${{ matrix.abi }}/
-          ls -la bin/android/${{ matrix.abi }}/
+        run: make build android --abi ${{ matrix.abi }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: liboqs-android-${{ matrix.abi }}
-          path: bin/android/${{ matrix.abi }}/liboqs.so
+          path: android/src/main/jniLibs/${{ matrix.abi }}/liboqs.so
 
   # ============================================
   # Windows x86_64
@@ -286,53 +238,33 @@ jobs:
   build-windows:
     needs: read-version
     runs-on: windows-latest
-    env:
-      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Ninja
-        run: choco install ninja -y
-
-      - name: Clone liboqs
+      - name: Install FVM
         run: |
-          git clone --depth 1 --branch ${{ env.LIBOQS_VERSION }} `
-            https://github.com/open-quantum-safe/liboqs.git C:\liboqs
+          dart pub global activate fvm
+          echo "$env:LOCALAPPDATA\Pub\Cache\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Cache FVM
+        uses: actions/cache@v4
+        with:
+          path: ~/.fvm
+          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+          restore-keys: |
+            fvm-${{ runner.os }}-
+
+      - name: Install Flutter via FVM
+        run: fvm install
+
+      - name: Install dependencies
+        run: choco install ninja make -y
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Build liboqs
-        run: |
-          mkdir C:\liboqs\build
-          cd C:\liboqs\build
-          cmake .. `
-            -DBUILD_SHARED_LIBS=ON `
-            -DOQS_BUILD_ONLY_LIB=ON `
-            -DOQS_USE_OPENSSL=OFF `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON `
-            -G Ninja
-          ninja
-
-      - name: Find and copy library
-        run: |
-          echo "=== Searching for built files ==="
-          Get-ChildItem -Path C:\liboqs\build -Recurse -Include *.dll,*.lib | ForEach-Object { $_.FullName }
-
-          New-Item -ItemType Directory -Force -Path bin\windows
-
-          # Find the DLL wherever it was placed
-          $dll = Get-ChildItem -Path C:\liboqs\build -Recurse -Filter "oqs.dll" | Select-Object -First 1
-          if ($dll) {
-            Copy-Item $dll.FullName -Destination bin\windows\oqs.dll
-            echo "Copied from: $($dll.FullName)"
-          } else {
-            echo "ERROR: oqs.dll not found in build directory"
-            exit 1
-          }
-
-          dir bin\windows
+      - name: Build liboqs for Windows
+        run: make build windows
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -355,6 +287,22 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install FVM
+        run: |
+          dart pub global activate fvm
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Cache FVM
+        uses: actions/cache@v4
+        with:
+          path: ~/.fvm
+          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+          restore-keys: |
+            fvm-${{ runner.os }}-
+
+      - name: Install Flutter via FVM
+        run: fvm install
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -365,94 +313,67 @@ jobs:
           echo "=== Downloaded artifacts ==="
           find artifacts -type f -exec ls -lh {} \;
 
-      - name: Clean old binaries
+      - name: Combine artifacts using Dart script
+        run: make combine --artifacts-dir artifacts
+
+      # ============================================
+      # Regenerate Dart FFI bindings
+      # ============================================
+      - name: Install build dependencies
         run: |
-          echo "=== Removing old binaries ==="
-          # Server binaries
-          rm -rf bin/
-          # Flutter platform binaries
-          rm -rf macos/Libraries/
-          rm -rf ios/Frameworks/
-          rm -rf ios/Libraries/
-          rm -rf android/src/main/jniLibs/
-          echo "Done"
+          brew list cmake &>/dev/null || brew install cmake
+          brew list ninja &>/dev/null || brew install ninja
 
-      - name: Create server binaries (bin/)
+      - name: Regenerate Dart FFI bindings
+        id: regenerate_bindings
         run: |
-          # Create directories for server platforms only
-          mkdir -p bin/{linux,macos,windows}
+          echo "=== Regenerating Dart FFI bindings for liboqs ${{ env.LIBOQS_VERSION }} ==="
 
-          # Linux
-          cp artifacts/liboqs-linux-x86_64/liboqs.so bin/linux/
+          make get
 
-          # macOS Universal Binary
-          lipo -create \
-            artifacts/liboqs-macos-arm64/liboqs.dylib \
-            artifacts/liboqs-macos-x86_64/liboqs.dylib \
-            -output bin/macos/liboqs.dylib
-          # Fix install name (liboqs.9.dylib -> liboqs.dylib)
-          install_name_tool -id "@rpath/liboqs.dylib" bin/macos/liboqs.dylib
+          if make regen; then
+            echo "bindings_updated=true" >> $GITHUB_OUTPUT
+            echo "Bindings regenerated successfully"
+          else
+            echo "bindings_updated=false" >> $GITHUB_OUTPUT
+            echo "::warning::Bindings regeneration failed, but continuing with build"
+          fi
 
-          # Windows
-          cp artifacts/liboqs-windows-x86_64/oqs.dll bin/windows/
+          if git diff --quiet lib/src/bindings/; then
+            echo "bindings_changed=false" >> $GITHUB_OUTPUT
+            echo "No changes in bindings"
+          else
+            echo "bindings_changed=true" >> $GITHUB_OUTPUT
+            echo "Bindings have changes:"
+            git diff --stat lib/src/bindings/
+          fi
 
-          echo "=== Server binaries (bin/) ==="
-          find bin -type f -exec ls -lh {} \;
-          echo "=== macOS Universal Binary ==="
-          lipo -info bin/macos/liboqs.dylib
-          otool -L bin/macos/liboqs.dylib | head -2
-
-      - name: Create iOS XCFramework with static libraries (ios/Frameworks/)
+      - name: Run quick tests
+        if: steps.regenerate_bindings.outputs.bindings_updated == 'true'
+        continue-on-error: true
         run: |
-          # Create iOS Simulator universal static library (temp)
-          mkdir -p tmp/ios-simulator
-          lipo -create \
-            artifacts/liboqs-ios-simulator-arm64/liboqs.a \
-            artifacts/liboqs-ios-simulator-x86_64/liboqs.a \
-            -output tmp/ios-simulator/liboqs.a
+          echo "=== Running quick tests to verify bindings ==="
+          make test test/quick_test.dart || echo "::warning::Quick tests failed"
 
-          # Create XCFramework with static libraries
-          mkdir -p ios/Frameworks
-          xcodebuild -create-xcframework \
-            -library artifacts/liboqs-ios-device-arm64/liboqs.a \
-            -library tmp/ios-simulator/liboqs.a \
-            -output ios/Frameworks/liboqs.xcframework
-
-          echo "=== iOS XCFramework (static) ==="
-          find ios/Frameworks/liboqs.xcframework -name "*.a" -exec file {} \;
-          cat ios/Frameworks/liboqs.xcframework/Info.plist
-
-      - name: Create Android libraries (android/src/main/jniLibs/)
-        run: |
-          mkdir -p android/src/main/jniLibs/{arm64-v8a,armeabi-v7a,x86_64}
-
-          cp artifacts/liboqs-android-arm64-v8a/liboqs.so android/src/main/jniLibs/arm64-v8a/
-          cp artifacts/liboqs-android-armeabi-v7a/liboqs.so android/src/main/jniLibs/armeabi-v7a/
-          cp artifacts/liboqs-android-x86_64/liboqs.so android/src/main/jniLibs/x86_64/
-
-          echo "=== Android libraries ==="
-          find android/src/main/jniLibs -type f -exec ls -lh {} \;
-
-      - name: Copy macOS library to plugin directory
-        run: |
-          # macOS needs copy in both bin/ (server) and macos/Libraries/ (Flutter)
-          mkdir -p macos/Libraries
-          cp bin/macos/liboqs.dylib macos/Libraries/
-          echo "=== macOS plugin library ==="
-          file macos/Libraries/liboqs.dylib
-
-      - name: Create version file
-        run: |
-          echo "liboqs_version: ${{ env.LIBOQS_VERSION }}" > bin/VERSION
-          echo "build_date: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> bin/VERSION
-          echo "commit: ${{ github.sha }}" >> bin/VERSION
-          cat bin/VERSION
-
-      - name: Commit binaries
+      - name: Commit binaries and bindings
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add native libraries
           git add bin/ macos/Libraries/ ios/Frameworks/ android/src/main/jniLibs/
+
+          # Add regenerated bindings (if changed)
+          git add lib/src/bindings/ headers/
+
+          # Determine what changed for commit message
+          BINDINGS_CHANGED="${{ steps.regenerate_bindings.outputs.bindings_changed }}"
+          if [ "$BINDINGS_CHANGED" = "true" ]; then
+            BINDINGS_NOTE="- Dart FFI bindings regenerated"
+          else
+            BINDINGS_NOTE="- Dart FFI bindings unchanged"
+          fi
+
           git commit -m "Build liboqs ${{ env.LIBOQS_VERSION }} native libraries
 
           Server (bin/):
@@ -465,7 +386,10 @@ jobs:
           - Android (arm64-v8a, armeabi-v7a, x86_64)
           - macOS (copy from bin/)
 
-          Built by GitHub Actions" || echo "No changes to commit"
+          Bindings:
+          $BINDINGS_NOTE
+
+          Built by GitHub Actions using cross-platform Dart scripts" || echo "No changes to commit"
           git push
 
       - name: Package iOS XCFramework for release
@@ -509,3 +433,10 @@ jobs:
             - **Server**: Place library in `bin/{platform}/`
             - **Flutter iOS**: Extract XCFramework to `ios/Frameworks/`
             - **Flutter Android**: Place in `android/src/main/jniLibs/{abi}/`
+
+            ### Build Scripts
+            These binaries were built using cross-platform Dart scripts.
+            You can rebuild locally on any OS using:
+            ```bash
+            make build <platform>
+            ```

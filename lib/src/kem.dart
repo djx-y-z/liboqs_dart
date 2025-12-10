@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:ffi' as ffi;
 import 'dart:typed_data';
+
 import 'package:ffi/ffi.dart';
+
+import 'base.dart';
 import 'bindings/liboqs_bindings.dart';
-import 'oqs_base.dart';
+import 'exception.dart';
+import 'utils.dart';
 
 final Finalizer<Pointer<OQS_KEM>> _kemFinalizer = Finalizer(
   (ptr) => LibOQSBase.bindings.OQS_KEM_free(ptr),
@@ -42,24 +46,6 @@ class KEM {
     return _kemPtr.ref.ind_cca;
   }
 
-  /// supported KEM algorithms by liboqs
-  static void printSupportedKemAlgorithms() {
-    print("Supported KEMs:");
-    final kemCount = LibOQSBase.bindings.OQS_KEM_alg_count();
-    for (int i = 0; i < kemCount; i++) {
-      final kemNamePtr = LibOQSBase.bindings.OQS_KEM_alg_identifier(i);
-      if (kemNamePtr != ffi.nullptr) {
-        final kemName = kemNamePtr.cast<Utf8>().toDartString();
-        final isEnabled = LibOQSBase.bindings.OQS_KEM_alg_is_enabled(
-          kemName.toNativeUtf8().cast<ffi.Char>(),
-        );
-        if (isEnabled == 1) {
-          print("- $kemName");
-        }
-      }
-    }
-  }
-
   /// returns list of supported kem algorithms from liboqs
   static List<String> getSupportedKemAlgorithms() {
     final kemCount = LibOQSBase.bindings.OQS_KEM_alg_count();
@@ -69,11 +55,17 @@ class KEM {
       final kemNamePtr = LibOQSBase.bindings.OQS_KEM_alg_identifier(i);
       if (kemNamePtr != ffi.nullptr) {
         final kemName = kemNamePtr.cast<Utf8>().toDartString();
-        final isEnabled = LibOQSBase.bindings.OQS_KEM_alg_is_enabled(
-          kemName.toNativeUtf8().cast<ffi.Char>(),
-        );
-        if (isEnabled == 1) {
-          supportedKems.add(kemName);
+        // Store pointer to avoid memory leak
+        final namePtr = kemName.toNativeUtf8();
+        try {
+          final isEnabled = LibOQSBase.bindings.OQS_KEM_alg_is_enabled(
+            namePtr.cast<ffi.Char>(),
+          );
+          if (isEnabled == 1) {
+            supportedKems.add(kemName);
+          }
+        } finally {
+          calloc.free(namePtr);
         }
       }
     }
@@ -81,12 +73,9 @@ class KEM {
   }
 
   /// Create a new KEM instance with the specified algorithm
-  static KEM? create(String algorithmName) {
+  static KEM create(String algorithmName) {
     LibOQSBase.init(); // Auto-initialize
-
-    if (algorithmName.isEmpty) {
-      throw ArgumentError('Algorithm name cannot be empty');
-    }
+    LibOQSUtils.validateAlgorithmName(algorithmName);
 
     final namePtr = algorithmName.toNativeUtf8();
     try {
@@ -110,47 +99,8 @@ class KEM {
     try {
       return LibOQSBase.bindings.OQS_KEM_alg_is_enabled(namePtr.cast()) == 1;
     } finally {
-      calloc.free(namePtr);
+      LibOQSUtils.freePointer(namePtr);
     }
-  }
-
-  /// Get hard coded list of supported KEM algorithms
-  static List<String> getSupportedKemAlgorithmsHardCodedList() {
-    final List<String> algorithms = [];
-
-    final kemAlgorithms = [
-      'Classic-McEliece-348864',
-      'Classic-McEliece-348864f',
-      'Classic-McEliece-460896',
-      'Classic-McEliece-460896f',
-      'Classic-McEliece-6688128',
-      'Classic-McEliece-6688128f',
-      'Classic-McEliece-6960119',
-      'Classic-McEliece-6960119f',
-      'Classic-McEliece-8192128',
-      'Classic-McEliece-8192128f',
-      'Kyber512',
-      'Kyber768',
-      'Kyber1024',
-      'ML-KEM-512',
-      'ML-KEM-768',
-      'ML-KEM-1024',
-      'sntrup761',
-      'FrodoKEM-640-AES',
-      'FrodoKEM-640-SHAKE',
-      'FrodoKEM-976-AES',
-      'FrodoKEM-976-SHAKE',
-      'FrodoKEM-1344-AES',
-      'FrodoKEM-1344-SHAKE',
-    ];
-
-    for (final alg in kemAlgorithms) {
-      if (isSupported(alg)) {
-        algorithms.add(alg);
-      }
-    }
-
-    return algorithms;
   }
 
   /// Get the public key length for this KEM
@@ -247,8 +197,9 @@ class KEM {
       );
     } finally {
       LibOQSUtils.freePointer(publicKey);
-      LibOQSUtils.freePointer(secretKey);
-      LibOQSUtils.freePointer(seedPtr);
+      // Secure free for sensitive data
+      LibOQSUtils.secureFreePointer(secretKey, secretKeyLength);
+      LibOQSUtils.secureFreePointer(seedPtr, seed.length);
     }
   }
 
@@ -276,7 +227,8 @@ class KEM {
       );
     } finally {
       LibOQSUtils.freePointer(publicKey);
-      LibOQSUtils.freePointer(secretKey);
+      // Secure free for sensitive data
+      LibOQSUtils.secureFreePointer(secretKey, secretKeyLength);
     }
   }
 
@@ -322,7 +274,8 @@ class KEM {
       );
     } finally {
       LibOQSUtils.freePointer(ciphertext);
-      LibOQSUtils.freePointer(sharedSecret);
+      // Secure free for sensitive data
+      LibOQSUtils.secureFreePointer(sharedSecret, sharedSecretLength);
       LibOQSUtils.freePointer(publicKeyPtr);
     }
   }
@@ -364,9 +317,10 @@ class KEM {
 
       return LibOQSUtils.pointerToUint8List(sharedSecret, sharedSecretLength);
     } finally {
-      LibOQSUtils.freePointer(sharedSecret);
+      // Secure free for sensitive data
+      LibOQSUtils.secureFreePointer(sharedSecret, sharedSecretLength);
       LibOQSUtils.freePointer(ciphertextPtr);
-      LibOQSUtils.freePointer(secretKeyPtr);
+      LibOQSUtils.secureFreePointer(secretKeyPtr, secretKey.length);
     }
   }
 

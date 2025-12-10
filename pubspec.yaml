@@ -1,16 +1,17 @@
-name: oqs
+name: liboqs
 description: Dart FFI bindings for liboqs — high-performance post-quantum cryptography (PQC) with ML-KEM, ML-DSA, Falcon, SPHINCS+ for key encapsulation and signatures.
 
-version: 2.2.0
+version: 1.0.0
 license: MIT
-repository: https://github.com/bardiakz/oqs
-homepage: https://github.com/bardiakz/oqs
+repository: https://github.com/djx-y-z/liboqs_dart
+homepage: https://github.com/djx-y-z/liboqs_dart
+issue_tracker: https://github.com/djx-y-z/liboqs_dart/issues
 
 environment:
   sdk: ^3.8.1
+  flutter: ">=3.32.1"
 
 dependencies:
-
   ffi: ^2.1.4
 
 dev_dependencies:
@@ -24,6 +25,21 @@ platforms:
   linux:
   macos:
   windows:
+
+# Flutter plugin configuration for native library bundling
+flutter:
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true
+      linux:
+        ffiPlugin: true
+      macos:
+        ffiPlugin: true
+      windows:
+        ffiPlugin: true
 
 topics:
   - cryptography
@@ -40,21 +56,23 @@ ffigen:
     entry-points:
       - 'headers/oqs/oqs.h'
     include-directives:
-      - 'headers/oqs/*.h'
+      - '**oqs/*.h'
   compiler-opts:
     - '-Iheaders'
   functions:
     include:
-      - 'OQS_KEM_.*'
-      - 'OQS_SIG_.*'
-      - 'OQS_init'
-      - 'OQS_destroy'
-      - 'OQS_.*_enabled'
-      - 'OQS_.*_supported'
+      - 'OQS_.*'
   structs:
     include:
       - 'OQS_KEM'
       - 'OQS_SIG'
-  type-map:
-    'size_t': 'IntPtr'
-    'uint8_t*': 'Pointer<Uint8>'
+  enums:
+    include:
+      - 'OQS_.*'
+  # ignore-source-errors: REQUIRED - macOS SDK emits warnings about visionos/driverkit
+  # platforms that ffigen treats as errors. These are Xcode compatibility issues,
+  # not problems with liboqs headers. Without this flag, ffigen refuses to generate.
+  ignore-source-errors: true
+  # silence-enum-warning: OQS_STATUS and OQS_CPU_EXT enums are only used as
+  # return values, not in struct layouts, so platform-specific sizes are safe
+  silence-enum-warning: true

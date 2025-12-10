@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:ffi' as ffi;
 import 'dart:typed_data';
+
 import 'package:ffi/ffi.dart';
+
+import 'base.dart';
 import 'bindings/liboqs_bindings.dart';
-import 'oqs_base.dart';
+import 'exception.dart';
+import 'utils.dart';
 
 final Finalizer<Pointer<OQS_SIG>> _sigFinalizer = Finalizer(
   (ptr) => LibOQSBase.bindings.OQS_SIG_free(ptr),
@@ -41,24 +45,6 @@ class Signature {
     return _sigPtr.ref.euf_cma;
   }
 
-  /// supported Signature algorithms by liboqs
-  static void printSupportedSignatureAlgorithms() {
-    print("\nSupported Signatures:");
-    final sigCount = LibOQSBase.bindings.OQS_SIG_alg_count();
-    for (int i = 0; i < sigCount; i++) {
-      final sigNamePtr = LibOQSBase.bindings.OQS_SIG_alg_identifier(i);
-      if (sigNamePtr != ffi.nullptr) {
-        final sigName = sigNamePtr.cast<Utf8>().toDartString();
-        final isEnabled = LibOQSBase.bindings.OQS_SIG_alg_is_enabled(
-          sigName.toNativeUtf8().cast<ffi.Char>(),
-        );
-        if (isEnabled == 1) {
-          print("- $sigName");
-        }
-      }
-    }
-  }
-
   /// returns list of supported Signature algorithms from liboqs
   static List<String> getSupportedSignatureAlgorithms() {
     final sigCount = LibOQSBase.bindings.OQS_SIG_alg_count();
@@ -68,11 +54,17 @@ class Signature {
       final sigNamePtr = LibOQSBase.bindings.OQS_SIG_alg_identifier(i);
       if (sigNamePtr != ffi.nullptr) {
         final sigName = sigNamePtr.cast<Utf8>().toDartString();
-        final isEnabled = LibOQSBase.bindings.OQS_SIG_alg_is_enabled(
-          sigName.toNativeUtf8().cast<ffi.Char>(),
-        );
-        if (isEnabled == 1) {
-          supportedSigs.add(sigName);
+        // Store pointer to avoid memory leak
+        final namePtr = sigName.toNativeUtf8();
+        try {
+          final isEnabled = LibOQSBase.bindings.OQS_SIG_alg_is_enabled(
+            namePtr.cast<ffi.Char>(),
+          );
+          if (isEnabled == 1) {
+            supportedSigs.add(sigName);
+          }
+        } finally {
+          calloc.free(namePtr);
         }
       }
     }
@@ -83,10 +75,7 @@ class Signature {
   /// Create a new Signature instance with the specified algorithm
   static Signature create(String algorithmName) {
     LibOQSBase.init(); // Ensure LibOQS is initialized
-
-    if (algorithmName.isEmpty) {
-      throw ArgumentError('Algorithm name cannot be empty');
-    }
+    LibOQSUtils.validateAlgorithmName(algorithmName);
 
     final namePtr = algorithmName.toNativeUtf8();
     try {
@@ -110,92 +99,8 @@ class Signature {
     try {
       return LibOQSBase.bindings.OQS_SIG_alg_is_enabled(namePtr.cast()) == 1;
     } finally {
-      calloc.free(namePtr);
+      LibOQSUtils.freePointer(namePtr);
     }
-  }
-
-  /// Get hard coded list of supported signature algorithms
-  static List<String> getSupportedSignatureAlgorithmsHardCodedList() {
-    final List<String> algorithms = [];
-
-    final sigAlgorithms = [
-      'Dilithium2',
-      'Dilithium3',
-      'Dilithium5',
-      'ML-DSA-44',
-      'ML-DSA-65',
-      'ML-DSA-87',
-      'Falcon-512',
-      'Falcon-1024',
-      'Falcon-padded-512',
-      'Falcon-padded-1024',
-      'SPHINCS+-SHA2-128f-simple',
-      'SPHINCS+-SHA2-128s-simple',
-      'SPHINCS+-SHA2-192f-simple',
-      'SPHINCS+-SHA2-192s-simple',
-      'SPHINCS+-SHA2-256f-simple',
-      'SPHINCS+-SHA2-256s-simple',
-      'SPHINCS+-SHAKE-128f-simple',
-      'SPHINCS+-SHAKE-128s-simple',
-      'SPHINCS+-SHAKE-192f-simple',
-      'SPHINCS+-SHAKE-192s-simple',
-      'SPHINCS+-SHAKE-256f-simple',
-      'SPHINCS+-SHAKE-256s-simple',
-      'MAYO-1',
-      'MAYO-2',
-      'MAYO-3',
-      'MAYO-5',
-      'cross-rsdp-128-balanced',
-      'cross-rsdp-128-fast',
-      'cross-rsdp-128-small',
-      'cross-rsdp-192-balanced',
-      'cross-rsdp-192-fast',
-      'cross-rsdp-192-small',
-      'cross-rsdp-256-balanced',
-      'cross-rsdp-256-fast',
-      'cross-rsdp-256-small',
-      'cross-rsdpg-128-balanced',
-      'cross-rsdpg-128-fast',
-      'cross-rsdpg-128-small',
-      'cross-rsdpg-192-balanced',
-      'cross-rsdpg-192-fast',
-      'cross-rsdpg-192-small',
-      'cross-rsdpg-256-balanced',
-      'cross-rsdpg-256-fast',
-      'cross-rsdpg-256-small',
-      'OV-Is',
-      'OV-Ip',
-      'OV-III',
-      'OV-V',
-      'OV-Is-pkc',
-      'OV-Ip-pkc',
-      'OV-III-pkc',
-      'OV-V-pkc',
-      'OV-Is-pkc-skc',
-      'OV-Ip-pkc-skc',
-      'OV-III-pkc-skc',
-      'OV-V-pkc-skc',
-      'SNOVA_24_5_4',
-      'SNOVA_24_5_4_SHAKE',
-      'SNOVA_24_5_4_esk',
-      'SNOVA_24_5_4_SHAKE_esk',
-      'SNOVA_37_17_2',
-      'SNOVA_25_8_3',
-      'SNOVA_56_25_2',
-      'SNOVA_49_11_3',
-      'SNOVA_37_8_4',
-      'SNOVA_24_5_5',
-      'SNOVA_60_10_4',
-      'SNOVA_29_6_5',
-    ];
-
-    for (final alg in sigAlgorithms) {
-      if (isSupported(alg)) {
-        algorithms.add(alg);
-      }
-    }
-
-    return algorithms;
   }
 
   /// Get the public key length for this signature algorithm
@@ -240,7 +145,8 @@ class Signature {
       );
     } finally {
       LibOQSUtils.freePointer(publicKey);
-      LibOQSUtils.freePointer(secretKey);
+      // Secure free for sensitive data
+      LibOQSUtils.secureFreePointer(secretKey, secretKeyLength);
     }
   }
 
@@ -291,7 +197,8 @@ class Signature {
       LibOQSUtils.freePointer(signature);
       LibOQSUtils.freePointer(signatureLength.cast());
       LibOQSUtils.freePointer(messagePtr);
-      LibOQSUtils.freePointer(secretKeyPtr);
+      // Secure free for sensitive data
+      LibOQSUtils.secureFreePointer(secretKeyPtr, secretKey.length);
     }
   }
 

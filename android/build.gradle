@@ -1,0 +1,41 @@
+// liboqs - Android FFI Plugin with pre-built native libraries
+// Uses pre-built liboqs.so from src/main/jniLibs/ (standard location)
+
+group = "org.liboqs.liboqs"
+version = "1.0"
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.9.1")
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: "com.android.library"
+
+android {
+    namespace = "org.liboqs.liboqs"
+    compileSdk = 34
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    defaultConfig {
+        minSdk = 21
+    }
+
+    // Native libraries are in src/main/jniLibs/ (default location)
+}

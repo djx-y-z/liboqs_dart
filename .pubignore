@@ -1,0 +1,31 @@
+# Development files
+CLAUDE.md
+TODO.md
+Makefile
+CONTRIBUTING.md
+.fvmrc
+
+# CI/CD
+.github/
+
+# Build scripts and headers (only needed for development/ffigen)
+scripts/
+headers/
+
+# IDE and editor files
+.vscode/
+.idea/
+.metadata
+*.iml
+
+# Git files that shouldn't be published
+UPSTREAM.md
+
+# Build artifacts
+example/build/
+example/.dart_tool/
+example/.flutter-plugins
+example/.flutter-plugins-dependencies
+
+# FVM
+.fvm/

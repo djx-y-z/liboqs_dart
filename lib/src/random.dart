@@ -1,9 +1,12 @@
 import 'dart:ffi';
 import 'dart:typed_data';
+
 import 'package:ffi/ffi.dart';
 
+import 'base.dart';
 import 'bindings/liboqs_bindings.dart';
-import 'oqs_base.dart';
+import 'exception.dart';
+import 'utils.dart';
 
 /// Safe random number generation using liboqs
 class OQSRandom {
@@ -53,8 +56,9 @@ class OQSRandom {
     return generateBytes(seedLength);
   }
 
-  /// Generate random integers in a range
+  /// Generate random integers in a range (unbiased)
   ///
+  /// Uses rejection sampling to eliminate modulo bias.
   /// @param min Minimum value (inclusive)
   /// @param max Maximum value (exclusive)
   /// @return Random integer in range [min, max)
@@ -64,15 +68,31 @@ class OQSRandom {
     }
 
     final range = max - min;
+
+    // Calculate the number of bytes needed to represent range
     final bytesNeeded = (range.bitLength + 7) ~/ 8;
-    final randomBytes = generateBytes(bytesNeeded);
 
-    int value = 0;
-    for (int i = 0; i < bytesNeeded; i++) {
-      value = (value << 8) | randomBytes[i];
+    // Calculate the maximum value we can use without bias
+    // maxValue is 2^(bytesNeeded * 8)
+    final maxValue = 1 << (bytesNeeded * 8);
+    // maxUsable is the largest multiple of range that fits in bytesNeeded bytes
+    final maxUsable = maxValue - (maxValue % range);
+
+    // Rejection sampling: regenerate if value >= maxUsable
+    while (true) {
+      final randomBytes = generateBytes(bytesNeeded);
+
+      int value = 0;
+      for (int i = 0; i < bytesNeeded; i++) {
+        value = (value << 8) | randomBytes[i];
+      }
+
+      // Reject values that would cause bias
+      if (value < maxUsable) {
+        return min + (value % range);
+      }
+      // Otherwise, regenerate (loop continues)
     }
-
-    return min + (value % range);
   }
 
   /// Switch to a different random number generator algorithm
@@ -101,13 +121,12 @@ class OQSRandom {
 
   /// Get list of available RNG algorithms
   ///
-  /// Note: This is a hardcoded list of commonly available algorithms
-  /// Actual availability may vary by platform and liboqs build
+  /// Note: liboqs does not provide an API to enumerate RNG algorithms.
+  /// This returns the algorithms defined in liboqs headers.
   static List<String> getAvailableAlgorithms() {
     return [
-      'system', // Default system RNG
-      'OpenSSL', // OpenSSL RAND_bytes
-      'NIST-KAT', // For testing (deterministic)
+      'system', // Default system RNG (OQS_RAND_alg_system)
+      'OpenSSL', // OpenSSL RAND_bytes (OQS_RAND_alg_openssl)
     ];
   }
 
@@ -120,18 +139,15 @@ class OQSRandom {
   static bool resetToDefault() {
     return switchAlgorithm('system');
   }
-}
 
-/// Extension methods for random operations
-extension OQSRandomExtensions on OQSRandom {
   /// Generate a random boolean
   static bool generateBool() {
-    return OQSRandom.generateBytes(1)[0] > 127;
+    return generateBytes(1)[0] > 127;
   }
 
   /// Generate random double between 0.0 and 1.0
   static double generateDouble() {
-    final bytes = OQSRandom.generateBytes(8);
+    final bytes = generateBytes(8);
     int value = 0;
     for (int i = 0; i < 8; i++) {
       value = (value << 8) | bytes[i];
@@ -143,7 +159,7 @@ extension OQSRandomExtensions on OQSRandom {
   /// Shuffle a list in place using cryptographically secure randomness
   static void shuffleList<T>(List<T> list) {
     for (int i = list.length - 1; i > 0; i--) {
-      final j = OQSRandom.generateInt(0, i + 1);
+      final j = generateInt(0, i + 1);
       final temp = list[i];
       list[i] = list[j];
       list[j] = temp;
