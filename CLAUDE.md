@@ -5,13 +5,15 @@
 **ALWAYS use Makefile commands.** Never call scripts directly via `fvm dart run scripts/...`. The Makefile is the single entry point for all operations.
 
 ```bash
-# Correct
-make build macos
+# Correct - pass arguments via ARGS variable
+make build ARGS="macos"
+make build ARGS="macos --arch arm64"
 make test
-make regen
+make analyze ARGS="--fatal-infos"
 
 # Wrong - never do this
 fvm dart run scripts/build.dart macos
+make build macos --arch arm64  # make interprets --arch as its own flag!
 ```
 
 ## Quick Reference
@@ -20,9 +22,10 @@ fvm dart run scripts/build.dart macos
 |------|---------|
 | Initial setup | `make setup` |
 | Show all commands | `make help` |
-| Build native library | `make build <platform>` |
+| Build native library | `make build ARGS="<platform>"` |
 | Run tests | `make test` |
 | Run analysis | `make analyze` |
+| Strict analysis | `make analyze ARGS="--fatal-infos"` |
 | Format code | `make format` |
 | Regenerate FFI bindings | `make regen` |
 | Check for updates | `make check` |
@@ -38,36 +41,36 @@ make setup                        # Install FVM + Flutter + dependencies (run on
 
 ### Build
 ```bash
-make build <platform> [options]   # Build native libraries
-make build macos                  # Build for macOS (universal)
-make build macos --arch arm64     # Build for specific architecture
-make build ios                    # Build for iOS (xcframework)
-make build ios --target simulator # Build for iOS simulator only
-make build android                # Build for Android (all ABIs)
-make build android --abi arm64-v8a
-make build linux                  # Build for Linux
-make build windows                # Build for Windows
-make build all                    # Build all platforms
-make build list                   # List available platforms
+make build ARGS="<platform> [options]"     # Build native libraries
+make build ARGS="macos"                    # Build for macOS (universal)
+make build ARGS="macos --arch arm64"       # Build for specific architecture
+make build ARGS="ios"                      # Build for iOS (xcframework)
+make build ARGS="ios --target simulator"   # Build for iOS simulator only
+make build ARGS="android"                  # Build for Android (all ABIs)
+make build ARGS="android --abi arm64-v8a"
+make build ARGS="linux"                    # Build for Linux
+make build ARGS="windows"                  # Build for Windows
+make build ARGS="all"                      # Build all platforms
+make build ARGS="list"                     # List available platforms
 ```
 
 ### Development
 ```bash
-make regen                        # Regenerate Dart FFI bindings
-make check                        # Check for liboqs updates
-make check --update               # Check and apply updates
-make check --json                 # Output JSON (for CI)
-make combine                      # Combine CI artifacts
+make regen                              # Regenerate Dart FFI bindings
+make check                              # Check for liboqs updates
+make check ARGS="--update"              # Check and apply updates
+make check ARGS="--json"                # Output JSON (for CI)
+make combine                            # Combine CI artifacts
 ```
 
 ### Quality Assurance
 ```bash
-make test                         # Run all tests
-make test test/kem_test.dart      # Run specific test file
-make analyze                      # Run static analysis
-make analyze --fatal-infos        # Strict analysis
-make format                       # Format Dart code
-make format-check                 # Check formatting without changes
+make test                                # Run all tests
+make test ARGS="test/kem_test.dart"      # Run specific test file
+make analyze                             # Run static analysis
+make analyze ARGS="--fatal-infos"        # Strict analysis
+make format                              # Format Dart code
+make format-check                        # Check formatting without changes
 ```
 
 ### Utilities
@@ -139,27 +142,27 @@ git push
 make check
 
 # Check and apply updates
-make check --update
+make check ARGS="--update"
 
 # Check with specific version
-make check --update --version 0.16.0
+make check ARGS="--update --version 0.16.0"
 ```
 
 ### Build Native Libraries Locally
 
 ```bash
 # List available platforms
-make build list
+make build ARGS="list"
 
 # Build for current platform
-make build macos
-make build linux
-make build windows
+make build ARGS="macos"
+make build ARGS="linux"
+make build ARGS="windows"
 
 # Build with options
-make build macos --arch arm64
-make build ios --target device
-make build android --abi arm64-v8a
+make build ARGS="macos --arch arm64"
+make build ARGS="ios --target device"
+make build ARGS="android --abi arm64-v8a"
 ```
 
 ### Run Tests
@@ -169,10 +172,10 @@ make build android --abi arm64-v8a
 make test
 
 # Specific test file
-make test test/kem_test.dart
+make test ARGS="test/kem_test.dart"
 
 # With verbose output
-make test --reporter=expanded
+make test ARGS="--reporter=expanded"
 ```
 
 ## Supported Platforms

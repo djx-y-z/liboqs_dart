@@ -1,15 +1,14 @@
 # liboqs - Makefile
 # Cross-platform build and development commands
 #
-# Usage: make <target> [args]
-# Example: make build macos --arch arm64
+# Usage: make <target> [ARGS="..."]
+# Example: make build ARGS="macos --arch arm64"
+# Example: make analyze ARGS="--fatal-infos"
 
-.PHONY: help setup build regen check combine test analyze format get clean version publish publish-dry-run
+.PHONY: help setup build regen check combine test analyze format format-check get clean version publish publish-dry-run
 
-# Capture all arguments after the target
-ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-# Prevent make from treating args as targets
-$(eval $(ARGS):;@:)
+# Arguments are passed via ARGS variable
+ARGS ?=
 
 # Default target
 .DEFAULT_GOAL := help
@@ -22,35 +21,39 @@ help:
 	@echo ""
 	@echo "liboqs - Available commands:"
 	@echo ""
+	@echo "  Pass arguments via ARGS variable: make <target> ARGS=\"...\""
+	@echo ""
 	@echo "  SETUP"
-	@echo "    make setup                       - Install FVM and project Flutter version (run once)"
+	@echo "    make setup                        - Install FVM and project Flutter version (run once)"
 	@echo ""
 	@echo "  BUILD"
-	@echo "    make build <platform> [options]  - Build native libraries"
-	@echo "                                       Platforms: macos, ios, android, linux, windows, all, list"
-	@echo "                                       Example: make build macos --arch arm64"
+	@echo "    make build ARGS=\"<platform>\"      - Build native libraries"
+	@echo "                                        Platforms: macos, ios, android, linux, windows, all, list"
+	@echo "                                        Example: make build ARGS=\"macos --arch arm64\""
 	@echo ""
 	@echo "  DEVELOPMENT"
-	@echo "    make regen                       - Regenerate Dart FFI bindings from liboqs headers"
-	@echo "    make check [options]             - Check for liboqs updates"
-	@echo "                                       Options: --update, --version X.Y.Z, --json"
-	@echo "    make combine                     - Combine CI artifacts (used by GitHub Actions)"
+	@echo "    make regen                        - Regenerate Dart FFI bindings from liboqs headers"
+	@echo "    make check                        - Check for liboqs updates"
+	@echo "                                        Example: make check ARGS=\"--update --version 0.16.0\""
+	@echo "    make combine                      - Combine CI artifacts (used by GitHub Actions)"
 	@echo ""
 	@echo "  QUALITY ASSURANCE"
-	@echo "    make test [path]                 - Run tests (optionally specific test file)"
-	@echo "    make analyze                     - Run static analysis"
-	@echo "    make format                      - Format Dart code"
-	@echo "    make format-check                - Check Dart code formatting"
+	@echo "    make test                         - Run tests"
+	@echo "                                        Example: make test ARGS=\"test/kem_test.dart\""
+	@echo "    make analyze                      - Run static analysis"
+	@echo "                                        Example: make analyze ARGS=\"--fatal-infos\""
+	@echo "    make format                       - Format Dart code"
+	@echo "    make format-check                 - Check Dart code formatting"
 	@echo ""
 	@echo "  PUBLISHING"
-	@echo "    make publish-dry-run             - Validate package before publishing"
-	@echo "    make publish                     - Publish package to pub.dev"
+	@echo "    make publish-dry-run              - Validate package before publishing"
+	@echo "    make publish                      - Publish package to pub.dev"
 	@echo ""
 	@echo "  UTILITIES"
-	@echo "    make get                         - Get dependencies"
-	@echo "    make clean                       - Clean build artifacts"
-	@echo "    make version                     - Show current liboqs version"
-	@echo "    make help                        - Show this help message"
+	@echo "    make get                          - Get dependencies"
+	@echo "    make clean                        - Clean build artifacts"
+	@echo "    make version                      - Show current liboqs version"
+	@echo "    make help                         - Show this help message"
 	@echo ""
 
 # =============================================================================

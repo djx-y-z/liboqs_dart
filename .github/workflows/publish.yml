@@ -161,7 +161,7 @@ jobs:
         run: make get
 
       - name: Analyze code
-        run: make analyze --fatal-infos
+        run: make analyze ARGS="--fatal-infos"
 
       - name: Run tests
         run: make test

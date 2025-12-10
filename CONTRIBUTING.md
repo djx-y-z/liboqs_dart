@@ -139,10 +139,10 @@ For major changes:
 make test
 
 # Run specific test file
-make test test/kem_test.dart
+make test ARGS="test/kem_test.dart"
 
 # Run with verbose output
-make test --reporter=expanded
+make test ARGS="--reporter=expanded"
 ```
 
 ### Writing Tests
@@ -296,7 +296,7 @@ All development tasks should be done via Makefile:
 | `make analyze` | Run static analysis |
 | `make format` | Format code |
 | `make format-check` | Check formatting |
-| `make build <platform>` | Build native libraries |
+| `make build ARGS="<platform>"` | Build native libraries |
 | `make regen` | Regenerate FFI bindings |
 | `make check` | Check for liboqs updates |
 | `make get` | Get dependencies |
@@ -334,20 +334,20 @@ However, you can build them locally for testing or development.
 
 ```bash
 # List available platforms
-make build list
+make build ARGS="list"
 
 # Build for your current platform
-make build macos
-make build linux
-make build windows
+make build ARGS="macos"
+make build ARGS="linux"
+make build ARGS="windows"
 
 # Build with specific options
-make build macos --arch arm64
-make build ios --target simulator
-make build android --abi arm64-v8a
+make build ARGS="macos --arch arm64"
+make build ARGS="ios --target simulator"
+make build ARGS="android --abi arm64-v8a"
 
 # Build all available platforms
-make build all
+make build ARGS="all"
 ```
 
 **Platform requirements:**
