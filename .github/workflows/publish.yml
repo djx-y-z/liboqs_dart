@@ -136,6 +136,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
       - name: Install FVM
         run: |
           dart pub global activate fvm
@@ -175,6 +180,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
 
       - name: Install FVM
         run: |
