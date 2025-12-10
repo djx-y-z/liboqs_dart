@@ -100,7 +100,7 @@ test:
 	fvm dart test $(ARGS)
 
 analyze:
-	fvm dart analyze $(ARGS)
+	fvm flutter analyze $(ARGS)
 
 format:
 	fvm dart format . $(ARGS)
