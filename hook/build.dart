@@ -28,6 +28,12 @@ const _githubRepo = 'djx-y-z/liboqs_dart';
 /// Entry point for the build hook.
 void main(List<String> args) async {
   await build(args, (input, output) async {
+    // Skip build hook if LIBOQS_SKIP_BUILD_HOOK is set.
+    // This is used during CI builds when compiling native libraries from source.
+    if (Platform.environment['LIBOQS_SKIP_BUILD_HOOK'] == '1') {
+      return;
+    }
+
     // Only process if building code assets
     if (!input.config.buildCodeAssets) {
       return;

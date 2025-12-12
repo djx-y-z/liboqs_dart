@@ -213,7 +213,7 @@ jobs:
 
       - name: Publish to pub.dev
         if: ${{ !inputs.dry-run }}
-        run: fvm dart pub publish --force
+        run: make publish ARGS="--force"
 
   # ============================================
   # Create tag and GitHub Release

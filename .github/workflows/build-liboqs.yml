@@ -11,9 +11,11 @@
 # - Windows x86_64
 #
 # Trigger:
-# - Manual dispatch (workflow_dispatch)
+# - Manual dispatch (workflow_dispatch) - for first run or force rebuild
 # - Push to main when LIBOQS_VERSION file changes
-# - New tags matching 'v*' or 'liboqs-*'
+#
+# After successful build, creates/updates GitHub Release with native library archives.
+# Build hooks download these archives automatically during app build.
 #
 # Version is read from LIBOQS_VERSION file in repository root
 
@@ -25,9 +27,6 @@ on:
     branches: [main]
     paths:
       - 'LIBOQS_VERSION'
-    tags:
-      - 'v*'
-      - 'liboqs-*'
 
 jobs:
   # ============================================
@@ -378,55 +377,10 @@ jobs:
             git diff --stat lib/src/bindings/
           fi
 
-      - name: Run quick tests
-        if: steps.regenerate_bindings.outputs.bindings_updated == 'true'
-        continue-on-error: true
-        run: |
-          echo "=== Running quick tests to verify bindings ==="
-          make test ARGS="test/quick_test.dart" || echo "::warning::Quick tests failed"
-
-      - name: Commit binaries and bindings
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Add native libraries
-          git add bin/ macos/Libraries/ ios/Frameworks/ android/src/main/jniLibs/
-
-          # Add regenerated bindings (if changed)
-          git add lib/src/bindings/ headers/
-
-          # Determine what changed for commit message
-          BINDINGS_CHANGED="${{ steps.regenerate_bindings.outputs.bindings_changed }}"
-          if [ "$BINDINGS_CHANGED" = "true" ]; then
-            BINDINGS_NOTE="- Dart FFI bindings regenerated"
-          else
-            BINDINGS_NOTE="- Dart FFI bindings unchanged"
-          fi
-
-          git commit -m "Build liboqs ${{ env.LIBOQS_VERSION }} native libraries
-
-          Server (bin/):
-          - Linux x86_64
-          - macOS Universal (arm64 + x86_64)
-          - Windows x86_64
-
-          Flutter:
-          - iOS XCFramework with STATIC libraries (device + simulator)
-          - Android (arm64-v8a, armeabi-v7a, x86_64)
-          - macOS (copy from bin/)
-
-          Bindings:
-          $BINDINGS_NOTE
-
-          Built by GitHub Actions using cross-platform Dart scripts" || echo "No changes to commit"
-          git push
-
       # ============================================
       # Create Release Archives for Build Hooks
       # ============================================
       - name: Create release archives
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION=${{ env.LIBOQS_VERSION }}
           mkdir -p release-archives
@@ -466,10 +420,12 @@ jobs:
           echo "=== Release archives created ==="
           ls -lh release-archives/
 
-      - name: Create Release (on tag)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ env.LIBOQS_VERSION }}
+          name: v${{ env.LIBOQS_VERSION }}
+          make_latest: true
           files: |
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz

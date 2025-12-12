@@ -77,20 +77,20 @@ setup:
 # =============================================================================
 
 build:
-	fvm dart run scripts/build.dart $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/build.dart $(ARGS)
 
 # =============================================================================
 # Development
 # =============================================================================
 
 regen:
-	fvm dart run scripts/regenerate_bindings.dart $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/regenerate_bindings.dart $(ARGS)
 
 check:
-	fvm dart run scripts/check_updates.dart $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/check_updates.dart $(ARGS)
 
 combine:
-	fvm dart run scripts/combine_artifacts.dart $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/combine_artifacts.dart $(ARGS)
 
 # =============================================================================
 # Quality Assurance
@@ -100,24 +100,24 @@ test:
 	fvm dart test $(ARGS)
 
 analyze:
-	fvm flutter analyze $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm flutter analyze $(ARGS)
 
 format:
-	fvm dart format . $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart format . $(ARGS)
 
 format-check:
-	fvm dart format --set-exit-if-changed . $(ARGS)
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart format --set-exit-if-changed . $(ARGS)
 
 # =============================================================================
 # Utilities
 # =============================================================================
 
 get:
-	fvm dart pub get --no-example
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub get --no-example
 
 clean:
 	rm -rf .dart_tool build
-	fvm dart pub get --no-example
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub get --no-example
 
 version:
 	@cat LIBOQS_VERSION
@@ -127,7 +127,7 @@ version:
 # =============================================================================
 
 publish-dry-run:
-	fvm dart pub publish --dry-run
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub publish --dry-run
 
 publish:
-	fvm dart pub publish
+	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub publish $(ARGS)
