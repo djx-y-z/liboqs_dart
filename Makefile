@@ -77,20 +77,20 @@ setup:
 # =============================================================================
 
 build:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/build.dart $(ARGS)
+	fvm dart run scripts/build.dart $(ARGS)
 
 # =============================================================================
 # Development
 # =============================================================================
 
 regen:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/regenerate_bindings.dart $(ARGS)
+	fvm dart run scripts/regenerate_bindings.dart $(ARGS)
 
 check:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/check_updates.dart $(ARGS)
+	fvm dart run scripts/check_updates.dart $(ARGS)
 
 combine:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart run scripts/combine_artifacts.dart $(ARGS)
+	fvm dart run scripts/combine_artifacts.dart $(ARGS)
 
 # =============================================================================
 # Quality Assurance
@@ -100,24 +100,24 @@ test:
 	fvm dart test $(ARGS)
 
 analyze:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm flutter analyze $(ARGS)
+	fvm flutter analyze $(ARGS)
 
 format:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart format . $(ARGS)
+	fvm dart format . $(ARGS)
 
 format-check:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart format --set-exit-if-changed . $(ARGS)
+	fvm dart format --set-exit-if-changed . $(ARGS)
 
 # =============================================================================
 # Utilities
 # =============================================================================
 
 get:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub get --no-example
+	fvm dart pub get --no-example
 
 clean:
 	rm -rf .dart_tool build
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub get --no-example
+	fvm dart pub get --no-example
 
 version:
 	@cat LIBOQS_VERSION
@@ -127,7 +127,7 @@ version:
 # =============================================================================
 
 publish-dry-run:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub publish --dry-run
+	fvm dart pub publish --dry-run
 
 publish:
-	LIBOQS_SKIP_BUILD_HOOK=1 fvm dart pub publish $(ARGS)
+	fvm dart pub publish $(ARGS)

@@ -28,9 +28,13 @@ const _githubRepo = 'djx-y-z/liboqs_dart';
 /// Entry point for the build hook.
 void main(List<String> args) async {
   await build(args, (input, output) async {
-    // Skip build hook if LIBOQS_SKIP_BUILD_HOOK is set.
-    // This is used during CI builds when compiling native libraries from source.
-    if (Platform.environment['LIBOQS_SKIP_BUILD_HOOK'] == '1') {
+    // Skip build hook if we're in the package repository itself (development/CI).
+    // Detection: if packageRoot is NOT in .pub-cache, we're developing the package.
+    // When the package is used as a dependency, it will be in .pub-cache.
+    final packagePath = input.packageRoot.toFilePath();
+    if (!packagePath.contains('.pub-cache')) {
+      // We're in the source repository, not a dependency.
+      // Native libraries are built separately via scripts/build.dart.
       return;
     }
 
