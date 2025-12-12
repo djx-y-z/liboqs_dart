@@ -1,7 +1,3 @@
-#
-# liboqs_dart - macOS FFI Plugin with pre-built native library
-# Uses pre-built liboqs.dylib from Libraries/
-#
 Pod::Spec.new do |s|
   s.name             = 'liboqs'
   s.version          = '1.0.0'
@@ -13,19 +9,15 @@ with ML-KEM, ML-DSA, Falcon, SPHINCS+ for key encapsulation and signatures.
   s.homepage         = 'https://github.com/djx-y-z/liboqs_dart'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'liboqs_dart' => 'dev@liboqs.org' }
-
   s.source           = { :path => '.' }
 
-  # Use pre-built dylib - no source files needed
-  s.vendored_libraries = 'Libraries/liboqs.dylib'
-
   s.dependency 'FlutterMacOS'
-
   s.platform = :osx, '10.14'
+  s.swift_version = '5.0'
+
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
-    # Ensure the dylib is found at runtime
+    # Ensure the dylib is found at runtime (Build Hooks place it in Frameworks)
     'LD_RUNPATH_SEARCH_PATHS' => '$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks'
   }
-  s.swift_version = '5.0'
 end

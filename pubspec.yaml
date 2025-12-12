@@ -8,11 +8,14 @@ homepage: https://github.com/djx-y-z/liboqs_dart
 issue_tracker: https://github.com/djx-y-z/liboqs_dart/issues
 
 environment:
-  sdk: ^3.8.1
-  flutter: ">=3.32.1"
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
 
 dependencies:
   ffi: ^2.1.4
+  # Build hooks for automatic native library download
+  hooks: ^1.0.0
+  code_assets: ^1.0.0
 
 dev_dependencies:
   lints: ^6.0.0
@@ -25,21 +28,6 @@ platforms:
   linux:
   macos:
   windows:
-
-# Flutter plugin configuration for native library bundling
-flutter:
-  plugin:
-    platforms:
-      android:
-        ffiPlugin: true
-      ios:
-        ffiPlugin: true
-      linux:
-        ffiPlugin: true
-      macos:
-        ffiPlugin: true
-      windows:
-        ffiPlugin: true
 
 topics:
   - cryptography

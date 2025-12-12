@@ -422,51 +422,101 @@ jobs:
           Built by GitHub Actions using cross-platform Dart scripts" || echo "No changes to commit"
           git push
 
-      - name: Package iOS XCFramework for release
+      # ============================================
+      # Create Release Archives for Build Hooks
+      # ============================================
+      - name: Create release archives
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cd ios/Frameworks
-          zip -r liboqs.xcframework.zip liboqs.xcframework
-          ls -la
+          VERSION=${{ env.LIBOQS_VERSION }}
+          mkdir -p release-archives
+
+          echo "=== Creating release archives for Build Hooks ==="
+
+          # Linux x86_64
+          tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
+            -C bin/linux liboqs.so
+
+          # macOS Universal
+          tar -czvf release-archives/liboqs-${VERSION}-macos-universal.tar.gz \
+            -C bin/macos liboqs.dylib
+
+          # Windows x86_64 (zip format)
+          cd bin/windows && zip ../../release-archives/liboqs-${VERSION}-windows-x86_64.zip oqs.dll && cd ../..
+
+          # Android ABIs
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            tar -czvf release-archives/liboqs-${VERSION}-android-${abi}.tar.gz \
+              -C android/src/main/jniLibs/${abi} liboqs.so
+          done
+
+          # iOS device (static library)
+          tar -czvf release-archives/liboqs-${VERSION}-ios-device.tar.gz \
+            -C ios/Frameworks/liboqs.xcframework/ios-arm64 liboqs.a
+
+          # iOS simulator (fat static library)
+          tar -czvf release-archives/liboqs-${VERSION}-ios-simulator.tar.gz \
+            -C ios/Frameworks/liboqs.xcframework/ios-arm64_x86_64-simulator liboqs.a
+
+          # Generate SHA256 checksums
+          cd release-archives
+          sha256sum liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
+          cd ..
+
+          echo "=== Release archives created ==="
+          ls -lh release-archives/
 
       - name: Create Release (on tag)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            bin/linux/liboqs.so
-            bin/macos/liboqs.dylib
-            bin/windows/oqs.dll
-            ios/Frameworks/liboqs.xcframework.zip
-            android/src/main/jniLibs/arm64-v8a/liboqs.so
-            android/src/main/jniLibs/armeabi-v7a/liboqs.so
-            android/src/main/jniLibs/x86_64/liboqs.so
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-device.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256
           body: |
             ## liboqs ${{ env.LIBOQS_VERSION }} Native Libraries
 
             Pre-built native libraries for all supported platforms.
+            **These archives are downloaded automatically by Dart Build Hooks.**
 
-            ### Server (Dart CLI)
-            | Platform | Architecture | File |
-            |----------|--------------|------|
-            | Linux | x86_64 | `liboqs.so` |
-            | macOS | Universal (arm64 + x86_64) | `liboqs.dylib` |
-            | Windows | x86_64 | `oqs.dll` |
+            ### Archive Format
+            Archives are named: `liboqs-{version}-{os}-{arch}.tar.gz` (or `.zip` for Windows)
 
-            ### Flutter
-            | Platform | Architecture | File |
-            |----------|--------------|------|
-            | iOS | XCFramework (static, device + simulator) | `liboqs.xcframework.zip` |
-            | Android | arm64-v8a, armeabi-v7a, x86_64 | `liboqs.so` |
+            | Platform | Architecture | Archive |
+            |----------|--------------|---------|
+            | Linux | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
+            | macOS | Universal | `liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz` |
+            | Windows | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |
+            | Android | arm64-v8a | `liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz` |
+            | Android | armeabi-v7a | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
+            | Android | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz` |
+            | iOS | device (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-device.tar.gz` |
+            | iOS | simulator | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator.tar.gz` |
 
-            ### Usage
-            - **Server**: Place library in `bin/{platform}/`
-            - **Flutter iOS**: Extract XCFramework to `ios/Frameworks/`
-            - **Flutter Android**: Place in `android/src/main/jniLibs/{abi}/`
+            ### Checksums
+            SHA256 checksums are available in `liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256`
 
-            ### Build Scripts
-            These binaries were built using cross-platform Dart scripts.
-            You can rebuild locally on any OS using:
+            ### Usage with Build Hooks
+            Add `liboqs` to your `pubspec.yaml` dependencies. Build hooks will
+            automatically download the correct native library during build.
+
+            ```yaml
+            dependencies:
+              liboqs: ^1.0.0
+            ```
+
+            ### Manual Download (for development)
+            If you need to download manually:
             ```bash
-            make build <platform>
+            # Example for macOS
+            curl -L -o liboqs.tar.gz \
+              https://github.com/${{ github.repository }}/releases/download/v${{ env.LIBOQS_VERSION }}/liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz
+            tar -xzf liboqs.tar.gz
             ```
