@@ -297,41 +297,16 @@ jobs:
           path: bin/windows/oqs.dll
 
   # ============================================
-  # Combine all artifacts and create release
+  # Create GitHub Release with all artifacts
   # ============================================
-  commit-binaries:
+  create-release:
     needs: [read-version, build-linux, build-macos, build-ios, build-android, build-windows]
-    runs-on: macos-latest  # Need macOS for lipo
+    runs-on: ubuntu-latest
     env:
       LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -342,44 +317,6 @@ jobs:
           echo "=== Downloaded artifacts ==="
           find artifacts -type f -exec ls -lh {} \;
 
-      - name: Combine artifacts using Dart script
-        run: make combine ARGS="--artifacts-dir artifacts"
-
-      # ============================================
-      # Regenerate Dart FFI bindings
-      # ============================================
-      - name: Install build dependencies
-        run: |
-          brew list cmake &>/dev/null || brew install cmake
-          brew list ninja &>/dev/null || brew install ninja
-
-      - name: Regenerate Dart FFI bindings
-        id: regenerate_bindings
-        run: |
-          echo "=== Regenerating Dart FFI bindings for liboqs ${{ env.LIBOQS_VERSION }} ==="
-
-          make get
-
-          if make regen; then
-            echo "bindings_updated=true" >> $GITHUB_OUTPUT
-            echo "Bindings regenerated successfully"
-          else
-            echo "bindings_updated=false" >> $GITHUB_OUTPUT
-            echo "::warning::Bindings regeneration failed, but continuing with build"
-          fi
-
-          if git diff --quiet lib/src/bindings/; then
-            echo "bindings_changed=false" >> $GITHUB_OUTPUT
-            echo "No changes in bindings"
-          else
-            echo "bindings_changed=true" >> $GITHUB_OUTPUT
-            echo "Bindings have changes:"
-            git diff --stat lib/src/bindings/
-          fi
-
-      # ============================================
-      # Create Release Archives for Build Hooks
-      # ============================================
       - name: Create release archives
         run: |
           VERSION=${{ env.LIBOQS_VERSION }}
@@ -389,52 +326,40 @@ jobs:
 
           # Linux x86_64
           tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
-            -C bin/linux liboqs.so
+            -C artifacts/liboqs-linux-x86_64 liboqs.so
 
-          # macOS arm64 and x86_64 (separate binaries for Flutter to merge with lipo)
-          # Extract each architecture from the universal binary
-          lipo -thin arm64 bin/macos/liboqs.dylib -output bin/macos/liboqs-arm64.dylib
-          lipo -thin x86_64 bin/macos/liboqs.dylib -output bin/macos/liboqs-x86_64.dylib
-
-          # Create separate archives (rename to liboqs.dylib inside archive)
-          cp bin/macos/liboqs-arm64.dylib bin/macos/liboqs_arm64_tmp.dylib
-          mv bin/macos/liboqs-arm64.dylib bin/macos/liboqs.dylib.bak
-          mv bin/macos/liboqs_arm64_tmp.dylib bin/macos/liboqs.dylib
+          # macOS arm64
           tar -czvf release-archives/liboqs-${VERSION}-macos-arm64.tar.gz \
-            -C bin/macos liboqs.dylib
-          mv bin/macos/liboqs.dylib.bak bin/macos/liboqs.dylib
+            -C artifacts/liboqs-macos-arm64 liboqs.dylib
 
-          cp bin/macos/liboqs-x86_64.dylib bin/macos/liboqs_x86_64_tmp.dylib
-          mv bin/macos/liboqs.dylib bin/macos/liboqs.dylib.bak
-          mv bin/macos/liboqs_x86_64_tmp.dylib bin/macos/liboqs.dylib
+          # macOS x86_64
           tar -czvf release-archives/liboqs-${VERSION}-macos-x86_64.tar.gz \
-            -C bin/macos liboqs.dylib
-          mv bin/macos/liboqs.dylib.bak bin/macos/liboqs.dylib
+            -C artifacts/liboqs-macos-x86_64 liboqs.dylib
 
           # Windows x86_64 (zip format)
-          cd bin/windows && zip ../../release-archives/liboqs-${VERSION}-windows-x86_64.zip oqs.dll && cd ../..
+          cd artifacts/liboqs-windows-x86_64 && zip ../../release-archives/liboqs-${VERSION}-windows-x86_64.zip oqs.dll && cd ../..
 
           # Android ABIs
           for abi in arm64-v8a armeabi-v7a x86_64; do
             tar -czvf release-archives/liboqs-${VERSION}-android-${abi}.tar.gz \
-              -C android/src/main/jniLibs/${abi} liboqs.so
+              -C artifacts/liboqs-android-${abi} liboqs.so
           done
 
-          # iOS device (dynamic library .dylib)
+          # iOS device arm64
           tar -czvf release-archives/liboqs-${VERSION}-ios-device-arm64.tar.gz \
-            -C ios/Libraries/device-arm64 liboqs.dylib
+            -C artifacts/liboqs-ios-device-arm64 liboqs.dylib
 
-          # iOS simulator arm64 (dynamic library .dylib)
+          # iOS simulator arm64
           tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-arm64.tar.gz \
-            -C ios/Libraries/simulator-arm64 liboqs.dylib
+            -C artifacts/liboqs-ios-simulator-arm64 liboqs.dylib
 
-          # iOS simulator x86_64 (dynamic library .dylib)
+          # iOS simulator x86_64
           tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-x86_64.tar.gz \
-            -C ios/Libraries/simulator-x86_64 liboqs.dylib
+            -C artifacts/liboqs-ios-simulator-x86_64 liboqs.dylib
 
           # Generate SHA256 checksums
           cd release-archives
-          shasum -a 256 liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
+          sha256sum liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
           cd ..
 
           echo "=== Release archives created ==="
@@ -467,36 +392,26 @@ jobs:
             ### Archive Format
             Archives are named: `liboqs-{version}-{os}-{arch}.tar.gz` (or `.zip` for Windows)
 
-            | Platform | Architecture | Type | Archive |
-            |----------|--------------|------|---------|
-            | Linux | x86_64 | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
-            | macOS | arm64 | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz` |
-            | macOS | x86_64 | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz` |
-            | Windows | x86_64 | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |
-            | Android | arm64-v8a | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz` |
-            | Android | armeabi-v7a | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
-            | Android | x86_64 | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz` |
-            | iOS | device (arm64) | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-ios-device-arm64.tar.gz` |
-            | iOS | simulator (arm64) | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz` |
-            | iOS | simulator (x86_64) | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz` |
+            | Platform | Architecture | Archive |
+            |----------|--------------|---------|
+            | Linux | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
+            | macOS | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz` |
+            | macOS | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz` |
+            | Windows | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |
+            | Android | arm64-v8a | `liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz` |
+            | Android | armeabi-v7a | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
+            | Android | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz` |
+            | iOS | device (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-device-arm64.tar.gz` |
+            | iOS | simulator (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz` |
+            | iOS | simulator (x86_64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz` |
 
             ### Checksums
             SHA256 checksums are available in `liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256`
 
-            ### Usage with Build Hooks
-            Add `liboqs` to your `pubspec.yaml` dependencies. Build hooks will
-            automatically download the correct native library during build.
+            ### Usage
+            Add `liboqs` to your `pubspec.yaml`. Build hooks will download the correct library automatically.
 
             ```yaml
             dependencies:
               liboqs: ^1.0.0
-            ```
-
-            ### Manual Download (for development)
-            If you need to download manually:
-            ```bash
-            # Example for macOS arm64 (Apple Silicon)
-            curl -L -o liboqs.tar.gz \
-              https://github.com/${{ github.repository }}/releases/download/v${{ env.LIBOQS_VERSION }}/liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz
-            tar -xzf liboqs.tar.gz
             ```

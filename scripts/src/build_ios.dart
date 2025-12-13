@@ -5,20 +5,20 @@
 ///   - cmake, ninja (or make)
 ///
 /// Output:
-///   ios/Frameworks/liboqs.xcframework/ (contains static libraries for all architectures)
+///   ios/Libraries/<target>-<arch>/liboqs.dylib
 ///
-/// All iOS targets use static libraries (.a) which are linked via CocoaPods.
-/// This allows using LookupInProcess() in the build hook, which is compatible
-/// with Flutter's native assets system for both device and simulator.
+/// All iOS targets use dynamic libraries (.dylib) which are bundled via
+/// Flutter's native assets system (DynamicLoadingBundled). Flutter automatically
+/// converts .dylib to Framework format required by App Store.
 
 import 'dart:io';
 import 'common.dart';
 
 /// iOS build target
 enum IOSTarget {
-  device, // Static library for device (arm64)
-  simulatorArm64, // Static library for simulator (arm64)
-  simulatorX86_64, // Static library for simulator (x86_64)
+  device, // Dynamic library for device (arm64)
+  simulatorArm64, // Dynamic library for simulator (arm64)
+  simulatorX86_64, // Dynamic library for simulator (x86_64)
   all, // Build all targets
 }
 
@@ -65,11 +65,14 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
     branch: version,
   );
 
-  if (target == IOSTarget.all) {
-    // Build all targets as static libraries (.a)
-    // Static libraries are linked via CocoaPods xcframework
+  // Output directory for all iOS libraries
+  final outputBaseDir = '${packageDir.path}/ios/Libraries';
 
-    // Device arm64 (static)
+  if (target == IOSTarget.all) {
+    // Build all targets as dynamic libraries (.dylib)
+    // Flutter will convert these to Frameworks automatically
+
+    // Device arm64
     final deviceLib = await _buildIOSTarget(
       target: 'device',
       arch: 'arm64',
@@ -78,10 +81,9 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
       sourceDir: sourceDir,
       tempDir: tempDir,
       buildTool: buildTool,
-      sharedLib: false, // Static
     );
 
-    // Simulator arm64 (static)
+    // Simulator arm64
     final simArm64Lib = await _buildIOSTarget(
       target: 'simulator',
       arch: 'arm64',
@@ -90,10 +92,9 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
       sourceDir: sourceDir,
       tempDir: tempDir,
       buildTool: buildTool,
-      sharedLib: false, // Static
     );
 
-    // Simulator x86_64 (static)
+    // Simulator x86_64
     final simX86_64Lib = await _buildIOSTarget(
       target: 'simulator',
       arch: 'x86_64',
@@ -102,65 +103,30 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
       sourceDir: sourceDir,
       tempDir: tempDir,
       buildTool: buildTool,
-      sharedLib: false, // Static
     );
 
     // Copy outputs to proper locations
-    final outputDir = '${packageDir.path}/ios/Libraries';
-
-    // Device static library
-    final deviceOutputDir = '$outputDir/device-arm64';
+    final deviceOutputDir = '$outputBaseDir/device-arm64';
     await ensureDir(deviceOutputDir);
-    await copyFile(deviceLib, '$deviceOutputDir/liboqs.a');
+    await copyFile(deviceLib, '$deviceOutputDir/liboqs.dylib');
 
-    // Simulator static libraries (separate for CI artifacts)
-    final simArm64OutputDir = '$outputDir/simulator-arm64';
+    final simArm64OutputDir = '$outputBaseDir/simulator-arm64';
     await ensureDir(simArm64OutputDir);
-    await copyFile(simArm64Lib, '$simArm64OutputDir/liboqs.a');
+    await copyFile(simArm64Lib, '$simArm64OutputDir/liboqs.dylib');
 
-    final simX86_64OutputDir = '$outputDir/simulator-x86_64';
+    final simX86_64OutputDir = '$outputBaseDir/simulator-x86_64';
     await ensureDir(simX86_64OutputDir);
-    await copyFile(simX86_64Lib, '$simX86_64OutputDir/liboqs.a');
-
-    // Create universal simulator library for xcframework
-    logStep('Creating universal simulator library...');
-    final universalSimLib = '$tempDir/liboqs-simulator-universal.a';
-    await runCommandOrFail('lipo', [
-      '-create',
-      simArm64Lib,
-      simX86_64Lib,
-      '-output',
-      universalSimLib,
-    ]);
-
-    // Create XCFramework with device + simulator (for CocoaPods)
-    logStep('Creating XCFramework...');
-    final frameworkDir = '${packageDir.path}/ios/Frameworks';
-    await removeDir('$frameworkDir/liboqs.xcframework');
-    await ensureDir(frameworkDir);
-
-    await runCommandOrFail('xcodebuild', [
-      '-create-xcframework',
-      '-library',
-      deviceLib,
-      '-library',
-      universalSimLib,
-      '-output',
-      '$frameworkDir/liboqs.xcframework',
-    ]);
-
-    logInfo('XCFramework created at $frameworkDir/liboqs.xcframework');
+    await copyFile(simX86_64Lib, '$simX86_64OutputDir/liboqs.dylib');
 
     // Show info
     logInfo('Build outputs:');
-    logInfo('  Device (static):        $deviceOutputDir/liboqs.a');
-    logInfo('  Simulator arm64 (static): $simArm64OutputDir/liboqs.a');
-    logInfo('  Simulator x86_64 (static): $simX86_64OutputDir/liboqs.a');
-    logInfo('  XCFramework:            $frameworkDir/liboqs.xcframework');
+    logInfo('  Device arm64:     $deviceOutputDir/liboqs.dylib');
+    logInfo('  Simulator arm64:  $simArm64OutputDir/liboqs.dylib');
+    logInfo('  Simulator x86_64: $simX86_64OutputDir/liboqs.dylib');
 
-    printBuildSummary('iOS all targets', outputDir);
+    printBuildSummary('iOS all targets', outputBaseDir);
   } else {
-    // Build single target (all static)
+    // Build single target
     final (targetName, arch, sdk, processor) = switch (target) {
       IOSTarget.device => ('device', 'arm64', 'iphoneos', 'aarch64'),
       IOSTarget.simulatorArm64 => (
@@ -186,13 +152,12 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
       sourceDir: sourceDir,
       tempDir: tempDir,
       buildTool: buildTool,
-      sharedLib: false, // Always static
     );
 
     // Copy to output
-    final outputDir = '${packageDir.path}/ios/Libraries/$targetName-$arch';
+    final outputDir = '$outputBaseDir/$targetName-$arch';
     await ensureDir(outputDir);
-    await copyFile(libPath, '$outputDir/liboqs.a');
+    await copyFile(libPath, '$outputDir/liboqs.dylib');
 
     printBuildSummary('iOS $targetName $arch', outputDir);
   }
@@ -213,10 +178,8 @@ Future<String> _buildIOSTarget({
   required String sourceDir,
   required String tempDir,
   required String buildTool,
-  required bool sharedLib,
 }) async {
-  final libType = sharedLib ? 'dynamic' : 'static';
-  logPlatform('iOS', 'Building $libType library for $target $arch...');
+  logPlatform('iOS', 'Building dynamic library for $target $arch...');
 
   // Get SDK path
   final sdkResult = await runCommand('xcrun', [
@@ -227,13 +190,13 @@ Future<String> _buildIOSTarget({
   final sdkPath = sdkResult.stdout.toString().trim();
   logInfo('SDK: $sdkPath');
 
-  final buildDir = '$tempDir/build-ios-$target-$arch-$libType';
+  final buildDir = '$tempDir/build-ios-$target-$arch';
   await ensureDir(buildDir);
 
   final cmakeArgs = [
     sourceDir,
     ...getBaseCMakeArgs(),
-    '-DBUILD_SHARED_LIBS=${sharedLib ? 'ON' : 'OFF'}',
+    '-DBUILD_SHARED_LIBS=ON',
     '-DOQS_DIST_BUILD=OFF',
     '-DOQS_OPT_TARGET=generic',
     '-DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON',
@@ -242,8 +205,8 @@ Future<String> _buildIOSTarget({
     '-DCMAKE_OSX_ARCHITECTURES=$arch',
     '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0',
     '-DCMAKE_OSX_SYSROOT=$sdkPath',
-    // For dynamic libraries, set install name
-    if (sharedLib) '-DCMAKE_INSTALL_NAME_DIR=@rpath',
+    // Set install name for dynamic library loading
+    '-DCMAKE_INSTALL_NAME_DIR=@rpath',
     ...await getCMakeGeneratorArgs(),
   ];
 
@@ -252,8 +215,7 @@ Future<String> _buildIOSTarget({
   final buildArgs = await getBuildArgs();
   await runCommandOrFail(buildTool, buildArgs, workingDirectory: buildDir);
 
-  final libName = sharedLib ? 'liboqs.dylib' : 'liboqs.a';
-  return '$buildDir/lib/$libName';
+  return '$buildDir/lib/liboqs.dylib';
 }
 
 /// Parse target from command line argument
