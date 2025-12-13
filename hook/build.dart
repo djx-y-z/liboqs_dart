@@ -28,34 +28,40 @@ const _githubRepo = 'djx-y-z/liboqs_dart';
 /// Entry point for the build hook.
 void main(List<String> args) async {
   await build(args, (input, output) async {
-    // Skip build hook if we're in the package repository itself (development/CI).
-    // Detection: if packageRoot is NOT in .pub-cache, we're developing the package.
-    // When the package is used as a dependency, it will be in .pub-cache.
-    final packagePath = input.packageRoot.toFilePath();
-    if (!packagePath.contains('.pub-cache')) {
-      // We're in the source repository, not a dependency.
-      // Native libraries are built separately via scripts/build.dart.
-      return;
-    }
-
     // Only process if building code assets
     if (!input.config.buildCodeAssets) {
       return;
     }
 
     final codeConfig = input.config.code;
-
-    // Read liboqs version from package
-    final version = await _readVersion(input.packageRoot);
-
-    // Resolve platform-specific asset info
-    final assetInfo = _resolveAssetInfo(codeConfig, version);
-
     final targetOS = codeConfig.targetOS;
     final targetArch = codeConfig.targetArchitecture;
+    final packageRoot = input.packageRoot;
+    final packagePath = packageRoot.toFilePath();
 
-    // Output directory for cached downloads (shared across builds)
-    final cacheDir = input.outputDirectoryShared;
+    // Detect if we're in the source repository (development/CI) or a dependency (.pub-cache)
+    final isSourceRepo = !packagePath.contains('.pub-cache');
+
+    // Detect CI environment (GitHub Actions, GitLab CI, etc.)
+    final isCI = Platform.environment['CI'] == 'true' ||
+        Platform.environment['GITHUB_ACTIONS'] == 'true' ||
+        Platform.environment['GITLAB_CI'] != null;
+
+    // Skip download in CI when in source repo (we're building the libraries, not using them)
+    if (isSourceRepo && isCI) {
+      // CI build: Libraries are built separately via scripts/build.dart
+      // and published to GitHub Releases. Skip hook to avoid chicken-and-egg problem.
+      return;
+    }
+
+    // For all other cases (dependency OR local development), download from GitHub Releases
+    final version = await _readVersion(packageRoot);
+    final assetInfo = _resolveAssetInfo(codeConfig, version);
+
+    // Output directory for cached downloads
+    // Use architecture-specific subdirectory for each platform/arch combination
+    final archSubdir = '${targetOS.name}-${targetArch.name}';
+    final cacheDir = input.outputDirectoryShared.resolve('$archSubdir/');
     final libFile = File.fromUri(cacheDir.resolve(assetInfo.fileName));
 
     // Download if not cached
@@ -87,7 +93,7 @@ void main(List<String> args) async {
     );
 
     // Add dependency on version file for cache invalidation
-    output.dependencies.add(input.packageRoot.resolve('LIBOQS_VERSION'));
+    output.dependencies.add(packageRoot.resolve('LIBOQS_VERSION'));
   });
 }
 
@@ -133,9 +139,11 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
       );
 
     case OS.macOS:
+      // Use architecture-specific binaries (Flutter will merge them with lipo)
+      final arch = _macOSArchName(targetArch);
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-macos-universal.tar.gz',
-        archiveFileName: 'liboqs-$version-macos-universal.tar.gz',
+        downloadUrl: '$baseUrl/liboqs-$version-macos-$arch.tar.gz',
+        archiveFileName: 'liboqs-$version-macos-$arch.tar.gz',
         fileName: 'liboqs.dylib',
         linkMode: DynamicLoadingBundled(),
       );
@@ -185,6 +193,18 @@ String _androidArchToAbi(Architecture arch) {
       return 'x86_64';
     default:
       throw HookException('Unsupported Android architecture: $arch');
+  }
+}
+
+/// Converts Dart Architecture to macOS architecture name.
+String _macOSArchName(Architecture arch) {
+  switch (arch) {
+    case Architecture.arm64:
+      return 'arm64';
+    case Architecture.x64:
+      return 'x86_64';
+    default:
+      throw HookException('Unsupported macOS architecture: $arch');
   }
 }
 

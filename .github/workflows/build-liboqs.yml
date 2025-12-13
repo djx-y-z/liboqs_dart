@@ -5,8 +5,8 @@
 #
 # Platforms:
 # - Linux x86_64
-# - macOS Universal (arm64 + x86_64)
-# - iOS XCFramework (device arm64 + simulator arm64/x86_64)
+# - macOS arm64, x86_64 (separate binaries, Flutter merges with lipo)
+# - iOS device arm64, simulator arm64/x86_64
 # - Android (arm64-v8a, armeabi-v7a, x86_64)
 # - Windows x86_64
 #
@@ -391,9 +391,25 @@ jobs:
           tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
             -C bin/linux liboqs.so
 
-          # macOS Universal
-          tar -czvf release-archives/liboqs-${VERSION}-macos-universal.tar.gz \
+          # macOS arm64 and x86_64 (separate binaries for Flutter to merge with lipo)
+          # Extract each architecture from the universal binary
+          lipo -thin arm64 bin/macos/liboqs.dylib -output bin/macos/liboqs-arm64.dylib
+          lipo -thin x86_64 bin/macos/liboqs.dylib -output bin/macos/liboqs-x86_64.dylib
+
+          # Create separate archives (rename to liboqs.dylib inside archive)
+          cp bin/macos/liboqs-arm64.dylib bin/macos/liboqs_arm64_tmp.dylib
+          mv bin/macos/liboqs-arm64.dylib bin/macos/liboqs.dylib.bak
+          mv bin/macos/liboqs_arm64_tmp.dylib bin/macos/liboqs.dylib
+          tar -czvf release-archives/liboqs-${VERSION}-macos-arm64.tar.gz \
             -C bin/macos liboqs.dylib
+          mv bin/macos/liboqs.dylib.bak bin/macos/liboqs.dylib
+
+          cp bin/macos/liboqs-x86_64.dylib bin/macos/liboqs_x86_64_tmp.dylib
+          mv bin/macos/liboqs.dylib bin/macos/liboqs.dylib.bak
+          mv bin/macos/liboqs_x86_64_tmp.dylib bin/macos/liboqs.dylib
+          tar -czvf release-archives/liboqs-${VERSION}-macos-x86_64.tar.gz \
+            -C bin/macos liboqs.dylib
+          mv bin/macos/liboqs.dylib.bak bin/macos/liboqs.dylib
 
           # Windows x86_64 (zip format)
           cd bin/windows && zip ../../release-archives/liboqs-${VERSION}-windows-x86_64.zip oqs.dll && cd ../..
@@ -414,7 +430,7 @@ jobs:
 
           # Generate SHA256 checksums
           cd release-archives
-          sha256sum liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
+          shasum -a 256 liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
           cd ..
 
           echo "=== Release archives created ==="
@@ -428,7 +444,8 @@ jobs:
           make_latest: true
           files: |
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz
@@ -448,7 +465,8 @@ jobs:
             | Platform | Architecture | Archive |
             |----------|--------------|---------|
             | Linux | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
-            | macOS | Universal | `liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz` |
+            | macOS | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz` |
+            | macOS | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz` |
             | Windows | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |
             | Android | arm64-v8a | `liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz` |
             | Android | armeabi-v7a | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
@@ -471,8 +489,8 @@ jobs:
             ### Manual Download (for development)
             If you need to download manually:
             ```bash
-            # Example for macOS
+            # Example for macOS arm64 (Apple Silicon)
             curl -L -o liboqs.tar.gz \
-              https://github.com/${{ github.repository }}/releases/download/v${{ env.LIBOQS_VERSION }}/liboqs-${{ env.LIBOQS_VERSION }}-macos-universal.tar.gz
+              https://github.com/${{ github.repository }}/releases/download/v${{ env.LIBOQS_VERSION }}/liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz
             tar -xzf liboqs.tar.gz
             ```

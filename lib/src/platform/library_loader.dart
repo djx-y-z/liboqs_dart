@@ -87,11 +87,10 @@ class LibOQSLoader {
       }
     }
 
-    // Strategy 4: System/bundled location (Build Hooks)
-    // The library is bundled by build hooks and should be found automatically
+    // Strategy 4: Platform-specific bundled library
+    // Build Hooks bundle the library with the application
     if (library == null) {
-      attemptedPaths.add('system: ${_getSystemLibraryName()}');
-      library = _trySystemLoad();
+      library = _tryBundledLibrary(attemptedPaths);
     }
 
     if (library == null) {
@@ -118,38 +117,85 @@ class LibOQSLoader {
     }
   }
 
-  /// Attempts to load the library from system/bundled locations.
+  /// Attempts to load the bundled library based on platform.
   ///
-  /// Build Hooks place the library in platform-specific locations that
-  /// [DynamicLibrary.open] can find automatically.
-  static DynamicLibrary? _trySystemLoad() {
+  /// Build Hooks bundle the library with the application.
+  /// Each platform has different conventions for bundled libraries.
+  static DynamicLibrary? _tryBundledLibrary(List<String> attemptedPaths) {
+    // Try native asset ID first (works in Dart standalone with native assets)
+    attemptedPaths.add('native_asset: package:liboqs/liboqs');
     try {
-      if (Platform.isIOS) {
-        // iOS: Framework bundled by build hooks
-        return DynamicLibrary.open('liboqs.framework/liboqs');
-      } else {
-        // All other platforms: Build hooks bundle the library
-        // so DynamicLibrary.open can find it by name
-        return DynamicLibrary.open(_getSystemLibraryName());
-      }
+      return DynamicLibrary.open('package:liboqs/liboqs');
     } catch (_) {
-      return null;
+      // Fall through to platform-specific loading
     }
-  }
 
-  /// Returns the platform-specific library filename.
-  static String _getSystemLibraryName() {
-    if (Platform.isWindows) {
-      return 'oqs.dll';
-    } else if (Platform.isLinux || Platform.isAndroid) {
-      return 'liboqs.so';
-    } else if (Platform.isMacOS || Platform.isIOS) {
-      return 'liboqs.dylib';
-    } else {
-      throw UnsupportedError(
-        'Platform ${Platform.operatingSystem} is not supported',
-      );
+    // Platform-specific bundled library paths
+    if (Platform.isMacOS) {
+      // macOS: Libraries are bundled as frameworks
+      // Try various paths that Flutter/macOS might use
+      const macOSPaths = [
+        'oqs.framework/oqs', // Framework in current directory
+        '@rpath/oqs.framework/oqs', // Framework via rpath
+        '@loader_path/../Frameworks/oqs.framework/oqs', // Relative to executable
+        'liboqs.dylib', // Direct dylib
+      ];
+      for (final path in macOSPaths) {
+        attemptedPaths.add('macos: $path');
+        try {
+          return DynamicLibrary.open(path);
+        } catch (_) {
+          continue;
+        }
+      }
+    } else if (Platform.isLinux) {
+      // Linux: Libraries in lib directory or system paths
+      const linuxPaths = [
+        'liboqs.so',
+        './liboqs.so',
+        'lib/liboqs.so',
+      ];
+      for (final path in linuxPaths) {
+        attemptedPaths.add('linux: $path');
+        try {
+          return DynamicLibrary.open(path);
+        } catch (_) {
+          continue;
+        }
+      }
+    } else if (Platform.isWindows) {
+      // Windows: DLLs in same directory as executable
+      const windowsPaths = [
+        'oqs.dll',
+        './oqs.dll',
+      ];
+      for (final path in windowsPaths) {
+        attemptedPaths.add('windows: $path');
+        try {
+          return DynamicLibrary.open(path);
+        } catch (_) {
+          continue;
+        }
+      }
+    } else if (Platform.isAndroid) {
+      // Android: Libraries in jniLibs, loaded by name
+      attemptedPaths.add('android: liboqs.so');
+      try {
+        return DynamicLibrary.open('liboqs.so');
+      } catch (_) {
+        // Fall through
+      }
+    } else if (Platform.isIOS) {
+      // iOS: Static linking, use DynamicLibrary.process()
+      attemptedPaths.add('ios: process (static linking)');
+      try {
+        return DynamicLibrary.process();
+      } catch (_) {
+        // Fall through
+      }
     }
+
+    return null;
   }
 
   /// Clears the cached library, forcing a fresh load on next call.
