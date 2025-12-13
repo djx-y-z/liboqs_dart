@@ -20,11 +20,7 @@ Future<void> buildMacOS({MacOSArch arch = MacOSArch.universal}) async {
     throw Exception('macOS build must be run on macOS');
   }
 
-  print('');
-  print('========================================');
-  print('  liboqs Build: macOS (${arch.name})');
-  print('========================================');
-  print('');
+  printBuildHeader('macOS (${arch.name})');
 
   // Check dependencies
   logStep('Checking dependencies...');

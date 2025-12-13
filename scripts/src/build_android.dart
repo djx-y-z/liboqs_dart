@@ -30,11 +30,7 @@ Future<void> buildAndroid({AndroidAbi abi = AndroidAbi.all}) async {
     throw Exception('Android build must be run on Linux or macOS');
   }
 
-  print('');
-  print('========================================');
-  print('  liboqs Build: Android (${abi.value})');
-  print('========================================');
-  print('');
+  printBuildHeader('Android (${abi.value})');
 
   // Check dependencies
   logStep('Checking dependencies...');

@@ -93,8 +93,7 @@ void main(List<String> args) async {
       );
     }
 
-    // Register the native asset
-    // For iOS, Flutter automatically converts .dylib to Framework format
+    // Register native asset (Flutter converts .dylib to Framework for iOS)
     output.assets.code.add(
       CodeAsset(
         package: _packageName,

@@ -143,21 +143,30 @@ Future<Map<String, String>> _fetchLatestRelease() async {
   };
 }
 
+/// Number of semver components (major.minor.patch)
+const _semverComponents = 3;
+
 /// Compare two semver versions, returns true if v1 > v2
 bool _compareVersions(String v1, String v2) {
   // Remove 'v' prefix and pre-release suffix for base comparison
   final v1Base = v1.replaceFirst(RegExp(r'^v'), '').split('-')[0];
   final v2Base = v2.replaceFirst(RegExp(r'^v'), '').split('-')[0];
 
-  final v1Parts = v1Base.split('.').map(int.parse).toList();
-  final v2Parts = v2Base.split('.').map(int.parse).toList();
+  List<int> v1Parts;
+  List<int> v2Parts;
+  try {
+    v1Parts = v1Base.split('.').map(int.parse).toList();
+    v2Parts = v2Base.split('.').map(int.parse).toList();
+  } catch (e) {
+    throw Exception('Invalid version format: v1=$v1, v2=$v2. Error: $e');
+  }
 
   // Pad with zeros if needed
-  while (v1Parts.length < 3) v1Parts.add(0);
-  while (v2Parts.length < 3) v2Parts.add(0);
+  while (v1Parts.length < _semverComponents) v1Parts.add(0);
+  while (v2Parts.length < _semverComponents) v2Parts.add(0);
 
   // Compare major.minor.patch
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < _semverComponents; i++) {
     if (v1Parts[i] > v2Parts[i]) return true;
     if (v1Parts[i] < v2Parts[i]) return false;
   }
@@ -201,7 +210,15 @@ PackageVersionResult calculatePackageVersion({
   final ourBaseVersion = currentPkgVersion.split('-')[0];
 
   // Parse our version components
-  final parts = ourBaseVersion.split('.').map(int.parse).toList();
+  List<int> parts;
+  try {
+    parts = ourBaseVersion.split('.').map(int.parse).toList();
+  } catch (e) {
+    throw Exception('Invalid package version format: $currentPkgVersion. Error: $e');
+  }
+  if (parts.length < _semverComponents) {
+    throw Exception('Package version must have at least $_semverComponents components: $currentPkgVersion');
+  }
   var major = parts[0];
   var minor = parts[1];
   var patch = parts[2];

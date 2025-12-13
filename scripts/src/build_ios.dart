@@ -28,11 +28,7 @@ Future<void> buildIOS({IOSTarget target = IOSTarget.all}) async {
     throw Exception('iOS build must be run on macOS');
   }
 
-  print('');
-  print('========================================');
-  print('  liboqs Build: iOS (${target.name})');
-  print('========================================');
-  print('');
+  printBuildHeader('iOS (${target.name})');
 
   // Check dependencies
   logStep('Checking dependencies...');

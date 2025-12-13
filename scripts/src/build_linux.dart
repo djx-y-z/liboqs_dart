@@ -16,11 +16,7 @@ Future<void> buildLinux() async {
     throw Exception('Linux build must be run on Linux');
   }
 
-  print('');
-  print('========================================');
-  print('  liboqs Build: Linux x86_64');
-  print('========================================');
-  print('');
+  printBuildHeader('Linux x86_64');
 
   // Check dependencies
   logStep('Checking dependencies...');

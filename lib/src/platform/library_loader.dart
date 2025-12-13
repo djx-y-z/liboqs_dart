@@ -122,16 +122,9 @@ class LibOQSLoader {
   ///
   /// Build Hooks bundle the library with the application.
   /// Each platform has different conventions for bundled libraries.
-  ///
-  /// Note: Flutter's native asset ID resolution (`package:liboqs/liboqs`)
-  /// currently doesn't work due to a Flutter bug ("SdkRoot not provided").
-  /// We use platform-specific paths instead, which work reliably.
   static DynamicLibrary? _tryBundledLibrary(List<String> attemptedPaths) {
-    // Platform-specific bundled library paths
     if (Platform.isMacOS) {
-      // macOS: Libraries are bundled as frameworks
-      // Flutter strips 'lib' prefix from dylib name when creating framework
-      // liboqs.dylib -> oqs.framework/oqs
+      // macOS: Framework format (Flutter converts liboqs.dylib -> oqs.framework/oqs)
       const macOSPaths = [
         '@rpath/oqs.framework/oqs',
         'oqs.framework/oqs',
@@ -149,7 +142,6 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isLinux) {
-      // Linux: Libraries in lib directory or system paths
       const linuxPaths = ['liboqs.so', './liboqs.so', 'lib/liboqs.so'];
       for (final path in linuxPaths) {
         attemptedPaths.add('linux: $path');
@@ -160,7 +152,6 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isWindows) {
-      // Windows: DLLs in same directory as executable
       const windowsPaths = ['oqs.dll', './oqs.dll'];
       for (final path in windowsPaths) {
         attemptedPaths.add('windows: $path');
@@ -171,7 +162,6 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isAndroid) {
-      // Android: Libraries in jniLibs, loaded by name
       attemptedPaths.add('android: liboqs.so');
       try {
         return DynamicLibrary.open('liboqs.so');
@@ -179,9 +169,7 @@ class LibOQSLoader {
         // Fall through
       }
     } else if (Platform.isIOS) {
-      // iOS: Libraries are bundled as frameworks
-      // Flutter strips 'lib' prefix from dylib name when creating framework
-      // liboqs.dylib -> oqs.framework/oqs
+      // iOS: Framework format (Flutter converts liboqs.dylib -> oqs.framework/oqs)
       const iOSPaths = [
         '@rpath/oqs.framework/oqs',
         'oqs.framework/oqs',
@@ -208,16 +196,4 @@ class LibOQSLoader {
 
   /// Returns whether a library is currently cached.
   static bool get hasCachedLibrary => _cachedLibrary != null;
-}
-
-/// Legacy function for backward compatibility.
-@Deprecated('Use LibOQSLoader.loadLibrary() instead')
-DynamicLibrary loadLibOQS() {
-  return LibOQSLoader.loadLibrary();
-}
-
-/// Legacy function for backward compatibility with error handling.
-@Deprecated('Use LibOQSLoader.loadLibrary() instead')
-DynamicLibrary loadLibOQSWithErrorHandling() {
-  return LibOQSLoader.loadLibrary();
 }

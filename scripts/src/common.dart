@@ -51,6 +51,15 @@ void logPlatform(String platform, String message) {
   print(Colors.colorize('[$platform]', Colors.cyan) + ' $message');
 }
 
+/// Print a build header for a platform
+void printBuildHeader(String platform) {
+  print('');
+  print('========================================');
+  print('  liboqs Build: $platform');
+  print('========================================');
+  print('');
+}
+
 // ============================================
 // Path utilities
 // ============================================

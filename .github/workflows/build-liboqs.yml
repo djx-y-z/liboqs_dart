@@ -55,26 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
 
       - name: Install dependencies
         run: |
@@ -106,26 +88,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
 
       - name: Install dependencies
         run: brew install cmake ninja
@@ -163,26 +127,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
 
       - name: Install dependencies
         run: brew install cmake ninja
@@ -208,26 +154,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
 
       - name: Install dependencies
         run: |
@@ -260,26 +188,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$env:LOCALAPPDATA\Pub\Cache\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
 
       - name: Install dependencies
         run: choco install ninja make -y
@@ -312,17 +222,10 @@ jobs:
         with:
           path: artifacts
 
-      - name: List downloaded artifacts
-        run: |
-          echo "=== Downloaded artifacts ==="
-          find artifacts -type f -exec ls -lh {} \;
-
       - name: Create release archives
         run: |
           VERSION=${{ env.LIBOQS_VERSION }}
           mkdir -p release-archives
-
-          echo "=== Creating release archives for Build Hooks ==="
 
           # Linux x86_64
           tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
@@ -362,7 +265,6 @@ jobs:
           sha256sum liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
           cd ..
 
-          echo "=== Release archives created ==="
           ls -lh release-archives/
 
       - name: Create or Update Release

@@ -29,26 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Install FVM
-        run: |
-          dart pub global activate fvm
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Cache FVM
-        uses: actions/cache@v4
-        with:
-          path: ~/.fvm
-          key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
-          restore-keys: |
-            fvm-${{ runner.os }}-
-
-      - name: Install Flutter via FVM
-        run: fvm install
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
 
       - name: Install dependencies
         run: make get

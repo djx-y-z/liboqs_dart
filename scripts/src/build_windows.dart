@@ -17,11 +17,7 @@ Future<void> buildWindows() async {
     throw Exception('Windows build must be run on Windows');
   }
 
-  print('');
-  print('========================================');
-  print('  liboqs Build: Windows x86_64');
-  print('========================================');
-  print('');
+  printBuildHeader('Windows x86_64');
 
   // Check dependencies
   logStep('Checking dependencies...');
