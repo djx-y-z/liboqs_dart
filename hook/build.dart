@@ -42,15 +42,29 @@ void main(List<String> args) async {
     // Detect if we're in the source repository (development/CI) or a dependency (.pub-cache)
     final isSourceRepo = !packagePath.contains('.pub-cache');
 
-    // Detect CI environment (GitHub Actions, GitLab CI, etc.)
-    final isCI = Platform.environment['CI'] == 'true' ||
-        Platform.environment['GITHUB_ACTIONS'] == 'true' ||
-        Platform.environment['GITLAB_CI'] != null;
+    // Detect CI environment (GitHub Actions, GitLab CI, Azure DevOps, etc.)
+    // Check multiple environment variables for robustness
+    final envCI = Platform.environment['CI'];
+    final envGitHubActions = Platform.environment['GITHUB_ACTIONS'];
+    final envGitLabCI = Platform.environment['GITLAB_CI'];
+    final envRunner = Platform.environment['RUNNER_OS']; // GitHub Actions specific
+
+    final isCI = envCI != null ||
+        envGitHubActions != null ||
+        envGitLabCI != null ||
+        envRunner != null;
+
+    // Debug logging (visible in CI logs)
+    stderr.writeln('[liboqs hook] packagePath: $packagePath');
+    stderr.writeln('[liboqs hook] isSourceRepo: $isSourceRepo');
+    stderr.writeln('[liboqs hook] CI env: CI=$envCI, GITHUB_ACTIONS=$envGitHubActions, RUNNER_OS=$envRunner');
+    stderr.writeln('[liboqs hook] isCI: $isCI');
 
     // Skip download in CI when in source repo (we're building the libraries, not using them)
     if (isSourceRepo && isCI) {
       // CI build: Libraries are built separately via scripts/build.dart
       // and published to GitHub Releases. Skip hook to avoid chicken-and-egg problem.
+      stderr.writeln('[liboqs hook] Skipping download: CI build in source repo');
       return;
     }
 
