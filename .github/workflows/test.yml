@@ -1,0 +1,45 @@
+# Run Dart tests for liboqs_dart
+#
+# Trigger:
+# - Push to main when library files change
+# - After native library build completes
+# - Manual dispatch
+
+name: Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+  workflow_run:
+    workflows: ["Build liboqs Native Libraries"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Native libraries are pre-built in bin/
+    # Skip if triggered by failed build workflow
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: make get
+
+      - name: Analyze code
+        run: make analyze ARGS="--fatal-infos"
+
+      - name: Run tests
+        run: make test
+
+      - name: Check formatting
+        run: make format-check

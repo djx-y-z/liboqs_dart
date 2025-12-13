@@ -1,0 +1,66 @@
+name: liboqs
+description: Dart FFI bindings for liboqs — high-performance post-quantum cryptography (PQC) with ML-KEM, ML-DSA, Falcon, SPHINCS+ for key encapsulation and signatures.
+
+version: 1.0.0
+license: MIT
+repository: https://github.com/djx-y-z/liboqs_dart
+homepage: https://github.com/djx-y-z/liboqs_dart
+issue_tracker: https://github.com/djx-y-z/liboqs_dart/issues
+
+environment:
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
+
+dependencies:
+  ffi: ^2.1.4
+  # Build hooks for automatic native library download
+  hooks: ^1.0.0
+  code_assets: ^1.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.24.0
+  ffigen: ^20.0.0
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  windows:
+
+topics:
+  - cryptography
+  - post-quantum
+  - kem
+  - pqc
+  - liboqs
+
+ffigen:
+  name: LibOQSBindings
+  description: 'Cross-platform bindings for liboqs'
+  output: 'lib/src/bindings/liboqs_bindings.dart'
+  headers:
+    entry-points:
+      - 'headers/oqs/oqs.h'
+    include-directives:
+      - '**oqs/*.h'
+  compiler-opts:
+    - '-Iheaders'
+  functions:
+    include:
+      - 'OQS_.*'
+  structs:
+    include:
+      - 'OQS_KEM'
+      - 'OQS_SIG'
+  enums:
+    include:
+      - 'OQS_.*'
+  # ignore-source-errors: REQUIRED - macOS SDK emits warnings about visionos/driverkit
+  # platforms that ffigen treats as errors. These are Xcode compatibility issues,
+  # not problems with liboqs headers. Without this flag, ffigen refuses to generate.
+  ignore-source-errors: true
+  # silence-enum-warning: OQS_STATUS and OQS_CPU_EXT enums are only used as
+  # return values, not in struct layouts, so platform-specific sizes are safe
+  silence-enum-warning: true

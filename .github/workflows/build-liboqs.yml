@@ -1,0 +1,319 @@
+# Build liboqs native libraries for all platforms
+#
+# This workflow uses cross-platform Dart scripts from scripts/ directory.
+# The same scripts can be run locally on any OS with Dart SDK.
+#
+# Platforms:
+# - Linux x86_64 (dynamic .so)
+# - macOS arm64, x86_64 (dynamic .dylib, separate binaries)
+# - iOS device arm64, simulator arm64/x86_64 (dynamic .dylib, bundled via Flutter native assets)
+# - Android arm64-v8a, armeabi-v7a, x86_64 (dynamic .so)
+# - Windows x86_64 (dynamic .dll)
+#
+# Trigger:
+# - Manual dispatch (workflow_dispatch) - for first run or force rebuild
+# - Push to main when LIBOQS_VERSION file changes
+#
+# After successful build, creates/updates GitHub Release with native library archives.
+# Build hooks download these archives automatically during app build.
+#
+# Version is read from LIBOQS_VERSION file in repository root
+
+name: Build liboqs Native Libraries
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'LIBOQS_VERSION'
+
+jobs:
+  # ============================================
+  # Read version from file
+  # ============================================
+  read-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read liboqs version
+        id: version
+        run: |
+          VERSION=$(cat LIBOQS_VERSION | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building liboqs version: $VERSION"
+
+  # ============================================
+  # Linux x86_64
+  # ============================================
+  build-linux:
+    needs: read-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc g++
+
+      - name: Build liboqs for Linux
+        run: make build ARGS="linux"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-linux-x86_64
+          path: bin/linux/liboqs.so
+
+  # ============================================
+  # macOS (arm64 + x86_64 on separate runners)
+  # ============================================
+  build-macos:
+    needs: read-version
+    strategy:
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-latest
+          - arch: x86_64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Build liboqs for macOS ${{ matrix.arch }}
+        run: make build ARGS="macos --arch ${{ matrix.arch }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-macos-${{ matrix.arch }}
+          path: bin/macos/liboqs.dylib
+
+  # ============================================
+  # iOS (dynamic .dylib, bundled via Flutter native assets)
+  # ============================================
+  build-ios:
+    needs: read-version
+    strategy:
+      matrix:
+        include:
+          - target: device
+            arch: arm64
+            runner: macos-latest
+            dart_target: device
+          - target: simulator
+            arch: arm64
+            runner: macos-latest
+            dart_target: simulator-arm64
+          - target: simulator
+            arch: x86_64
+            runner: macos-15-intel
+            dart_target: simulator-x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Build liboqs for iOS ${{ matrix.target }} ${{ matrix.arch }}
+        run: make build ARGS="ios --target ${{ matrix.dart_target }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-ios-${{ matrix.target }}-${{ matrix.arch }}
+          path: ios/Libraries/${{ matrix.target }}-${{ matrix.arch }}/liboqs.dylib
+
+  # ============================================
+  # Android (all architectures)
+  # ============================================
+  build-android:
+    needs: read-version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Setup Android NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: |
+          sdkmanager --install "ndk;26.3.11579264"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> $GITHUB_ENV
+
+      - name: Build liboqs for Android ${{ matrix.abi }}
+        run: make build ARGS="android --abi ${{ matrix.abi }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-android-${{ matrix.abi }}
+          path: android/src/main/jniLibs/${{ matrix.abi }}/liboqs.so
+
+  # ============================================
+  # Windows x86_64
+  # ============================================
+  build-windows:
+    needs: read-version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: choco install ninja make -y
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build liboqs for Windows
+        run: make build ARGS="windows"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liboqs-windows-x86_64
+          path: bin/windows/oqs.dll
+
+  # ============================================
+  # Create GitHub Release with all artifacts
+  # ============================================
+  create-release:
+    needs: [read-version, build-linux, build-macos, build-ios, build-android, build-windows]
+    runs-on: ubuntu-latest
+    env:
+      LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release archives
+        run: |
+          VERSION=${{ env.LIBOQS_VERSION }}
+          mkdir -p release-archives
+
+          # Linux x86_64
+          tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
+            -C artifacts/liboqs-linux-x86_64 liboqs.so
+
+          # macOS arm64
+          tar -czvf release-archives/liboqs-${VERSION}-macos-arm64.tar.gz \
+            -C artifacts/liboqs-macos-arm64 liboqs.dylib
+
+          # macOS x86_64
+          tar -czvf release-archives/liboqs-${VERSION}-macos-x86_64.tar.gz \
+            -C artifacts/liboqs-macos-x86_64 liboqs.dylib
+
+          # Windows x86_64 (zip format)
+          cd artifacts/liboqs-windows-x86_64 && zip ../../release-archives/liboqs-${VERSION}-windows-x86_64.zip oqs.dll && cd ../..
+
+          # Android ABIs
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            tar -czvf release-archives/liboqs-${VERSION}-android-${abi}.tar.gz \
+              -C artifacts/liboqs-android-${abi} liboqs.so
+          done
+
+          # iOS device arm64
+          tar -czvf release-archives/liboqs-${VERSION}-ios-device-arm64.tar.gz \
+            -C artifacts/liboqs-ios-device-arm64 liboqs.dylib
+
+          # iOS simulator arm64
+          tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-arm64.tar.gz \
+            -C artifacts/liboqs-ios-simulator-arm64 liboqs.dylib
+
+          # iOS simulator x86_64
+          tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-x86_64.tar.gz \
+            -C artifacts/liboqs-ios-simulator-x86_64 liboqs.dylib
+
+          # Generate SHA256 checksums
+          cd release-archives
+          sha256sum liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
+          cd ..
+
+          ls -lh release-archives/
+
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.LIBOQS_VERSION }}
+          name: v${{ env.LIBOQS_VERSION }}
+          make_latest: true
+          files: |
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-device-arm64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256
+          body: |
+            ## liboqs ${{ env.LIBOQS_VERSION }} Native Libraries
+
+            Pre-built native libraries for all supported platforms.
+            **These archives are downloaded automatically by Dart Build Hooks.**
+
+            ### Archive Format
+            Archives are named: `liboqs-{version}-{os}-{arch}.tar.gz` (or `.zip` for Windows)
+
+            | Platform | Architecture | Archive |
+            |----------|--------------|---------|
+            | Linux | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
+            | macOS | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz` |
+            | macOS | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz` |
+            | Windows | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |
+            | Android | arm64-v8a | `liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz` |
+            | Android | armeabi-v7a | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
+            | Android | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz` |
+            | iOS | device (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-device-arm64.tar.gz` |
+            | iOS | simulator (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz` |
+            | iOS | simulator (x86_64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz` |
+
+            ### Checksums
+            SHA256 checksums are available in `liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256`
+
+            ### Usage
+            Add `liboqs` to your `pubspec.yaml`. Build hooks will download the correct library automatically.
+
+            ```yaml
+            dependencies:
+              liboqs: ^1.0.0
+            ```
