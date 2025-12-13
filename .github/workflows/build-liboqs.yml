@@ -140,7 +140,7 @@ jobs:
           path: bin/macos/liboqs.dylib
 
   # ============================================
-  # iOS (device = static .a, simulator = dynamic .dylib)
+  # iOS (all static .a, linked via CocoaPods)
   # ============================================
   build-ios:
     needs: read-version
@@ -151,17 +151,14 @@ jobs:
             arch: arm64
             runner: macos-latest
             dart_target: device
-            lib_ext: a
           - target: simulator
             arch: arm64
             runner: macos-latest
             dart_target: simulator-arm64
-            lib_ext: dylib
           - target: simulator
             arch: x86_64
             runner: macos-15-intel
             dart_target: simulator-x86_64
-            lib_ext: dylib
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -197,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: liboqs-ios-${{ matrix.target }}-${{ matrix.arch }}
-          path: ios/Libraries/${{ matrix.target }}-${{ matrix.arch }}/liboqs.${{ matrix.lib_ext }}
+          path: ios/Libraries/${{ matrix.target }}-${{ matrix.arch }}/liboqs.a
 
   # ============================================
   # Android (all architectures)
@@ -427,13 +424,13 @@ jobs:
           tar -czvf release-archives/liboqs-${VERSION}-ios-device.tar.gz \
             -C ios/Libraries/device-arm64 liboqs.a
 
-          # iOS simulator arm64 (dynamic library .dylib)
+          # iOS simulator arm64 (static library .a)
           tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-arm64.tar.gz \
-            -C ios/Libraries/simulator-arm64 liboqs.dylib
+            -C ios/Libraries/simulator-arm64 liboqs.a
 
-          # iOS simulator x86_64 (dynamic library .dylib)
+          # iOS simulator x86_64 (static library .a)
           tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-x86_64.tar.gz \
-            -C ios/Libraries/simulator-x86_64 liboqs.dylib
+            -C ios/Libraries/simulator-x86_64 liboqs.a
 
           # Generate SHA256 checksums
           cd release-archives
@@ -480,8 +477,8 @@ jobs:
             | Android | armeabi-v7a | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
             | Android | x86_64 | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz` |
             | iOS | device (arm64) | static | `liboqs-${{ env.LIBOQS_VERSION }}-ios-device.tar.gz` |
-            | iOS | simulator (arm64) | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz` |
-            | iOS | simulator (x86_64) | dynamic | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz` |
+            | iOS | simulator (arm64) | static | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz` |
+            | iOS | simulator (x86_64) | static | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz` |
 
             ### Checksums
             SHA256 checksums are available in `liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256`

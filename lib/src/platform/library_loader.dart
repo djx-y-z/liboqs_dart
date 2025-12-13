@@ -5,6 +5,8 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:ffi/ffi.dart';
+
 /// Exception thrown when the liboqs library cannot be loaded.
 class LibraryLoadException implements Exception {
   final String message;
@@ -122,11 +124,18 @@ class LibOQSLoader {
   /// Build Hooks bundle the library with the application.
   /// Each platform has different conventions for bundled libraries.
   static DynamicLibrary? _tryBundledLibrary(List<String> attemptedPaths) {
-    // Try native asset ID first (works in Dart standalone with native assets)
+    // Try native asset ID first (works with Dart 3.10+ native assets)
+    // This should work automatically when build hooks are properly configured
     attemptedPaths.add('native_asset: package:liboqs/liboqs');
     try {
-      return DynamicLibrary.open('package:liboqs/liboqs');
-    } catch (_) {
+      final lib = DynamicLibrary.open('package:liboqs/liboqs');
+      // Verify the library works by looking up a known symbol
+      lib.lookup<NativeFunction<Pointer<Utf8> Function()>>('OQS_version');
+      return lib;
+    } catch (e) {
+      // Log error for debugging (visible in flutter run output)
+      // ignore: avoid_print
+      print('[liboqs] Native asset load failed: $e');
       // Fall through to platform-specific loading
     }
 
@@ -187,31 +196,50 @@ class LibOQSLoader {
       }
     } else if (Platform.isIOS) {
       // iOS device: static linking (symbols in main executable)
-      // iOS simulator: dynamic linking (dylib bundled as framework)
+      // iOS simulator: dynamic linking (dylib bundled in app)
       // Try both approaches since we can't easily detect device vs simulator at runtime
 
-      // First try dynamic loading (for simulator)
+      // First try static linking (for device with statically linked library)
+      // This must be tried first because on device, dynamic loading will fail
+      attemptedPaths.add('ios: process (static linking)');
+      try {
+        final lib = DynamicLibrary.process();
+        // Verify symbols exist
+        lib.lookup<NativeFunction<Pointer<Utf8> Function()>>('OQS_version');
+        // ignore: avoid_print
+        print('[liboqs] Loaded via static linking (iOS device)');
+        return lib;
+      } catch (e) {
+        // ignore: avoid_print
+        print('[liboqs] Static linking failed: $e');
+        // Fall through to dynamic loading
+      }
+
+      // Try dynamic loading (for simulator)
       const iOSPaths = [
-        'liboqs.framework/liboqs', // Framework in current directory
-        '@rpath/liboqs.framework/liboqs', // Framework via rpath
-        '@loader_path/Frameworks/liboqs.framework/liboqs', // Relative to executable
-        'liboqs.dylib', // Direct dylib
+        // Flutter native assets paths
+        '@rpath/liboqs.dylib',
+        '@executable_path/Frameworks/liboqs.dylib',
+        '@loader_path/Frameworks/liboqs.dylib',
+        // Framework paths
+        'liboqs.framework/liboqs',
+        '@rpath/liboqs.framework/liboqs',
+        '@loader_path/Frameworks/liboqs.framework/liboqs',
+        // Direct dylib
+        'liboqs.dylib',
       ];
       for (final path in iOSPaths) {
         attemptedPaths.add('ios: $path');
         try {
-          return DynamicLibrary.open(path);
-        } catch (_) {
+          final lib = DynamicLibrary.open(path);
+          // ignore: avoid_print
+          print('[liboqs] Loaded from: $path');
+          return lib;
+        } catch (e) {
+          // ignore: avoid_print
+          print('[liboqs] Failed to load $path: $e');
           continue;
         }
-      }
-
-      // Fall back to static linking (for device)
-      attemptedPaths.add('ios: process (static linking)');
-      try {
-        return DynamicLibrary.process();
-      } catch (_) {
-        // Fall through
       }
     }
 

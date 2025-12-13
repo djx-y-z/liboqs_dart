@@ -72,6 +72,21 @@ void main(List<String> args) async {
     final version = await _readVersion(packageRoot);
     final assetInfo = _resolveAssetInfo(codeConfig, version);
 
+    // For iOS, we use LookupInProcess() - library is linked via CocoaPods
+    // No need to download or bundle anything
+    if (targetOS == OS.iOS) {
+      output.assets.code.add(
+        CodeAsset(
+          package: _packageName,
+          name: _assetId,
+          linkMode: assetInfo.linkMode,
+          // No file needed for LookupInProcess - symbols are in the process
+        ),
+      );
+      stderr.writeln('[liboqs hook] iOS: Using LookupInProcess (CocoaPods linkage)');
+      return;
+    }
+
     // Output directory for cached downloads
     // Use architecture-specific subdirectory for each platform/arch combination
     final archSubdir = '${targetOS.name}-${targetArch.name}';
@@ -180,27 +195,24 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
       );
 
     case OS.iOS:
-      // iOS device: static linking (Apple requirement)
-      // iOS simulator: dynamic linking (runs on macOS, supports dylib)
-      final isSimulator = codeConfig.iOS.targetSdk == IOSSdk.iPhoneSimulator;
-      if (isSimulator) {
-        // Simulator: dynamic linking with architecture-specific dylib
-        final arch = _iOSArchName(targetArch);
-        return _AssetInfo(
-          downloadUrl: '$baseUrl/liboqs-$version-ios-simulator-$arch.tar.gz',
-          archiveFileName: 'liboqs-$version-ios-simulator-$arch.tar.gz',
-          fileName: 'liboqs.dylib',
-          linkMode: DynamicLoadingBundled(),
-        );
-      } else {
-        // Device: static linking
-        return _AssetInfo(
-          downloadUrl: '$baseUrl/liboqs-$version-ios-device.tar.gz',
-          archiveFileName: 'liboqs-$version-ios-device.tar.gz',
-          fileName: 'liboqs.a',
-          linkMode: StaticLinking(),
-        );
-      }
+      // iOS: Use LookupInProcess() for both device and simulator
+      // The static library is linked via CocoaPods (ios/liboqs.podspec)
+      // which uses the xcframework containing static libraries for all architectures.
+      // At runtime, DynamicLibrary.process() finds the symbols.
+      //
+      // This approach works because:
+      // 1. CocoaPods links liboqs.xcframework into the app
+      // 2. LookupInProcess() tells Flutter not to bundle anything
+      // 3. library_loader.dart uses DynamicLibrary.process() to find symbols
+      //
+      // Note: We don't need to download anything here since CocoaPods handles it,
+      // but we still register the asset so FFI knows where to find symbols.
+      return _AssetInfo(
+        downloadUrl: '', // Not used - library is linked via CocoaPods
+        archiveFileName: '',
+        fileName: '',
+        linkMode: LookupInProcess(),
+      );
 
     default:
       throw HookException('Unsupported target OS: $targetOS');
@@ -233,17 +245,6 @@ String _macOSArchName(Architecture arch) {
   }
 }
 
-/// Converts Dart Architecture to iOS architecture name.
-String _iOSArchName(Architecture arch) {
-  switch (arch) {
-    case Architecture.arm64:
-      return 'arm64';
-    case Architecture.x64:
-      return 'x86_64';
-    default:
-      throw HookException('Unsupported iOS architecture: $arch');
-  }
-}
 
 /// Downloads and extracts the native library archive.
 Future<void> _downloadAndExtract(
