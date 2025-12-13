@@ -42,23 +42,23 @@ void main(List<String> args) async {
     // Detect if we're in the source repository (development/CI) or a dependency (.pub-cache)
     final isSourceRepo = !packagePath.contains('.pub-cache');
 
-    // Detect CI environment (GitHub Actions, GitLab CI, Azure DevOps, etc.)
-    // Check multiple environment variables for robustness
-    final envCI = Platform.environment['CI'];
-    final envGitHubActions = Platform.environment['GITHUB_ACTIONS'];
-    final envGitLabCI = Platform.environment['GITLAB_CI'];
-    final envRunner = Platform.environment['RUNNER_OS']; // GitHub Actions specific
-
-    final isCI = envCI != null ||
-        envGitHubActions != null ||
-        envGitLabCI != null ||
-        envRunner != null;
+    // Detect CI environment by path (environment variables are not passed to hooks_runner)
+    // GitHub Actions paths:
+    //   macOS: /Users/runner/work/...
+    //   Linux: /home/runner/work/...
+    //   Windows: D:\a\... or contains runner\work
+    // Other CI systems can be added as needed
+    final isCI = packagePath.contains('/runner/work/') || // GitHub Actions (macOS/Linux)
+        packagePath.contains('\\runner\\work\\') || // GitHub Actions (Windows)
+        packagePath.contains('/home/runner/') || // GitHub Actions Linux alternative
+        packagePath.startsWith('D:\\a\\') || // GitHub Actions Windows
+        packagePath.contains('/builds/') || // GitLab CI
+        packagePath.contains('/home/vsts/'); // Azure DevOps
 
     // Debug logging (visible in CI logs)
     stderr.writeln('[liboqs hook] packagePath: $packagePath');
     stderr.writeln('[liboqs hook] isSourceRepo: $isSourceRepo');
-    stderr.writeln('[liboqs hook] CI env: CI=$envCI, GITHUB_ACTIONS=$envGitHubActions, RUNNER_OS=$envRunner');
-    stderr.writeln('[liboqs hook] isCI: $isCI');
+    stderr.writeln('[liboqs hook] isCI (path-based): $isCI');
 
     // Skip download in CI when in source repo (we're building the libraries, not using them)
     if (isSourceRepo && isCI) {
