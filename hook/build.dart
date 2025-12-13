@@ -166,16 +166,27 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
       );
 
     case OS.iOS:
-      // iOS uses static linking and needs IOSSdk to distinguish device vs simulator
-      // (arm64 can be both device and Apple Silicon simulator)
+      // iOS device: static linking (Apple requirement)
+      // iOS simulator: dynamic linking (runs on macOS, supports dylib)
       final isSimulator = codeConfig.iOS.targetSdk == IOSSdk.iPhoneSimulator;
-      final target = isSimulator ? 'simulator' : 'device';
-      return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-ios-$target.tar.gz',
-        archiveFileName: 'liboqs-$version-ios-$target.tar.gz',
-        fileName: 'liboqs.a',
-        linkMode: StaticLinking(),
-      );
+      if (isSimulator) {
+        // Simulator: dynamic linking with architecture-specific dylib
+        final arch = _iOSArchName(targetArch);
+        return _AssetInfo(
+          downloadUrl: '$baseUrl/liboqs-$version-ios-simulator-$arch.tar.gz',
+          archiveFileName: 'liboqs-$version-ios-simulator-$arch.tar.gz',
+          fileName: 'liboqs.dylib',
+          linkMode: DynamicLoadingBundled(),
+        );
+      } else {
+        // Device: static linking
+        return _AssetInfo(
+          downloadUrl: '$baseUrl/liboqs-$version-ios-device.tar.gz',
+          archiveFileName: 'liboqs-$version-ios-device.tar.gz',
+          fileName: 'liboqs.a',
+          linkMode: StaticLinking(),
+        );
+      }
 
     default:
       throw HookException('Unsupported target OS: $targetOS');
@@ -205,6 +216,18 @@ String _macOSArchName(Architecture arch) {
       return 'x86_64';
     default:
       throw HookException('Unsupported macOS architecture: $arch');
+  }
+}
+
+/// Converts Dart Architecture to iOS architecture name.
+String _iOSArchName(Architecture arch) {
+  switch (arch) {
+    case Architecture.arm64:
+      return 'arm64';
+    case Architecture.x64:
+      return 'x86_64';
+    default:
+      throw HookException('Unsupported iOS architecture: $arch');
   }
 }
 

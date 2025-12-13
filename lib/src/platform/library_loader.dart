@@ -186,7 +186,27 @@ class LibOQSLoader {
         // Fall through
       }
     } else if (Platform.isIOS) {
-      // iOS: Static linking, use DynamicLibrary.process()
+      // iOS device: static linking (symbols in main executable)
+      // iOS simulator: dynamic linking (dylib bundled as framework)
+      // Try both approaches since we can't easily detect device vs simulator at runtime
+
+      // First try dynamic loading (for simulator)
+      const iOSPaths = [
+        'liboqs.framework/liboqs', // Framework in current directory
+        '@rpath/liboqs.framework/liboqs', // Framework via rpath
+        '@loader_path/Frameworks/liboqs.framework/liboqs', // Relative to executable
+        'liboqs.dylib', // Direct dylib
+      ];
+      for (final path in iOSPaths) {
+        attemptedPaths.add('ios: $path');
+        try {
+          return DynamicLibrary.open(path);
+        } catch (_) {
+          continue;
+        }
+      }
+
+      // Fall back to static linking (for device)
       attemptedPaths.add('ios: process (static linking)');
       try {
         return DynamicLibrary.process();
