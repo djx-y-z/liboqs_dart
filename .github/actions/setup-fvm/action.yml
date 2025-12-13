@@ -31,6 +31,12 @@ runs:
         restore-keys: |
           fvm-${{ runner.os }}-
 
-    - name: Install Flutter via FVM
+    - name: Install Flutter via FVM (Unix)
+      if: runner.os != 'Windows'
       run: fvm install
       shell: bash
+
+    - name: Install Flutter via FVM (Windows)
+      if: runner.os == 'Windows'
+      run: fvm install
+      shell: pwsh
