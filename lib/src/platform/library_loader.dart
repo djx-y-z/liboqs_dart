@@ -5,8 +5,6 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:ffi/ffi.dart';
-
 /// Exception thrown when the liboqs library cannot be loaded.
 class LibraryLoadException implements Exception {
   final String message;
@@ -124,31 +122,23 @@ class LibOQSLoader {
   ///
   /// Build Hooks bundle the library with the application.
   /// Each platform has different conventions for bundled libraries.
+  ///
+  /// Note: Flutter's native asset ID resolution (`package:liboqs/liboqs`)
+  /// currently doesn't work due to a Flutter bug ("SdkRoot not provided").
+  /// We use platform-specific paths instead, which work reliably.
   static DynamicLibrary? _tryBundledLibrary(List<String> attemptedPaths) {
-    // Try native asset ID first (works with Dart 3.10+ native assets)
-    // This should work automatically when build hooks are properly configured
-    attemptedPaths.add('native_asset: package:liboqs/liboqs');
-    try {
-      final lib = DynamicLibrary.open('package:liboqs/liboqs');
-      // Verify the library works by looking up a known symbol
-      lib.lookup<NativeFunction<Pointer<Utf8> Function()>>('OQS_version');
-      return lib;
-    } catch (e) {
-      // Log error for debugging (visible in flutter run output)
-      // ignore: avoid_print
-      print('[liboqs] Native asset load failed: $e');
-      // Fall through to platform-specific loading
-    }
-
-    // Platform-specific bundled library paths (fallback)
+    // Platform-specific bundled library paths
     if (Platform.isMacOS) {
-      // macOS: Libraries are bundled as frameworks or dylibs
+      // macOS: Libraries are bundled as frameworks
+      // Flutter strips 'lib' prefix from dylib name when creating framework
+      // liboqs.dylib -> oqs.framework/oqs
       const macOSPaths = [
+        '@rpath/oqs.framework/oqs',
+        'oqs.framework/oqs',
+        '@loader_path/../Frameworks/oqs.framework/oqs',
+        '@rpath/liboqs.framework/liboqs',
         'liboqs.dylib',
         '@rpath/liboqs.dylib',
-        '@loader_path/../Frameworks/liboqs.dylib',
-        'liboqs.framework/liboqs',
-        '@rpath/liboqs.framework/liboqs',
       ];
       for (final path in macOSPaths) {
         attemptedPaths.add('macos: $path');
@@ -189,9 +179,23 @@ class LibOQSLoader {
         // Fall through
       }
     } else if (Platform.isIOS) {
-      // iOS: Library is bundled via Flutter native assets (build hooks)
-      // No fallback paths needed - native asset loading should work
-      attemptedPaths.add('ios: native assets only');
+      // iOS: Libraries are bundled as frameworks
+      // Flutter strips 'lib' prefix from dylib name when creating framework
+      // liboqs.dylib -> oqs.framework/oqs
+      const iOSPaths = [
+        '@rpath/oqs.framework/oqs',
+        'oqs.framework/oqs',
+        '@loader_path/Frameworks/oqs.framework/oqs',
+        '@rpath/liboqs.framework/liboqs',
+      ];
+      for (final path in iOSPaths) {
+        attemptedPaths.add('ios: $path');
+        try {
+          return DynamicLibrary.open(path);
+        } catch (_) {
+          continue;
+        }
+      }
     }
 
     return null;

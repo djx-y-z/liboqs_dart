@@ -58,29 +58,16 @@ void main(List<String> args) async {
         packagePath.contains('/builds/') || // GitLab CI
         packagePath.contains('/home/vsts/'); // Azure DevOps
 
-    // Debug logging (visible in CI logs)
-    stderr.writeln('[liboqs hook] packagePath: $packagePath');
-    stderr.writeln(
-      '[liboqs hook] targetOS: $targetOS, targetArch: $targetArch',
-    );
-    stderr.writeln('[liboqs hook] isSourceRepo: $isSourceRepo');
-    stderr.writeln('[liboqs hook] isCI (path-based): $isCI');
-
     // Skip download in CI when in source repo (we're building the libraries, not using them)
     if (isSourceRepo && isCI) {
       // CI build: Libraries are built separately via scripts/build.dart
       // and published to GitHub Releases. Skip hook to avoid chicken-and-egg problem.
-      stderr.writeln(
-        '[liboqs hook] Skipping download: CI build in source repo',
-      );
       return;
     }
 
     // For all cases, download from GitHub Releases and bundle with the app
     final version = await _readVersion(packageRoot);
     final assetInfo = _resolveAssetInfo(codeConfig, version);
-
-    stderr.writeln('[liboqs hook] Downloading: ${assetInfo.downloadUrl}');
 
     // Output directory for cached downloads
     // Use architecture-specific subdirectory for each platform/arch combination
@@ -105,8 +92,6 @@ void main(List<String> args) async {
         'File not found: ${libFile.path}',
       );
     }
-
-    stderr.writeln('[liboqs hook] Library ready: ${libFile.path}');
 
     // Register the native asset
     // For iOS, Flutter automatically converts .dylib to Framework format
