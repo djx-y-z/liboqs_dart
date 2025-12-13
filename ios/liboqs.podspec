@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Dart FFI bindings for liboqs — high-performance post-quantum cryptography (PQC)
 with ML-KEM, ML-DSA, Falcon, SPHINCS+ for key encapsulation and signatures.
-Native libraries are statically linked via this podspec for iOS.
+Native libraries are bundled automatically via Flutter's native assets system.
                        DESC
   s.homepage         = 'https://github.com/djx-y-z/liboqs_dart'
   s.license          = { :file => '../LICENSE' }
@@ -14,12 +14,8 @@ Native libraries are statically linked via this podspec for iOS.
 
   s.source_files = 'Classes/**/*'
 
-  # Use xcframework with static libraries for all iOS architectures
-  # The xcframework is created by CI and contains device + simulator
-  s.vendored_frameworks = 'Frameworks/liboqs.xcframework'
-
-  # Static library linkage configuration
-  s.static_framework = true
+  # Native library is bundled via Flutter's native assets system (build hooks)
+  # No vendored_frameworks needed - DynamicLoadingBundled handles iOS libraries
 
   s.dependency 'Flutter'
   s.platform = :ios, '12.0'

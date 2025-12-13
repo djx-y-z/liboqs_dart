@@ -5,7 +5,7 @@
 /// This script is used by CI after all platform builds complete.
 /// It creates:
 ///   - macOS Universal Binary (arm64 + x86_64)
-///   - iOS XCFramework (device + simulator)
+///   - iOS Libraries (copied to ios/Libraries/)
 ///
 /// Usage:
 ///   dart run scripts/combine_artifacts.dart --artifacts-dir /path/to/artifacts
@@ -15,9 +15,9 @@
 ///   ├── liboqs-linux-x86_64/liboqs.so
 ///   ├── liboqs-macos-arm64/liboqs.dylib
 ///   ├── liboqs-macos-x86_64/liboqs.dylib
-///   ├── liboqs-ios-device-arm64/liboqs.a
-///   ├── liboqs-ios-simulator-arm64/liboqs.a
-///   ├── liboqs-ios-simulator-x86_64/liboqs.a
+///   ├── liboqs-ios-device-arm64/liboqs.dylib
+///   ├── liboqs-ios-simulator-arm64/liboqs.dylib
+///   ├── liboqs-ios-simulator-x86_64/liboqs.dylib
 ///   ├── liboqs-android-arm64-v8a/liboqs.so
 ///   ├── liboqs-android-armeabi-v7a/liboqs.so
 ///   ├── liboqs-android-x86_64/liboqs.so
@@ -79,7 +79,7 @@ void main(List<String> args) async {
     // Process each platform
     await _copyLinux(artifactsDir, packageDir.path);
     await _createMacOSUniversal(artifactsDir, packageDir.path);
-    await _createIOSXCFramework(artifactsDir, packageDir.path);
+    await _copyiOSLibraries(artifactsDir, packageDir.path);
     await _copyAndroid(artifactsDir, packageDir.path);
     await _copyWindows(artifactsDir, packageDir.path);
     await _createVersionFile(packageDir.path);
@@ -167,94 +167,68 @@ Future<void> _createMacOSUniversal(
   await runCommand('lipo', ['-info', '$outputDir/liboqs.dylib']);
 }
 
-/// Process iOS libraries
+/// Copy iOS dynamic libraries
 ///
-/// All iOS targets use static libraries (.a) which are linked via CocoaPods.
-/// This allows using LookupInProcess() in the build hook.
-///
-/// We create:
-/// 1. XCFramework with device + simulator (for CocoaPods)
-/// 2. Copy individual libraries to ios/Libraries/ for CI artifacts
-Future<void> _createIOSXCFramework(
-  String artifactsDir,
-  String packageDir,
-) async {
-  final device = '$artifactsDir/liboqs-ios-device-arm64/liboqs.a';
-  final simArm64 = '$artifactsDir/liboqs-ios-simulator-arm64/liboqs.a';
-  final simX86_64 = '$artifactsDir/liboqs-ios-simulator-x86_64/liboqs.a';
+/// iOS libraries are bundled via Flutter's native assets system (build hooks).
+/// Flutter automatically converts .dylib to Framework format for App Store.
+Future<void> _copyiOSLibraries(String artifactsDir, String packageDir) async {
+  final device = '$artifactsDir/liboqs-ios-device-arm64/liboqs.dylib';
+  final simArm64 = '$artifactsDir/liboqs-ios-simulator-arm64/liboqs.dylib';
+  final simX86_64 = '$artifactsDir/liboqs-ios-simulator-x86_64/liboqs.dylib';
 
-  logStep('Processing iOS libraries...');
+  logStep('Copying iOS libraries...');
 
-  // Copy libraries to ios/Libraries/
   final librariesDir = '$packageDir/ios/Libraries';
 
-  // Device static library
+  // Device dynamic library
   if (File(device).existsSync()) {
     await ensureDir('$librariesDir/device-arm64');
-    await copyFile(device, '$librariesDir/device-arm64/liboqs.a');
+    await copyFile(device, '$librariesDir/device-arm64/liboqs.dylib');
+
+    // Fix install name for dynamic loading
+    await runCommandOrFail('install_name_tool', [
+      '-id',
+      '@rpath/liboqs.dylib',
+      '$librariesDir/device-arm64/liboqs.dylib',
+    ]);
+
     logInfo('Copied iOS device library');
   } else {
     logWarn('iOS device artifact not found');
   }
 
-  // Simulator arm64 static library
+  // Simulator arm64 dynamic library
   if (File(simArm64).existsSync()) {
     await ensureDir('$librariesDir/simulator-arm64');
-    await copyFile(simArm64, '$librariesDir/simulator-arm64/liboqs.a');
+    await copyFile(simArm64, '$librariesDir/simulator-arm64/liboqs.dylib');
+
+    // Fix install name for dynamic loading
+    await runCommandOrFail('install_name_tool', [
+      '-id',
+      '@rpath/liboqs.dylib',
+      '$librariesDir/simulator-arm64/liboqs.dylib',
+    ]);
+
     logInfo('Copied iOS simulator arm64 library');
   } else {
     logWarn('iOS simulator arm64 artifact not found');
   }
 
-  // Simulator x86_64 static library
+  // Simulator x86_64 dynamic library
   if (File(simX86_64).existsSync()) {
     await ensureDir('$librariesDir/simulator-x86_64');
-    await copyFile(simX86_64, '$librariesDir/simulator-x86_64/liboqs.a');
+    await copyFile(simX86_64, '$librariesDir/simulator-x86_64/liboqs.dylib');
+
+    // Fix install name for dynamic loading
+    await runCommandOrFail('install_name_tool', [
+      '-id',
+      '@rpath/liboqs.dylib',
+      '$librariesDir/simulator-x86_64/liboqs.dylib',
+    ]);
+
     logInfo('Copied iOS simulator x86_64 library');
   } else {
     logWarn('iOS simulator x86_64 artifact not found');
-  }
-
-  // Create XCFramework with device + simulator
-  if (File(device).existsSync() &&
-      File(simArm64).existsSync() &&
-      File(simX86_64).existsSync()) {
-    logStep('Creating iOS XCFramework...');
-
-    // Create universal simulator library
-    final tempDir = getTempBuildDir();
-    await ensureDir(tempDir);
-    final universalSimLib = '$tempDir/liboqs-simulator-universal.a';
-
-    await runCommandOrFail('lipo', [
-      '-create',
-      simArm64,
-      simX86_64,
-      '-output',
-      universalSimLib,
-    ]);
-    logInfo('Created universal simulator library');
-
-    // Create XCFramework
-    final frameworksDir = '$packageDir/ios/Frameworks';
-    await removeDir('$frameworksDir/liboqs.xcframework');
-    await ensureDir(frameworksDir);
-
-    await runCommandOrFail('xcodebuild', [
-      '-create-xcframework',
-      '-library',
-      device,
-      '-library',
-      universalSimLib,
-      '-output',
-      '$frameworksDir/liboqs.xcframework',
-    ]);
-    logInfo('iOS XCFramework created (device + simulator)');
-
-    // Cleanup temp
-    await removeDir(tempDir);
-  } else {
-    logWarn('Not all iOS artifacts found, skipping XCFramework creation');
   }
 }
 
@@ -327,7 +301,7 @@ Usage:
 
 This script combines platform-specific build artifacts into final binaries:
   - macOS Universal Binary (arm64 + x86_64)
-  - iOS XCFramework (device + simulator)
+  - iOS Dynamic Libraries (bundled via Flutter native assets)
 
 Options:
   --artifacts-dir DIR   Directory containing downloaded artifacts
@@ -337,9 +311,9 @@ Expected artifacts structure:
   ├── liboqs-linux-x86_64/liboqs.so
   ├── liboqs-macos-arm64/liboqs.dylib
   ├── liboqs-macos-x86_64/liboqs.dylib
-  ├── liboqs-ios-device-arm64/liboqs.a    (static, linked via CocoaPods)
-  ├── liboqs-ios-simulator-arm64/liboqs.a (static, linked via CocoaPods)
-  ├── liboqs-ios-simulator-x86_64/liboqs.a
+  ├── liboqs-ios-device-arm64/liboqs.dylib    (bundled via Flutter native assets)
+  ├── liboqs-ios-simulator-arm64/liboqs.dylib (bundled via Flutter native assets)
+  ├── liboqs-ios-simulator-x86_64/liboqs.dylib
   ├── liboqs-android-*/liboqs.so
   └── liboqs-windows-x86_64/oqs.dll
 ''');

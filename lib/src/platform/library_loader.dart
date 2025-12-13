@@ -33,7 +33,8 @@ class LibraryLoadException implements Exception {
 /// 1. Explicit path (if provided via [explicitPath] parameter)
 /// 2. Custom path (if set via [LibOQSLoader.customPath])
 /// 3. Environment variable (LIBOQS_PATH)
-/// 4. System/bundled location (Build Hooks automatically place the library here)
+/// 4. Native asset ID (Build Hooks automatically register the library)
+/// 5. Platform-specific fallback paths
 class LibOQSLoader {
   static DynamicLibrary? _cachedLibrary;
 
@@ -139,15 +140,15 @@ class LibOQSLoader {
       // Fall through to platform-specific loading
     }
 
-    // Platform-specific bundled library paths
+    // Platform-specific bundled library paths (fallback)
     if (Platform.isMacOS) {
-      // macOS: Libraries are bundled as frameworks
-      // Try various paths that Flutter/macOS might use
+      // macOS: Libraries are bundled as frameworks or dylibs
       const macOSPaths = [
-        'oqs.framework/oqs', // Framework in current directory
-        '@rpath/oqs.framework/oqs', // Framework via rpath
-        '@loader_path/../Frameworks/oqs.framework/oqs', // Relative to executable
-        'liboqs.dylib', // Direct dylib
+        'liboqs.dylib',
+        '@rpath/liboqs.dylib',
+        '@loader_path/../Frameworks/liboqs.dylib',
+        'liboqs.framework/liboqs',
+        '@rpath/liboqs.framework/liboqs',
       ];
       for (final path in macOSPaths) {
         attemptedPaths.add('macos: $path');
@@ -159,11 +160,7 @@ class LibOQSLoader {
       }
     } else if (Platform.isLinux) {
       // Linux: Libraries in lib directory or system paths
-      const linuxPaths = [
-        'liboqs.so',
-        './liboqs.so',
-        'lib/liboqs.so',
-      ];
+      const linuxPaths = ['liboqs.so', './liboqs.so', 'lib/liboqs.so'];
       for (final path in linuxPaths) {
         attemptedPaths.add('linux: $path');
         try {
@@ -174,10 +171,7 @@ class LibOQSLoader {
       }
     } else if (Platform.isWindows) {
       // Windows: DLLs in same directory as executable
-      const windowsPaths = [
-        'oqs.dll',
-        './oqs.dll',
-      ];
+      const windowsPaths = ['oqs.dll', './oqs.dll'];
       for (final path in windowsPaths) {
         attemptedPaths.add('windows: $path');
         try {
@@ -195,52 +189,9 @@ class LibOQSLoader {
         // Fall through
       }
     } else if (Platform.isIOS) {
-      // iOS device: static linking (symbols in main executable)
-      // iOS simulator: dynamic linking (dylib bundled in app)
-      // Try both approaches since we can't easily detect device vs simulator at runtime
-
-      // First try static linking (for device with statically linked library)
-      // This must be tried first because on device, dynamic loading will fail
-      attemptedPaths.add('ios: process (static linking)');
-      try {
-        final lib = DynamicLibrary.process();
-        // Verify symbols exist
-        lib.lookup<NativeFunction<Pointer<Utf8> Function()>>('OQS_version');
-        // ignore: avoid_print
-        print('[liboqs] Loaded via static linking (iOS device)');
-        return lib;
-      } catch (e) {
-        // ignore: avoid_print
-        print('[liboqs] Static linking failed: $e');
-        // Fall through to dynamic loading
-      }
-
-      // Try dynamic loading (for simulator)
-      const iOSPaths = [
-        // Flutter native assets paths
-        '@rpath/liboqs.dylib',
-        '@executable_path/Frameworks/liboqs.dylib',
-        '@loader_path/Frameworks/liboqs.dylib',
-        // Framework paths
-        'liboqs.framework/liboqs',
-        '@rpath/liboqs.framework/liboqs',
-        '@loader_path/Frameworks/liboqs.framework/liboqs',
-        // Direct dylib
-        'liboqs.dylib',
-      ];
-      for (final path in iOSPaths) {
-        attemptedPaths.add('ios: $path');
-        try {
-          final lib = DynamicLibrary.open(path);
-          // ignore: avoid_print
-          print('[liboqs] Loaded from: $path');
-          return lib;
-        } catch (e) {
-          // ignore: avoid_print
-          print('[liboqs] Failed to load $path: $e');
-          continue;
-        }
-      }
+      // iOS: Library is bundled via Flutter native assets (build hooks)
+      // No fallback paths needed - native asset loading should work
+      attemptedPaths.add('ios: native assets only');
     }
 
     return null;

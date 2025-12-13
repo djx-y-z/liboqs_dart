@@ -48,15 +48,21 @@ void main(List<String> args) async {
     //   Linux: /home/runner/work/...
     //   Windows: D:\a\... or contains runner\work
     // Other CI systems can be added as needed
-    final isCI = packagePath.contains('/runner/work/') || // GitHub Actions (macOS/Linux)
+    final isCI =
+        packagePath.contains('/runner/work/') || // GitHub Actions (macOS/Linux)
         packagePath.contains('\\runner\\work\\') || // GitHub Actions (Windows)
-        packagePath.contains('/home/runner/') || // GitHub Actions Linux alternative
+        packagePath.contains(
+          '/home/runner/',
+        ) || // GitHub Actions Linux alternative
         packagePath.startsWith('D:\\a\\') || // GitHub Actions Windows
         packagePath.contains('/builds/') || // GitLab CI
         packagePath.contains('/home/vsts/'); // Azure DevOps
 
     // Debug logging (visible in CI logs)
     stderr.writeln('[liboqs hook] packagePath: $packagePath');
+    stderr.writeln(
+      '[liboqs hook] targetOS: $targetOS, targetArch: $targetArch',
+    );
     stderr.writeln('[liboqs hook] isSourceRepo: $isSourceRepo');
     stderr.writeln('[liboqs hook] isCI (path-based): $isCI');
 
@@ -64,28 +70,17 @@ void main(List<String> args) async {
     if (isSourceRepo && isCI) {
       // CI build: Libraries are built separately via scripts/build.dart
       // and published to GitHub Releases. Skip hook to avoid chicken-and-egg problem.
-      stderr.writeln('[liboqs hook] Skipping download: CI build in source repo');
+      stderr.writeln(
+        '[liboqs hook] Skipping download: CI build in source repo',
+      );
       return;
     }
 
-    // For all other cases (dependency OR local development), download from GitHub Releases
+    // For all cases, download from GitHub Releases and bundle with the app
     final version = await _readVersion(packageRoot);
     final assetInfo = _resolveAssetInfo(codeConfig, version);
 
-    // For iOS, we use LookupInProcess() - library is linked via CocoaPods
-    // No need to download or bundle anything
-    if (targetOS == OS.iOS) {
-      output.assets.code.add(
-        CodeAsset(
-          package: _packageName,
-          name: _assetId,
-          linkMode: assetInfo.linkMode,
-          // No file needed for LookupInProcess - symbols are in the process
-        ),
-      );
-      stderr.writeln('[liboqs hook] iOS: Using LookupInProcess (CocoaPods linkage)');
-      return;
-    }
+    stderr.writeln('[liboqs hook] Downloading: ${assetInfo.downloadUrl}');
 
     // Output directory for cached downloads
     // Use architecture-specific subdirectory for each platform/arch combination
@@ -111,7 +106,10 @@ void main(List<String> args) async {
       );
     }
 
+    stderr.writeln('[liboqs hook] Library ready: ${libFile.path}');
+
     // Register the native asset
+    // For iOS, Flutter automatically converts .dylib to Framework format
     output.assets.code.add(
       CodeAsset(
         package: _packageName,
@@ -130,9 +128,7 @@ void main(List<String> args) async {
 Future<String> _readVersion(Uri packageRoot) async {
   final versionFile = File.fromUri(packageRoot.resolve('LIBOQS_VERSION'));
   if (!versionFile.existsSync()) {
-    throw HookException(
-      'LIBOQS_VERSION file not found at ${versionFile.path}',
-    );
+    throw HookException('LIBOQS_VERSION file not found at ${versionFile.path}');
   }
   return (await versionFile.readAsString()).trim();
 }
@@ -195,23 +191,19 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
       );
 
     case OS.iOS:
-      // iOS: Use LookupInProcess() for both device and simulator
-      // The static library is linked via CocoaPods (ios/liboqs.podspec)
-      // which uses the xcframework containing static libraries for all architectures.
-      // At runtime, DynamicLibrary.process() finds the symbols.
+      // iOS: Use DynamicLoadingBundled - Flutter automatically converts
+      // .dylib to Framework format required by App Store.
       //
-      // This approach works because:
-      // 1. CocoaPods links liboqs.xcframework into the app
-      // 2. LookupInProcess() tells Flutter not to bundle anything
-      // 3. library_loader.dart uses DynamicLibrary.process() to find symbols
-      //
-      // Note: We don't need to download anything here since CocoaPods handles it,
-      // but we still register the asset so FFI knows where to find symbols.
+      // We download architecture-specific .dylib files:
+      // - device-arm64 for physical devices
+      // - simulator-arm64 for Apple Silicon simulators
+      // - simulator-x86_64 for Intel simulators
+      final iosTarget = _iOSTargetName(codeConfig, targetArch);
       return _AssetInfo(
-        downloadUrl: '', // Not used - library is linked via CocoaPods
-        archiveFileName: '',
-        fileName: '',
-        linkMode: LookupInProcess(),
+        downloadUrl: '$baseUrl/liboqs-$version-ios-$iosTarget.tar.gz',
+        archiveFileName: 'liboqs-$version-ios-$iosTarget.tar.gz',
+        fileName: 'liboqs.dylib',
+        linkMode: DynamicLoadingBundled(),
       );
 
     default:
@@ -245,6 +237,36 @@ String _macOSArchName(Architecture arch) {
   }
 }
 
+/// Determines iOS target name based on CodeConfig.
+///
+/// For iOS, we need to determine if we're building for device or simulator,
+/// and which architecture. The CodeConfig provides this information.
+String _iOSTargetName(CodeConfig codeConfig, Architecture arch) {
+  // Check if building for simulator by looking at the iOS SDK
+  // iOS simulators use iphonesimulator SDK, devices use iphoneos SDK
+  // The CodeConfig.iOS.targetSdk property tells us which one
+  final isSimulator = codeConfig.iOS.targetSdk == IOSSdk.iPhoneSimulator;
+
+  if (isSimulator) {
+    // Simulator: can be arm64 (Apple Silicon) or x86_64 (Intel)
+    switch (arch) {
+      case Architecture.arm64:
+        return 'simulator-arm64';
+      case Architecture.x64:
+        return 'simulator-x86_64';
+      default:
+        throw HookException('Unsupported iOS simulator architecture: $arch');
+    }
+  } else {
+    // Device: always arm64
+    if (arch != Architecture.arm64) {
+      throw HookException(
+        'Unsupported iOS device architecture: $arch (only arm64 is supported)',
+      );
+    }
+    return 'device-arm64';
+  }
+}
 
 /// Downloads and extracts the native library archive.
 Future<void> _downloadAndExtract(
@@ -333,14 +355,14 @@ Future<void> _downloadWithRetry(
 
 /// Extracts a tar.gz archive.
 Future<void> _extractTarGz(File archive, Directory outDir) async {
-  final result = await Process.run(
-    'tar',
-    ['-xzf', archive.path, '-C', outDir.path],
-  );
+  final result = await Process.run('tar', [
+    '-xzf',
+    archive.path,
+    '-C',
+    outDir.path,
+  ]);
   if (result.exitCode != 0) {
-    throw HookException(
-      'Failed to extract tar.gz archive: ${result.stderr}',
-    );
+    throw HookException('Failed to extract tar.gz archive: ${result.stderr}');
   }
 }
 
@@ -349,29 +371,26 @@ Future<void> _extractZip(File archive, Directory outDir) async {
   ProcessResult result;
 
   if (Platform.isWindows) {
-    result = await Process.run(
-      'powershell',
-      [
-        '-Command',
-        'Expand-Archive',
-        '-Path',
-        archive.path,
-        '-DestinationPath',
-        outDir.path,
-        '-Force',
-      ],
-    );
+    result = await Process.run('powershell', [
+      '-Command',
+      'Expand-Archive',
+      '-Path',
+      archive.path,
+      '-DestinationPath',
+      outDir.path,
+      '-Force',
+    ]);
   } else {
-    result = await Process.run(
-      'unzip',
-      ['-o', archive.path, '-d', outDir.path],
-    );
+    result = await Process.run('unzip', [
+      '-o',
+      archive.path,
+      '-d',
+      outDir.path,
+    ]);
   }
 
   if (result.exitCode != 0) {
-    throw HookException(
-      'Failed to extract zip archive: ${result.stderr}',
-    );
+    throw HookException('Failed to extract zip archive: ${result.stderr}');
   }
 }
 
