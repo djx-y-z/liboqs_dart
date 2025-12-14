@@ -129,7 +129,7 @@ class LibOQSLoader {
   /// Tries to load the library from CLI-specific locations.
   ///
   /// For JIT mode (dart run): .dart_tool/native_assets/ or .dart_tool/lib/
-  /// For AOT mode (dart compile exe): ../lib/{libName} relative to executable
+  /// For AOT mode (dart build cli): ../lib/{libName} relative to executable
   static DynamicLibrary? _tryCLILibrary(List<String> attemptedPaths) {
     final libName = _getLibraryName();
     if (libName == null) return null;
@@ -138,8 +138,12 @@ class LibOQSLoader {
     // JIT mode: executable is dart SDK binary (contains /dart-sdk/ or ends with /dart)
     // AOT mode: executable is user's compiled binary
     final resolvedExe = Platform.resolvedExecutable;
-    final exeName = resolvedExe.split(Platform.pathSeparator).last.toLowerCase();
-    final isJIT = exeName == 'dart' ||
+    final exeName = resolvedExe
+        .split(Platform.pathSeparator)
+        .last
+        .toLowerCase();
+    final isJIT =
+        exeName == 'dart' ||
         exeName == 'dart.exe' ||
         resolvedExe.contains('dart-sdk') ||
         resolvedExe.contains('flutter${Platform.pathSeparator}bin');
@@ -227,8 +231,12 @@ class LibOQSLoader {
     } else if (Platform.isLinux) {
       // Check if this is a Flutter/AOT app (not running via dart command)
       final resolvedExe = Platform.resolvedExecutable;
-      final exeName = resolvedExe.split(Platform.pathSeparator).last.toLowerCase();
-      final isFlutterOrAOT = exeName != 'dart' &&
+      final exeName = resolvedExe
+          .split(Platform.pathSeparator)
+          .last
+          .toLowerCase();
+      final isFlutterOrAOT =
+          exeName != 'dart' &&
           !resolvedExe.contains('dart-sdk') &&
           !resolvedExe.contains('flutter${Platform.pathSeparator}bin');
 
@@ -264,18 +272,19 @@ class LibOQSLoader {
     } else if (Platform.isWindows) {
       // Check if this is a Flutter/AOT app (not running via dart command)
       final resolvedExe = Platform.resolvedExecutable;
-      final exeName = resolvedExe.split(Platform.pathSeparator).last.toLowerCase();
-      final isFlutterOrAOT = exeName != 'dart.exe' &&
+      final exeName = resolvedExe
+          .split(Platform.pathSeparator)
+          .last
+          .toLowerCase();
+      final isFlutterOrAOT =
+          exeName != 'dart.exe' &&
           !resolvedExe.contains('dart-sdk') &&
           !resolvedExe.contains('flutter${Platform.pathSeparator}bin');
 
       if (isFlutterOrAOT) {
         // Flutter/AOT Windows: DLL is next to executable
         final exeDir = File(Platform.resolvedExecutable).parent.path;
-        final flutterPaths = [
-          '$exeDir/oqs.dll',
-          '$exeDir/../lib/oqs.dll',
-        ];
+        final flutterPaths = ['$exeDir/oqs.dll', '$exeDir/../lib/oqs.dll'];
         for (final path in flutterPaths) {
           attemptedPaths.add('windows-flutter: $path');
           try {
