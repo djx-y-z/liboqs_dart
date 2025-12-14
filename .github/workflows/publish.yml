@@ -111,12 +111,12 @@ jobs:
             CHANGELOG="Release version $VERSION"
           fi
 
-          # Escape for GitHub Actions output
-          CHANGELOG="${CHANGELOG//'%'/'%25'}"
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-
-          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+          # Use heredoc for multiline output (no escaping needed)
+          {
+            echo "changelog<<EOF"
+            echo "$CHANGELOG"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Validate CHANGELOG.md has entry for this version
         run: |
