@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2025-01-14
+
+### Added
+
+- Linux ARM64 (aarch64) platform support for native libraries
+- Updated README platform support table with architecture details
+
+### Fixed
+
+- Library loading on Linux and Windows Flutter desktop apps (paths relative to executable)
+- Library loading for CLI applications in both JIT (`dart run`) and AOT (`dart build cli`) modes
+- AOT detection logic no longer incorrectly triggers on project paths containing "dart" substring
+
 ## [1.0.1] - 2025-01-14
 
 ### Changed
@@ -42,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Secret keys are automatically zeroed before memory is freed
 - Based on liboqs 0.15.0 with NIST-standardized algorithms (FIPS 203, 204, 205)
 
-[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/djx-y-z/liboqs_dart/releases/tag/v1.0.0
