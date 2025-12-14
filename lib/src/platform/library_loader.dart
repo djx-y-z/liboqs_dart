@@ -135,10 +135,15 @@ class LibOQSLoader {
     if (libName == null) return null;
 
     // Check if running as AOT compiled executable
-    // AOT executables don't have 'dart' or 'flutter' in the resolved path
-    final resolvedExe = Platform.resolvedExecutable.toLowerCase();
-    final isAOT =
-        !resolvedExe.contains('dart') && !resolvedExe.contains('flutter');
+    // JIT mode: executable is dart SDK binary (contains /dart-sdk/ or ends with /dart)
+    // AOT mode: executable is user's compiled binary
+    final resolvedExe = Platform.resolvedExecutable;
+    final exeName = resolvedExe.split(Platform.pathSeparator).last.toLowerCase();
+    final isJIT = exeName == 'dart' ||
+        exeName == 'dart.exe' ||
+        resolvedExe.contains('dart-sdk') ||
+        resolvedExe.contains('flutter${Platform.pathSeparator}bin');
+    final isAOT = !isJIT;
 
     if (isAOT) {
       // AOT mode: library is in ../lib/ or lib/ relative to executable
@@ -220,13 +225,15 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isLinux) {
-      // Check if this is a Flutter app (not running via dart/flutter command)
-      final resolvedExe = Platform.resolvedExecutable.toLowerCase();
-      final isFlutterApp =
-          !resolvedExe.contains('dart') && !resolvedExe.contains('flutter');
+      // Check if this is a Flutter/AOT app (not running via dart command)
+      final resolvedExe = Platform.resolvedExecutable;
+      final exeName = resolvedExe.split(Platform.pathSeparator).last.toLowerCase();
+      final isFlutterOrAOT = exeName != 'dart' &&
+          !resolvedExe.contains('dart-sdk') &&
+          !resolvedExe.contains('flutter${Platform.pathSeparator}bin');
 
-      if (isFlutterApp) {
-        // Flutter Linux desktop: library is in lib/ relative to executable
+      if (isFlutterOrAOT) {
+        // Flutter/AOT Linux: library is in lib/ relative to executable
         final exeDir = File(Platform.resolvedExecutable).parent.path;
         final flutterPaths = [
           // Flutter Linux bundle: bundle/lib/liboqs.so
@@ -255,12 +262,15 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isWindows) {
-      // Check if this is a Flutter app (not running via dart command)
-      final resolvedExe = Platform.resolvedExecutable.toLowerCase();
-      final isFlutterApp = !resolvedExe.contains('dart');
+      // Check if this is a Flutter/AOT app (not running via dart command)
+      final resolvedExe = Platform.resolvedExecutable;
+      final exeName = resolvedExe.split(Platform.pathSeparator).last.toLowerCase();
+      final isFlutterOrAOT = exeName != 'dart.exe' &&
+          !resolvedExe.contains('dart-sdk') &&
+          !resolvedExe.contains('flutter${Platform.pathSeparator}bin');
 
-      if (isFlutterApp) {
-        // Flutter Windows desktop: DLL is next to executable
+      if (isFlutterOrAOT) {
+        // Flutter/AOT Windows: DLL is next to executable
         final exeDir = File(Platform.resolvedExecutable).parent.path;
         final flutterPaths = [
           '$exeDir/oqs.dll',
