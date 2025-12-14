@@ -5,8 +5,8 @@
 # Example: make build ARGS="macos --arch arm64"
 # Example: make analyze ARGS="--fatal-infos"
 #
-# On Windows CI (Git Bash), convert path with cygpath:
-# Example: make build ARGS="windows" FVM="$(cygpath "$LOCALAPPDATA")/Pub/Cache/bin/fvm"
+# On Windows CI (Git Bash), convert path with cygpath -u (unix format):
+# Example: make build ARGS="windows" FVM="$(cygpath -u "$LOCALAPPDATA")/Pub/Cache/bin/fvm"
 
 .PHONY: help setup build regen check combine test analyze format format-check get clean version publish publish-dry-run
 

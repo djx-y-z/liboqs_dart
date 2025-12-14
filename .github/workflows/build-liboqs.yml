@@ -199,7 +199,7 @@ jobs:
 
       - name: Build liboqs for Windows
         run: |
-          FVM_PATH="$(cygpath "$LOCALAPPDATA")/Pub/Cache/bin/fvm"
+          FVM_PATH="$(cygpath -u "$LOCALAPPDATA")/Pub/Cache/bin/fvm"
           make build ARGS="windows" FVM="$FVM_PATH"
         shell: bash
 
