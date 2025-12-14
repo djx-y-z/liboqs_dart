@@ -4,7 +4,7 @@
 # The same scripts can be run locally on any OS with Dart SDK.
 #
 # Platforms:
-# - Linux x86_64 (dynamic .so)
+# - Linux x86_64, arm64 (dynamic .so)
 # - macOS arm64, x86_64 (dynamic .dylib, separate binaries)
 # - iOS device arm64, simulator arm64/x86_64 (dynamic .dylib, bundled via Flutter native assets)
 # - Android arm64-v8a, armeabi-v7a, x86_64 (dynamic .so)
@@ -47,11 +47,18 @@ jobs:
           echo "Building liboqs version: $VERSION"
 
   # ============================================
-  # Linux x86_64
+  # Linux (x86_64 + arm64 on separate runners)
   # ============================================
   build-linux:
     needs: read-version
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -63,13 +70,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build gcc g++
 
-      - name: Build liboqs for Linux
-        run: make build ARGS="linux"
+      - name: Build liboqs for Linux ${{ matrix.arch }}
+        run: make build ARGS="linux --arch ${{ matrix.arch }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: liboqs-linux-x86_64
+          name: liboqs-linux-${{ matrix.arch }}
           path: bin/linux/liboqs.so
 
   # ============================================
@@ -232,6 +239,10 @@ jobs:
           tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
             -C artifacts/liboqs-linux-x86_64 liboqs.so
 
+          # Linux arm64
+          tar -czvf release-archives/liboqs-${VERSION}-linux-arm64.tar.gz \
+            -C artifacts/liboqs-linux-arm64 liboqs.so
+
           # macOS arm64
           tar -czvf release-archives/liboqs-${VERSION}-macos-arm64.tar.gz \
             -C artifacts/liboqs-macos-arm64 liboqs.dylib
@@ -276,6 +287,7 @@ jobs:
           make_latest: true
           files: |
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
+            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-arm64.tar.gz
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip
@@ -298,6 +310,7 @@ jobs:
             | Platform | Architecture | Archive |
             |----------|--------------|---------|
             | Linux | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
+            | Linux | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-arm64.tar.gz` |
             | macOS | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz` |
             | macOS | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz` |
             | Windows | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |

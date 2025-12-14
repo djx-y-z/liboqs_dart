@@ -129,9 +129,10 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
 
   switch (targetOS) {
     case OS.linux:
+      final linuxArch = _linuxArchName(targetArch);
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-linux-x86_64.tar.gz',
-        archiveFileName: 'liboqs-$version-linux-x86_64.tar.gz',
+        downloadUrl: '$baseUrl/liboqs-$version-linux-$linuxArch.tar.gz',
+        archiveFileName: 'liboqs-$version-linux-$linuxArch.tar.gz',
         fileName: 'liboqs.so',
         linkMode: DynamicLoadingBundled(),
       );
@@ -207,6 +208,18 @@ String _macOSArchName(Architecture arch) {
       return 'x86_64';
     default:
       throw HookException('Unsupported macOS architecture: $arch');
+  }
+}
+
+/// Converts Dart Architecture to Linux architecture name.
+String _linuxArchName(Architecture arch) {
+  switch (arch) {
+    case Architecture.arm64:
+      return 'arm64';
+    case Architecture.x64:
+      return 'x86_64';
+    default:
+      throw HookException('Unsupported Linux architecture: $arch');
   }
 }
 

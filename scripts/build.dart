@@ -6,7 +6,7 @@
 ///   dart run scripts/build.dart <platform> [options]
 ///
 /// Platforms:
-///   linux      Build for Linux x86_64
+///   linux      Build for Linux (x86_64 or arm64, native)
 ///   macos      Build for macOS (Universal Binary by default)
 ///   ios        Build for iOS (XCFramework by default)
 ///   android    Build for Android (all ABIs by default)
@@ -40,7 +40,8 @@ void main(List<String> args) async {
   try {
     switch (platform) {
       case 'linux':
-        await buildLinux();
+        final linuxArch = _getOption(options, '--arch');
+        await buildLinux(arch: linuxArch);
 
       case 'macos':
         final arch = _getOption(options, '--arch');
@@ -175,7 +176,7 @@ Usage:
   dart run scripts/build.dart <platform> [options]
 
 Platforms:
-  linux      Build for Linux x86_64
+  linux      Build for Linux (x86_64 or arm64, native)
   macos      Build for macOS (Universal Binary)
   ios        Build for iOS (XCFramework)
   android    Build for Android (all ABIs)
@@ -184,7 +185,7 @@ Platforms:
   list       List available platforms
 
 Options:
-  --arch <arch>      macOS architecture: arm64, x86_64, universal (default)
+  --arch <arch>      Linux/macOS architecture: arm64, x86_64 (native by default for Linux)
   --target <target>  iOS target: device, simulator-arm64, simulator-x86_64, all (default)
   --abi <abi>        Android ABI: arm64-v8a, armeabi-v7a, x86_64, all (default)
 
