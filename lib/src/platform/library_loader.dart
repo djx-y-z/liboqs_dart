@@ -118,11 +118,56 @@ class LibOQSLoader {
     }
   }
 
+  /// Returns platform-specific library file name.
+  static String? _getLibraryName() {
+    if (Platform.isMacOS || Platform.isIOS) return 'liboqs.dylib';
+    if (Platform.isLinux || Platform.isAndroid) return 'liboqs.so';
+    if (Platform.isWindows) return 'oqs.dll';
+    return null;
+  }
+
+  /// Tries to load the library from CLI-specific locations.
+  ///
+  /// For JIT mode (dart run): .dart_tool/lib/{libName}
+  /// For AOT mode (dart build cli): ../lib/{libName} relative to executable
+  static DynamicLibrary? _tryCLILibrary(List<String> attemptedPaths) {
+    final libName = _getLibraryName();
+    if (libName == null) return null;
+
+    // Check if running as AOT compiled executable
+    // AOT executables don't have 'dart' or 'flutter' in the resolved path
+    final resolvedExe = Platform.resolvedExecutable.toLowerCase();
+    final isAOT = !resolvedExe.contains('dart') &&
+        !resolvedExe.contains('flutter');
+
+    if (isAOT) {
+      // AOT mode: library is in ../lib/ relative to executable
+      final exeDir = File(Platform.resolvedExecutable).parent.path;
+      final aotPath = '$exeDir/../lib/$libName';
+      attemptedPaths.add('cli-aot: $aotPath');
+      final lib = _tryLoad(aotPath);
+      if (lib != null) return lib;
+    }
+
+    // JIT mode: library is in .dart_tool/lib/ relative to current directory
+    final jitPath = '${Directory.current.path}/.dart_tool/lib/$libName';
+    attemptedPaths.add('cli-jit: $jitPath');
+    final lib = _tryLoad(jitPath);
+    if (lib != null) return lib;
+
+    return null;
+  }
+
   /// Attempts to load the bundled library based on platform.
   ///
   /// Build Hooks bundle the library with the application.
   /// Each platform has different conventions for bundled libraries.
   static DynamicLibrary? _tryBundledLibrary(List<String> attemptedPaths) {
+    // Strategy 4a: CLI-specific paths (JIT and AOT)
+    final cliLib = _tryCLILibrary(attemptedPaths);
+    if (cliLib != null) return cliLib;
+
+    // Strategy 4b: Platform-specific bundled library (Flutter)
     if (Platform.isMacOS) {
       // macOS: Framework format (Flutter converts liboqs.dylib -> oqs.framework/oqs)
       const macOSPaths = [

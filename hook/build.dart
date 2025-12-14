@@ -20,7 +20,9 @@ import 'package:hooks/hooks.dart';
 const _packageName = 'liboqs';
 
 /// Asset ID used for looking up the library at runtime.
-const _assetId = 'package:liboqs/liboqs';
+/// Note: This is just the name part; CodeAsset combines it with package
+/// to form the full ID: package:liboqs/liboqs
+const _assetId = 'liboqs';
 
 /// GitHub repository for downloading releases.
 const _githubRepo = 'djx-y-z/liboqs_dart';
