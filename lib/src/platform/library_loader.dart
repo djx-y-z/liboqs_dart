@@ -137,8 +137,8 @@ class LibOQSLoader {
     // Check if running as AOT compiled executable
     // AOT executables don't have 'dart' or 'flutter' in the resolved path
     final resolvedExe = Platform.resolvedExecutable.toLowerCase();
-    final isAOT = !resolvedExe.contains('dart') &&
-        !resolvedExe.contains('flutter');
+    final isAOT =
+        !resolvedExe.contains('dart') && !resolvedExe.contains('flutter');
 
     if (isAOT) {
       // AOT mode: library is in ../lib/ relative to executable

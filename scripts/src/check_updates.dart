@@ -214,10 +214,14 @@ PackageVersionResult calculatePackageVersion({
   try {
     parts = ourBaseVersion.split('.').map(int.parse).toList();
   } catch (e) {
-    throw Exception('Invalid package version format: $currentPkgVersion. Error: $e');
+    throw Exception(
+      'Invalid package version format: $currentPkgVersion. Error: $e',
+    );
   }
   if (parts.length < _semverComponents) {
-    throw Exception('Package version must have at least $_semverComponents components: $currentPkgVersion');
+    throw Exception(
+      'Package version must have at least $_semverComponents components: $currentPkgVersion',
+    );
   }
   var major = parts[0];
   var minor = parts[1];
