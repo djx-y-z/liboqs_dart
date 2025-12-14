@@ -187,7 +187,18 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isLinux) {
-      const linuxPaths = ['liboqs.so', './liboqs.so', 'lib/liboqs.so'];
+      // Flutter Linux desktop: library is in lib/ relative to executable
+      final exeDir = File(Platform.resolvedExecutable).parent.path;
+      final linuxPaths = [
+        // Flutter Linux bundle: bundle/lib/liboqs.so
+        '$exeDir/lib/liboqs.so',
+        // Alternative structure: executable in bin/, library in lib/
+        '$exeDir/../lib/liboqs.so',
+        // System library search
+        'liboqs.so',
+        './liboqs.so',
+        'lib/liboqs.so',
+      ];
       for (final path in linuxPaths) {
         attemptedPaths.add('linux: $path');
         try {
@@ -197,7 +208,17 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isWindows) {
-      const windowsPaths = ['oqs.dll', './oqs.dll'];
+      // Flutter Windows desktop: DLL is next to executable or in data folder
+      final exeDir = File(Platform.resolvedExecutable).parent.path;
+      final windowsPaths = [
+        // Flutter Windows bundle: next to executable
+        '$exeDir/oqs.dll',
+        // Alternative structure
+        '$exeDir/../lib/oqs.dll',
+        // System DLL search
+        'oqs.dll',
+        './oqs.dll',
+      ];
       for (final path in windowsPaths) {
         attemptedPaths.add('windows: $path');
         try {
