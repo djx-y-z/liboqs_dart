@@ -54,6 +54,8 @@ make build ARGS="all"                      # Build all platforms
 make build ARGS="list"                     # List available platforms
 ```
 
+**Note:** `make build` automatically creates a `.skip_liboqs_hook` marker file to prevent Build Hooks from downloading libraries during the build process (avoids chicken-and-egg problem). The marker is automatically removed after the build completes.
+
 ### Development
 ```bash
 make regen                              # Regenerate Dart FFI bindings

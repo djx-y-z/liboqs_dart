@@ -17,10 +17,11 @@ A Dart FFI wrapper for [liboqs](https://github.com/open-quantum-safe/liboqs), pr
 
 ## Features
 
+- **Flutter & CLI Support**: Works with Flutter apps and standalone Dart CLI applications
 - **Key Encapsulation (ML-KEM)**: NIST standardized (FIPS 203), plus Classic McEliece, FrodoKEM, HQC
 - **Digital Signatures (ML-DSA, SLH-DSA)**: NIST standardized (FIPS 204, 205), plus Falcon, MAYO
 - **Cryptographically Secure Random**: System-backed random number generation
-- **Zero Configuration**: Pre-built native libraries included
+- **Zero Configuration**: Pre-built native libraries included via Build Hooks
 - **High Performance**: Direct FFI bindings with minimal overhead
 - **Automated Updates**: Native libraries auto-rebuild when new liboqs versions are released
 

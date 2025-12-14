@@ -3,6 +3,11 @@
 Cross-platform Dart scripts for building liboqs native libraries.
 These scripts work on Windows, macOS, and Linux.
 
+> **Recommended:** Use `make build` instead of calling scripts directly.
+> The Makefile automatically handles Build Hook skip markers to avoid
+> chicken-and-egg problems during native library compilation.
+> See the root [CLAUDE.md](../CLAUDE.md) for details.
+
 ## Prerequisites
 
 - [FVM](https://fvm.app/) (Flutter Version Management)
@@ -11,21 +16,27 @@ These scripts work on Windows, macOS, and Linux.
 
 ## Quick Start
 
+**Using Makefile (recommended):**
 ```bash
 # Install FVM and project Flutter version
-dart pub global activate fvm
-fvm install
+make setup
 
 # Build for your current platform
+make build ARGS="macos"
+make build ARGS="linux"
+make build ARGS="windows"
+
+# List available platforms
+make build ARGS="list"
+```
+
+**Direct script invocation (advanced):**
+```bash
+# Note: Direct invocation doesn't skip Build Hooks automatically.
+# Use `touch .skip_liboqs_hook` before and `rm .skip_liboqs_hook` after.
 fvm dart run scripts/build.dart macos
 fvm dart run scripts/build.dart linux
 fvm dart run scripts/build.dart windows
-
-# Build all platforms available on your OS
-fvm dart run scripts/build.dart all
-
-# List available platforms
-fvm dart run scripts/build.dart list
 ```
 
 ## Scripts
