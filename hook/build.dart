@@ -122,7 +122,8 @@ class _AssetInfo {
 
 /// Resolves asset information for the target platform.
 _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
-  final baseUrl = 'https://github.com/$_githubRepo/releases/download/v$version';
+  final baseUrl =
+      'https://github.com/$_githubRepo/releases/download/liboqs-$version';
   final targetOS = codeConfig.targetOS;
   final targetArch = codeConfig.targetArchitecture;
 

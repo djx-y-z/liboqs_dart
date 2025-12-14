@@ -160,6 +160,7 @@ jobs:
   publish:
     needs: [validate, test]
     runs-on: ubuntu-latest
+    environment: pub.dev
     steps:
       - uses: actions/checkout@v4
 

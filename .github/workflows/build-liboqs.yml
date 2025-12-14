@@ -270,8 +270,8 @@ jobs:
       - name: Create or Update Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.LIBOQS_VERSION }}
-          name: v${{ env.LIBOQS_VERSION }}
+          tag_name: liboqs-${{ env.LIBOQS_VERSION }}
+          name: liboqs ${{ env.LIBOQS_VERSION }} - Native Libraries
           make_latest: true
           files: |
             release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
