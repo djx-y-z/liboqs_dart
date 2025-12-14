@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-01-14
+
+### Changed
+
+- Native library releases now use `liboqs-{version}` tag format instead of `v{version}` to avoid conflicts with Dart package version tags
+
+### Fixed
+
+- Windows CI build: fixed FVM path handling in Git Bash environment
+
 ## [1.0.0] - 2025-01-01
 
 ### Added
@@ -32,5 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Secret keys are automatically zeroed before memory is freed
 - Based on liboqs 0.15.0 with NIST-standardized algorithms (FIPS 203, 204, 205)
 
-[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/djx-y-z/liboqs_dart/releases/tag/v1.0.0
