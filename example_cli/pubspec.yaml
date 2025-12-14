@@ -1,0 +1,13 @@
+name: example_cli
+description: CLI example for liboqs package.
+publish_to: none
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  liboqs:
+    path: ../
+
+dev_dependencies:
+  lints: ^6.0.0
