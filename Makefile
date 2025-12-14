@@ -47,7 +47,7 @@ help:
 	@echo ""
 	@echo "  PUBLISHING"
 	@echo "    make publish-dry-run              - Validate package before publishing"
-	@echo "    make publish                      - Publish package to pub.dev"
+	@echo "    make publish                      - Publish package (CI only, blocked locally)"
 	@echo ""
 	@echo "  UTILITIES"
 	@echo "    make get                          - Get dependencies"
@@ -131,4 +131,22 @@ publish-dry-run:
 	fvm dart pub publish --dry-run
 
 publish:
+ifndef CI
+	@echo ""
+	@echo "ERROR: Local publishing is disabled."
+	@echo ""
+	@echo "This package uses automated publishing via GitHub Actions."
+	@echo "To publish a new version:"
+	@echo ""
+	@echo "  1. Update version in pubspec.yaml"
+	@echo "  2. Update CHANGELOG.md"
+	@echo "  3. Commit and push changes"
+	@echo "  4. Go to: https://github.com/djx-y-z/liboqs_dart/actions/workflows/publish.yml"
+	@echo "  5. Click 'Run workflow'"
+	@echo ""
+	@echo "To validate the package locally, use: make publish-dry-run"
+	@echo ""
+	@exit 1
+else
 	fvm dart pub publish $(ARGS)
+endif
