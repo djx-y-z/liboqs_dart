@@ -3,32 +3,32 @@
 # This workflow publishes the package to pub.dev and creates a GitHub Release.
 #
 # Flow:
-# 1. Manual trigger (workflow_dispatch)
-# 2. Validate version matches pubspec.yaml
-# 3. Run tests and analysis
-# 4. Publish to pub.dev via OIDC (no tokens needed)
-# 5. Create git tag after successful publish
+# 1. Create and push a version tag: git tag v1.0.1 && git push origin v1.0.1
+# 2. Workflow automatically triggers on tag push
+# 3. Validate version tag matches pubspec.yaml
+# 4. Run tests and analysis
+# 5. Publish to pub.dev via OIDC (no tokens needed)
 # 6. Create GitHub Release with changelog
 #
 # Prerequisites:
 # - Enable "Automated publishing" in pub.dev publisher settings
 # - Add this repository to allowed repositories
+# - Configure to allow publishing from tags
 # - See: https://dart.dev/tools/pub/automated-publishing
 
 name: Publish to pub.dev
 
 on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v1.0.0, v1.0.1, etc.
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (leave empty to use pubspec.yaml version)'
-        required: false
-        type: string
       dry-run:
         description: 'Dry run (validate without publishing)'
         required: false
         type: boolean
-        default: false
+        default: true
 
 # Required for OIDC authentication with pub.dev
 permissions:
@@ -47,21 +47,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get version from pubspec.yaml
+      - name: Get version from tag and validate
         id: version
         run: |
           PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
 
-          if [ -n "${{ inputs.version }}" ]; then
-            INPUT_VERSION="${{ inputs.version }}"
-            # Remove 'v' prefix if present
-            INPUT_VERSION="${INPUT_VERSION#v}"
+          # Get version from tag (remove 'v' prefix)
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG_VERSION="${GITHUB_REF#refs/tags/v}"
 
-            if [ "$INPUT_VERSION" != "$PUBSPEC_VERSION" ]; then
-              echo "::error::Version mismatch! Input: $INPUT_VERSION, pubspec.yaml: $PUBSPEC_VERSION"
-              echo "Please update pubspec.yaml to match the version you want to publish."
+            if [ "$TAG_VERSION" != "$PUBSPEC_VERSION" ]; then
+              echo "::error::Version mismatch! Tag: $TAG_VERSION, pubspec.yaml: $PUBSPEC_VERSION"
+              echo "Please ensure the tag matches the version in pubspec.yaml."
               exit 1
             fi
+            echo "Tag version matches pubspec.yaml: $TAG_VERSION"
+          else
+            echo "Running from branch (dry-run mode)"
           fi
 
           echo "version=$PUBSPEC_VERSION" >> $GITHUB_OUTPUT
@@ -82,14 +84,11 @@ jobs:
 
           echo "Version $VERSION is not yet published. Proceeding..."
 
-      - name: Check if tag exists
+      - name: Verify tag exists (when triggered by tag)
+        if: github.ref_type == 'tag'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            echo "::error::Tag v$VERSION already exists"
-            exit 1
-          fi
-          echo "Tag v$VERSION does not exist. Will create after publish."
+          echo "Publishing from tag v$VERSION"
 
       - name: Extract changelog for this version
         id: changelog
@@ -171,35 +170,24 @@ jobs:
         run: make get
 
       - name: Publish to pub.dev (dry run)
-        if: ${{ inputs.dry-run }}
+        if: github.ref_type != 'tag' || inputs.dry-run
         run: |
           echo "DRY RUN - would publish version ${{ needs.validate.outputs.version }}"
           make publish-dry-run
 
       - name: Publish to pub.dev
-        if: ${{ !inputs.dry-run }}
+        if: github.ref_type == 'tag' && !inputs.dry-run
         run: make publish ARGS="--force"
 
   # ============================================
-  # Create tag and GitHub Release
+  # Create GitHub Release
   # ============================================
   release:
     needs: [validate, publish]
-    if: ${{ !inputs.dry-run }}
+    if: github.ref_type == 'tag' && !inputs.dry-run
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Create and push tag
-        run: |
-          VERSION="${{ needs.validate.outputs.version }}"
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin "v$VERSION"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
