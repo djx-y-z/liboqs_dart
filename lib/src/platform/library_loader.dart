@@ -128,8 +128,8 @@ class LibOQSLoader {
 
   /// Tries to load the library from CLI-specific locations.
   ///
-  /// For JIT mode (dart run): .dart_tool/lib/{libName}
-  /// For AOT mode (dart build cli): ../lib/{libName} relative to executable
+  /// For JIT mode (dart run): .dart_tool/native_assets/ or .dart_tool/lib/
+  /// For AOT mode (dart compile exe): ../lib/{libName} relative to executable
   static DynamicLibrary? _tryCLILibrary(List<String> attemptedPaths) {
     final libName = _getLibraryName();
     if (libName == null) return null;
@@ -141,21 +141,54 @@ class LibOQSLoader {
         !resolvedExe.contains('dart') && !resolvedExe.contains('flutter');
 
     if (isAOT) {
-      // AOT mode: library is in ../lib/ relative to executable
+      // AOT mode: library is in ../lib/ or lib/ relative to executable
       final exeDir = File(Platform.resolvedExecutable).parent.path;
-      final aotPath = '$exeDir/../lib/$libName';
-      attemptedPaths.add('cli-aot: $aotPath');
-      final lib = _tryLoad(aotPath);
-      if (lib != null) return lib;
+      final aotPaths = [
+        '$exeDir/../lib/$libName',
+        '$exeDir/lib/$libName',
+        '$exeDir/$libName',
+      ];
+      for (final path in aotPaths) {
+        attemptedPaths.add('cli-aot: $path');
+        final lib = _tryLoad(path);
+        if (lib != null) return lib;
+      }
+    } else {
+      // JIT mode: library is in .dart_tool/native_assets/ relative to project
+      final projectDir = Directory.current.path;
+      final arch = _getHostArch();
+      final os = Platform.operatingSystem;
+
+      final jitPaths = [
+        // Dart 3.10+ native assets location
+        '$projectDir/.dart_tool/native_assets/$os\_$arch/$libName',
+        '$projectDir/.dart_tool/native_assets/$os/$libName',
+        // Legacy location
+        '$projectDir/.dart_tool/lib/$libName',
+        // Relative to project
+        '$projectDir/lib/$libName',
+        '$projectDir/$libName',
+      ];
+
+      for (final path in jitPaths) {
+        attemptedPaths.add('cli-jit: $path');
+        final lib = _tryLoad(path);
+        if (lib != null) return lib;
+      }
     }
 
-    // JIT mode: library is in .dart_tool/lib/ relative to current directory
-    final jitPath = '${Directory.current.path}/.dart_tool/lib/$libName';
-    attemptedPaths.add('cli-jit: $jitPath');
-    final lib = _tryLoad(jitPath);
-    if (lib != null) return lib;
-
     return null;
+  }
+
+  /// Detect host architecture for native assets path
+  static String _getHostArch() {
+    // Use Dart's Platform to detect architecture
+    // This is a simplified detection - in practice the arch comes from the build
+    if (Platform.version.contains('arm64') ||
+        Platform.version.contains('aarch64')) {
+      return 'arm64';
+    }
+    return 'x64';
   }
 
   /// Attempts to load the bundled library based on platform.
@@ -187,19 +220,33 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isLinux) {
-      // Flutter Linux desktop: library is in lib/ relative to executable
-      final exeDir = File(Platform.resolvedExecutable).parent.path;
-      final linuxPaths = [
-        // Flutter Linux bundle: bundle/lib/liboqs.so
-        '$exeDir/lib/liboqs.so',
-        // Alternative structure: executable in bin/, library in lib/
-        '$exeDir/../lib/liboqs.so',
-        // System library search
-        'liboqs.so',
-        './liboqs.so',
-        'lib/liboqs.so',
-      ];
-      for (final path in linuxPaths) {
+      // Check if this is a Flutter app (not running via dart/flutter command)
+      final resolvedExe = Platform.resolvedExecutable.toLowerCase();
+      final isFlutterApp =
+          !resolvedExe.contains('dart') && !resolvedExe.contains('flutter');
+
+      if (isFlutterApp) {
+        // Flutter Linux desktop: library is in lib/ relative to executable
+        final exeDir = File(Platform.resolvedExecutable).parent.path;
+        final flutterPaths = [
+          // Flutter Linux bundle: bundle/lib/liboqs.so
+          '$exeDir/lib/liboqs.so',
+          // Alternative structure: executable in bin/, library in lib/
+          '$exeDir/../lib/liboqs.so',
+        ];
+        for (final path in flutterPaths) {
+          attemptedPaths.add('linux-flutter: $path');
+          try {
+            return DynamicLibrary.open(path);
+          } catch (_) {
+            continue;
+          }
+        }
+      }
+
+      // System library search (works for both CLI and Flutter)
+      const systemPaths = ['liboqs.so', './liboqs.so', 'lib/liboqs.so'];
+      for (final path in systemPaths) {
         attemptedPaths.add('linux: $path');
         try {
           return DynamicLibrary.open(path);
@@ -208,18 +255,30 @@ class LibOQSLoader {
         }
       }
     } else if (Platform.isWindows) {
-      // Flutter Windows desktop: DLL is next to executable or in data folder
-      final exeDir = File(Platform.resolvedExecutable).parent.path;
-      final windowsPaths = [
-        // Flutter Windows bundle: next to executable
-        '$exeDir/oqs.dll',
-        // Alternative structure
-        '$exeDir/../lib/oqs.dll',
-        // System DLL search
-        'oqs.dll',
-        './oqs.dll',
-      ];
-      for (final path in windowsPaths) {
+      // Check if this is a Flutter app (not running via dart command)
+      final resolvedExe = Platform.resolvedExecutable.toLowerCase();
+      final isFlutterApp = !resolvedExe.contains('dart');
+
+      if (isFlutterApp) {
+        // Flutter Windows desktop: DLL is next to executable
+        final exeDir = File(Platform.resolvedExecutable).parent.path;
+        final flutterPaths = [
+          '$exeDir/oqs.dll',
+          '$exeDir/../lib/oqs.dll',
+        ];
+        for (final path in flutterPaths) {
+          attemptedPaths.add('windows-flutter: $path');
+          try {
+            return DynamicLibrary.open(path);
+          } catch (_) {
+            continue;
+          }
+        }
+      }
+
+      // System DLL search (works for both CLI and Flutter)
+      const systemPaths = ['oqs.dll', './oqs.dll'];
+      for (final path in systemPaths) {
         attemptedPaths.add('windows: $path');
         try {
           return DynamicLibrary.open(path);
