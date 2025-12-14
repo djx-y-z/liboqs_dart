@@ -198,7 +198,11 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Build liboqs for Windows
-        run: make build ARGS="windows"
+        run: |
+          # Add FVM to PATH for Git Bash (used by make)
+          export PATH="$LOCALAPPDATA/Pub/Cache/bin:$PATH"
+          make build ARGS="windows"
+        shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

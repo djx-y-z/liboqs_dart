@@ -23,10 +23,20 @@ runs:
         echo "$env:LOCALAPPDATA\Pub\Cache\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
       shell: pwsh
 
-    - name: Cache FVM
+    - name: Cache FVM (Unix)
+      if: runner.os != 'Windows'
       uses: actions/cache@v4
       with:
         path: ~/.fvm
+        key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
+        restore-keys: |
+          fvm-${{ runner.os }}-
+
+    - name: Cache FVM (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/cache@v4
+      with:
+        path: ~\.fvm
         key: fvm-${{ runner.os }}-${{ hashFiles('.fvmrc') }}
         restore-keys: |
           fvm-${{ runner.os }}-
