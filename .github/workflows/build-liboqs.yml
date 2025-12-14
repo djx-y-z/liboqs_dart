@@ -198,9 +198,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Build liboqs for Windows
-        run: |
-          FVM_PATH="$(cygpath -u "$LOCALAPPDATA")/Pub/Cache/bin/fvm"
-          make build ARGS="windows" FVM="$FVM_PATH"
+        run: make build ARGS="windows" FVM="cmd //c fvm"
         shell: bash
 
       - name: Upload artifact
