@@ -4,8 +4,14 @@
 # Usage: make <target> [ARGS="..."]
 # Example: make build ARGS="macos --arch arm64"
 # Example: make analyze ARGS="--fatal-infos"
+#
+# On Windows CI, pass full path to fvm:
+# Example: make build ARGS="windows" FVM="/c/Users/runneradmin/AppData/Local/Pub/Cache/bin/fvm"
 
 .PHONY: help setup build regen check combine test analyze format format-check get clean version publish publish-dry-run
+
+# FVM command - can be overridden to provide full path on Windows CI
+FVM ?= fvm
 
 # Arguments are passed via ARGS variable
 ARGS ?=
@@ -65,10 +71,10 @@ setup:
 	dart pub global activate fvm
 	@echo ""
 	@echo "Installing project Flutter version..."
-	fvm install
+	$(FVM) install
 	@echo ""
 	@echo "Getting dependencies..."
-	fvm dart pub get --no-example
+	$(FVM) dart pub get --no-example
 	@echo ""
 	@echo "Setup complete! You can now use 'make help' to see available commands."
 
@@ -78,47 +84,47 @@ setup:
 
 build:
 	@touch .skip_liboqs_hook
-	@fvm dart run scripts/build.dart $(ARGS); ret=$$?; rm -f .skip_liboqs_hook; exit $$ret
+	@$(FVM) dart run scripts/build.dart $(ARGS); ret=$$?; rm -f .skip_liboqs_hook; exit $$ret
 
 # =============================================================================
 # Development
 # =============================================================================
 
 regen:
-	fvm dart run scripts/regenerate_bindings.dart $(ARGS)
+	$(FVM) dart run scripts/regenerate_bindings.dart $(ARGS)
 
 check:
-	fvm dart run scripts/check_updates.dart $(ARGS)
+	$(FVM) dart run scripts/check_updates.dart $(ARGS)
 
 combine:
-	fvm dart run scripts/combine_artifacts.dart $(ARGS)
+	$(FVM) dart run scripts/combine_artifacts.dart $(ARGS)
 
 # =============================================================================
 # Quality Assurance
 # =============================================================================
 
 test:
-	fvm dart test $(ARGS)
+	$(FVM) dart test $(ARGS)
 
 analyze:
-	fvm flutter analyze $(ARGS)
+	$(FVM) flutter analyze $(ARGS)
 
 format:
-	fvm dart format . $(ARGS)
+	$(FVM) dart format . $(ARGS)
 
 format-check:
-	fvm dart format --set-exit-if-changed . $(ARGS)
+	$(FVM) dart format --set-exit-if-changed . $(ARGS)
 
 # =============================================================================
 # Utilities
 # =============================================================================
 
 get:
-	fvm dart pub get --no-example
+	$(FVM) dart pub get --no-example
 
 clean:
 	rm -rf .dart_tool build
-	fvm dart pub get --no-example
+	$(FVM) dart pub get --no-example
 
 version:
 	@cat LIBOQS_VERSION
@@ -128,7 +134,7 @@ version:
 # =============================================================================
 
 publish-dry-run:
-	fvm dart pub publish --dry-run
+	$(FVM) dart pub publish --dry-run
 
 publish:
 ifndef CI
@@ -148,5 +154,5 @@ ifndef CI
 	@echo ""
 	@exit 1
 else
-	fvm dart pub publish $(ARGS)
+	$(FVM) dart pub publish $(ARGS)
 endif
