@@ -3,6 +3,7 @@ TODO.md
 CONTRIBUTING.md
 Makefile
 .fvmrc
+.skip_liboqs_hook
 
 # CI/CD
 .github/

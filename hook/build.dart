@@ -39,31 +39,17 @@ void main(List<String> args) async {
     final targetOS = codeConfig.targetOS;
     final targetArch = codeConfig.targetArchitecture;
     final packageRoot = input.packageRoot;
-    final packagePath = packageRoot.toFilePath();
 
-    // Detect if we're in the source repository (development/CI) or a dependency (.pub-cache)
-    final isSourceRepo = !packagePath.contains('.pub-cache');
+    // Check for skip marker file (used during library building via `make build`)
+    // This avoids chicken-and-egg problem when building native libraries
+    final skipMarkerUri = packageRoot.resolve('.skip_liboqs_hook');
+    final skipFile = File.fromUri(skipMarkerUri);
 
-    // Detect CI environment by path (environment variables are not passed to hooks_runner)
-    // GitHub Actions paths:
-    //   macOS: /Users/runner/work/...
-    //   Linux: /home/runner/work/...
-    //   Windows: D:\a\... or contains runner\work
-    // Other CI systems can be added as needed
-    final isCI =
-        packagePath.contains('/runner/work/') || // GitHub Actions (macOS/Linux)
-        packagePath.contains('\\runner\\work\\') || // GitHub Actions (Windows)
-        packagePath.contains(
-          '/home/runner/',
-        ) || // GitHub Actions Linux alternative
-        packagePath.startsWith('D:\\a\\') || // GitHub Actions Windows
-        packagePath.contains('/builds/') || // GitLab CI
-        packagePath.contains('/home/vsts/'); // Azure DevOps
+    // Add marker file as dependency for cache invalidation
+    // This ensures hook reruns when marker is created/deleted
+    output.dependencies.add(skipMarkerUri);
 
-    // Skip download in CI when in source repo (we're building the libraries, not using them)
-    if (isSourceRepo && isCI) {
-      // CI build: Libraries are built separately via scripts/build.dart
-      // and published to GitHub Releases. Skip hook to avoid chicken-and-egg problem.
+    if (skipFile.existsSync()) {
       return;
     }
 

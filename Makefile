@@ -77,7 +77,8 @@ setup:
 # =============================================================================
 
 build:
-	fvm dart run scripts/build.dart $(ARGS)
+	@touch .skip_liboqs_hook
+	@fvm dart run scripts/build.dart $(ARGS); ret=$$?; rm -f .skip_liboqs_hook; exit $$ret
 
 # =============================================================================
 # Development
