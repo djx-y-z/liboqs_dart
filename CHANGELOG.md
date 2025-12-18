@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2025-12-18
+
 ### Added
 
 - Add support "@Native" annotation instead use library loader class
 - Add "NATIVE_BUILD" file to manage build number of native library
 - Add settings for code formatter
 
-## [1.0.2] - 2025-01-14
+## [1.0.2] - 2025-12-14
 
 ### Added
 
@@ -26,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Library loading for CLI applications in both JIT (`dart run`) and AOT (`dart build cli`) modes
 - AOT detection logic no longer incorrectly triggers on project paths containing "dart" substring
 
-## [1.0.1] - 2025-01-14
+## [1.0.1] - 2025-12-14
 
 ### Changed
 
@@ -36,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Windows CI build: fixed FVM path handling in Git Bash environment
 
-## [1.0.0] - 2025-01-01
+## [1.0.0] - 2025-12-13
 
 ### Added
 
