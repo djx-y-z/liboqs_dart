@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add support "@Native" annotation instead use library loader class
+- Add "NATIVE_BUILD" file to manage build number of native library
+- Add settings for code formatter
 
 ## [1.0.2] - 2025-01-14
 
