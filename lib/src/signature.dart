@@ -6,17 +6,17 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 
 import 'base.dart';
-import 'bindings/liboqs_bindings.dart';
+import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
 import 'utils.dart';
 
-final Finalizer<Pointer<OQS_SIG>> _sigFinalizer = Finalizer(
-  (ptr) => LibOQSBase.bindings.OQS_SIG_free(ptr),
+final Finalizer<Pointer<oqs.OQS_SIG>> _sigFinalizer = Finalizer(
+  (ptr) => oqs.OQS_SIG_free(ptr),
 );
 
 /// Digital Signature implementation
 class Signature {
-  late final Pointer<OQS_SIG> _sigPtr;
+  late final Pointer<oqs.OQS_SIG> _sigPtr;
   final String algorithmName;
 
   bool _disposed = false;
@@ -47,19 +47,17 @@ class Signature {
 
   /// returns list of supported Signature algorithms from liboqs
   static List<String> getSupportedSignatureAlgorithms() {
-    final sigCount = LibOQSBase.bindings.OQS_SIG_alg_count();
+    final sigCount = oqs.OQS_SIG_alg_count();
     final List<String> supportedSigs = [];
 
     for (int i = 0; i < sigCount; i++) {
-      final sigNamePtr = LibOQSBase.bindings.OQS_SIG_alg_identifier(i);
+      final sigNamePtr = oqs.OQS_SIG_alg_identifier(i);
       if (sigNamePtr != ffi.nullptr) {
         final sigName = sigNamePtr.cast<Utf8>().toDartString();
         // Store pointer to avoid memory leak
         final namePtr = sigName.toNativeUtf8();
         try {
-          final isEnabled = LibOQSBase.bindings.OQS_SIG_alg_is_enabled(
-            namePtr.cast<ffi.Char>(),
-          );
+          final isEnabled = oqs.OQS_SIG_alg_is_enabled(namePtr.cast<ffi.Char>());
           if (isEnabled == 1) {
             supportedSigs.add(sigName);
           }
@@ -79,7 +77,7 @@ class Signature {
 
     final namePtr = algorithmName.toNativeUtf8();
     try {
-      final sigPtr = LibOQSBase.bindings.OQS_SIG_new(namePtr.cast());
+      final sigPtr = oqs.OQS_SIG_new(namePtr.cast());
       if (sigPtr == nullptr) {
         throw LibOQSException(
           'Failed to create Signature instance. Algorithm may not be supported or enabled.',
@@ -87,7 +85,7 @@ class Signature {
           algorithmName,
         );
       }
-      return Signature._(sigPtr.cast<OQS_SIG>(), algorithmName);
+      return Signature._(sigPtr.cast<oqs.OQS_SIG>(), algorithmName);
     } finally {
       LibOQSUtils.freePointer(namePtr);
     }
@@ -97,7 +95,7 @@ class Signature {
   static bool isSupported(String algorithmName) {
     final namePtr = algorithmName.toNativeUtf8();
     try {
-      return LibOQSBase.bindings.OQS_SIG_alg_is_enabled(namePtr.cast()) == 1;
+      return oqs.OQS_SIG_alg_is_enabled(namePtr.cast()) == 1;
     } finally {
       LibOQSUtils.freePointer(namePtr);
     }
@@ -249,7 +247,7 @@ class Signature {
     if (!_disposed) {
       _disposed = true;
       _sigFinalizer.detach(this);
-      LibOQSBase.bindings.OQS_SIG_free(_sigPtr);
+      oqs.OQS_SIG_free(_sigPtr);
     }
   }
 }

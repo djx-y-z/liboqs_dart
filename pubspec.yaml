@@ -57,6 +57,10 @@ ffigen:
   enums:
     include:
       - 'OQS_.*'
+  # Generate @Native annotations instead of DynamicLibrary class
+  # asset-id must match CodeAsset registration in hook/build.dart
+  ffi-native:
+    asset-id: 'package:liboqs/liboqs'
   # ignore-source-errors: REQUIRED - macOS SDK emits warnings about visionos/driverkit
   # platforms that ffigen treats as errors. These are Xcode compatibility issues,
   # not problems with liboqs headers. Without this flag, ffigen refuses to generate.

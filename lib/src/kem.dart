@@ -6,17 +6,17 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 
 import 'base.dart';
-import 'bindings/liboqs_bindings.dart';
+import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
 import 'utils.dart';
 
-final Finalizer<Pointer<OQS_KEM>> _kemFinalizer = Finalizer(
-  (ptr) => LibOQSBase.bindings.OQS_KEM_free(ptr),
+final Finalizer<Pointer<oqs.OQS_KEM>> _kemFinalizer = Finalizer(
+  (ptr) => oqs.OQS_KEM_free(ptr),
 );
 
 /// Key Encapsulation Mechanism (KEM) implementation
 class KEM {
-  late final Pointer<OQS_KEM> _kemPtr;
+  late final Pointer<oqs.OQS_KEM> _kemPtr;
   final String algorithmName;
 
   bool _disposed = false;
@@ -48,19 +48,17 @@ class KEM {
 
   /// returns list of supported kem algorithms from liboqs
   static List<String> getSupportedKemAlgorithms() {
-    final kemCount = LibOQSBase.bindings.OQS_KEM_alg_count();
+    final kemCount = oqs.OQS_KEM_alg_count();
     final List<String> supportedKems = [];
 
     for (int i = 0; i < kemCount; i++) {
-      final kemNamePtr = LibOQSBase.bindings.OQS_KEM_alg_identifier(i);
+      final kemNamePtr = oqs.OQS_KEM_alg_identifier(i);
       if (kemNamePtr != ffi.nullptr) {
         final kemName = kemNamePtr.cast<Utf8>().toDartString();
         // Store pointer to avoid memory leak
         final namePtr = kemName.toNativeUtf8();
         try {
-          final isEnabled = LibOQSBase.bindings.OQS_KEM_alg_is_enabled(
-            namePtr.cast<ffi.Char>(),
-          );
+          final isEnabled = oqs.OQS_KEM_alg_is_enabled(namePtr.cast<ffi.Char>());
           if (isEnabled == 1) {
             supportedKems.add(kemName);
           }
@@ -79,7 +77,7 @@ class KEM {
 
     final namePtr = algorithmName.toNativeUtf8();
     try {
-      final kemPtr = LibOQSBase.bindings.OQS_KEM_new(namePtr.cast());
+      final kemPtr = oqs.OQS_KEM_new(namePtr.cast());
       if (kemPtr == nullptr) {
         throw LibOQSException(
           'Failed to create KEM instance. Algorithm may not be supported or enabled.',
@@ -87,7 +85,7 @@ class KEM {
           algorithmName,
         );
       }
-      return KEM._(kemPtr.cast<OQS_KEM>(), algorithmName);
+      return KEM._(kemPtr.cast<oqs.OQS_KEM>(), algorithmName);
     } finally {
       LibOQSUtils.freePointer(namePtr);
     }
@@ -97,7 +95,7 @@ class KEM {
   static bool isSupported(String algorithmName) {
     final namePtr = algorithmName.toNativeUtf8();
     try {
-      return LibOQSBase.bindings.OQS_KEM_alg_is_enabled(namePtr.cast()) == 1;
+      return oqs.OQS_KEM_alg_is_enabled(namePtr.cast()) == 1;
     } finally {
       LibOQSUtils.freePointer(namePtr);
     }
@@ -329,7 +327,7 @@ class KEM {
     if (!_disposed) {
       _disposed = true;
       _kemFinalizer.detach(this);
-      LibOQSBase.bindings.OQS_KEM_free(_kemPtr);
+      oqs.OQS_KEM_free(_kemPtr);
     }
   }
 }

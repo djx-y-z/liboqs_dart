@@ -3,54 +3,27 @@ import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
 
-import 'bindings/liboqs_bindings.dart';
+import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
-import 'platform/library_loader.dart';
 
 /// Thread-safe base class for liboqs functionality
 class LibOQSBase {
-  static DynamicLibrary? _lib;
-  static LibOQSBindings? _bindings;
   static bool _initialized = false;
   static final Map<int, bool> _threadInitialized = {};
-
-  /// Get the library instance with validation
-  static DynamicLibrary get lib {
-    if (_lib == null) {
-      try {
-        _lib = LibOQSLoader.loadLibrary(useCache: true);
-      } catch (e) {
-        throw LibOQSException('Failed to load LibOQS library: $e');
-      }
-    }
-    return _lib!;
-  }
-
-  /// Get the liboqs bindings instance with validation
-  static LibOQSBindings get bindings {
-    if (_bindings == null) {
-      try {
-        _bindings = LibOQSBindings(lib);
-      } catch (e) {
-        throw LibOQSException('Failed to create LibOQS bindings: $e');
-      }
-    }
-    return _bindings!;
-  }
 
   /// Safe initialization with comprehensive error handling
   static void init() {
     if (_initialized) return;
 
     try {
-      // Validate library is loaded
-      final testPtr = bindings.OQS_version();
+      // Validate library is loaded by calling OQS_version
+      final testPtr = oqs.OQS_version();
       if (testPtr == nullptr) {
         throw LibOQSException('LibOQS library appears to be invalid');
       }
 
       // Initialize the library
-      bindings.OQS_init();
+      oqs.OQS_init();
       _initialized = true;
 
       // Mark current thread as initialized
@@ -71,7 +44,7 @@ class LibOQSBase {
       cleanupThread();
 
       // Then destroy the library
-      bindings.OQS_destroy();
+      oqs.OQS_destroy();
     } catch (_) {
       // Silent fail - cleanup errors should not leak to logs
     } finally {
@@ -85,7 +58,7 @@ class LibOQSBase {
     final threadId = Isolate.current.hashCode;
     if (_threadInitialized[threadId] == true) {
       try {
-        bindings.OQS_thread_stop();
+        oqs.OQS_thread_stop();
         _threadInitialized[threadId] = false;
       } catch (_) {
         // Silent fail - cleanup errors should not leak to logs
@@ -98,7 +71,7 @@ class LibOQSBase {
     init(); // Auto-initialize if needed
 
     try {
-      final versionPtr = bindings.OQS_version();
+      final versionPtr = oqs.OQS_version();
       if (versionPtr == nullptr) {
         throw LibOQSException('Failed to get LibOQS version pointer');
       }

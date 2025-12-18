@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 
 import 'base.dart';
-import 'bindings/liboqs_bindings.dart';
+import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
 import 'utils.dart';
 
@@ -36,7 +36,7 @@ class OQSRandom {
     Pointer<Uint8>? randomPtr;
     try {
       randomPtr = LibOQSUtils.allocateBytes(length);
-      LibOQSBase.bindings.OQS_randombytes(randomPtr, length);
+      oqs.OQS_randombytes(randomPtr, length);
       return LibOQSUtils.pointerToUint8List(randomPtr, length);
     } catch (e) {
       throw LibOQSException('Failed to generate random bytes: $e');
@@ -110,10 +110,8 @@ class OQSRandom {
 
     final algorithmPtr = algorithm.toNativeUtf8();
     try {
-      final result = LibOQSBase.bindings.OQS_randombytes_switch_algorithm(
-        algorithmPtr.cast(),
-      );
-      return result == OQS_STATUS.OQS_SUCCESS;
+      final result = oqs.OQS_randombytes_switch_algorithm(algorithmPtr.cast());
+      return result == oqs.OQS_STATUS.OQS_SUCCESS;
     } finally {
       LibOQSUtils.freePointer(algorithmPtr);
     }
