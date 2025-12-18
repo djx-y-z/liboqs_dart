@@ -57,7 +57,9 @@ class Signature {
         // Store pointer to avoid memory leak
         final namePtr = sigName.toNativeUtf8();
         try {
-          final isEnabled = oqs.OQS_SIG_alg_is_enabled(namePtr.cast<ffi.Char>());
+          final isEnabled = oqs.OQS_SIG_alg_is_enabled(
+            namePtr.cast<ffi.Char>(),
+          );
           if (isEnabled == 1) {
             supportedSigs.add(sigName);
           }

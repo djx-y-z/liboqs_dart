@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:ffi' as ffi;
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
@@ -58,7 +58,9 @@ class KEM {
         // Store pointer to avoid memory leak
         final namePtr = kemName.toNativeUtf8();
         try {
-          final isEnabled = oqs.OQS_KEM_alg_is_enabled(namePtr.cast<ffi.Char>());
+          final isEnabled = oqs.OQS_KEM_alg_is_enabled(
+            namePtr.cast<ffi.Char>(),
+          );
           if (isEnabled == 1) {
             supportedKems.add(kemName);
           }
