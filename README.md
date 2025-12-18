@@ -13,8 +13,8 @@ A Dart FFI wrapper for [liboqs](https://github.com/open-quantum-safe/liboqs), pr
 
 |             | Android | iOS   | macOS  | Linux      | Windows |
 |-------------|---------|-------|--------|------------|---------|
-| **Support** | SDK 21+ | 12.0+ | 10.14+ | x64, arm64 | x64     |
-| **Arch**    | arm64, armv7, x64 | arm64 | arm64, x64 | x64, arm64 | x64 |
+| **Support** | SDK 21+ | 12.0+ | 10.14+ | arm64, x64 | x64     |
+| **Arch**    | arm64, armv7, x64 | arm64 | arm64, x64 | arm64, x64 | x64 |
 
 ## Features
 
@@ -32,7 +32,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  liboqs: ^1.0.0
+  liboqs: ^1.0.3
 ```
 
 ## Quick Start
