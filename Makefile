@@ -127,7 +127,9 @@ clean:
 	$(FVM) dart pub get --no-example
 
 version:
-	@cat LIBOQS_VERSION
+	@echo "liboqs version: $$(cat LIBOQS_VERSION)"
+	@echo "Native build:   $$(cat NATIVE_BUILD 2>/dev/null || echo '1')"
+	@echo "Full version:   $$(cat LIBOQS_VERSION)-$$(cat NATIVE_BUILD 2>/dev/null || echo '1')"
 
 # =============================================================================
 # Publishing

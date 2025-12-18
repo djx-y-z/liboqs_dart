@@ -102,6 +102,24 @@ String getLiboqsVersion() {
   return version;
 }
 
+/// Get the NATIVE_BUILD number from file
+String getNativeBuild() {
+  final packageDir = getPackageDir();
+  final buildFile = File('${packageDir.path}/NATIVE_BUILD');
+
+  if (!buildFile.existsSync()) {
+    return '1';
+  }
+
+  final build = buildFile.readAsStringSync().trim();
+  return build.isEmpty ? '1' : build;
+}
+
+/// Get full version string (liboqs version + native build)
+String getFullVersion() {
+  return '${getLiboqsVersion()}-${getNativeBuild()}';
+}
+
 // ============================================
 // Process execution utilities
 // ============================================

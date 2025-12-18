@@ -36,15 +36,24 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      build: ${{ steps.version.outputs.build }}
+      full_version: ${{ steps.version.outputs.full_version }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read liboqs version
+      - name: Read version info
         id: version
         run: |
           VERSION=$(cat LIBOQS_VERSION | tr -d '[:space:]')
+          BUILD=$(cat NATIVE_BUILD 2>/dev/null | tr -d '[:space:]' || echo '1')
+          FULL_VERSION="${VERSION}-${BUILD}"
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building liboqs version: $VERSION"
+          echo "build=$BUILD" >> $GITHUB_OUTPUT
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+
+          echo "Building liboqs version: $VERSION (Build $BUILD)"
+          echo "Full version: $FULL_VERSION"
 
   # ============================================
   # Linux (x86_64 + arm64 on separate runners)
@@ -222,6 +231,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
+      NATIVE_BUILD: ${{ needs.read-version.outputs.build }}
+      FULL_VERSION: ${{ needs.read-version.outputs.full_version }}
     permissions:
       contents: write
     steps:
@@ -232,49 +243,49 @@ jobs:
 
       - name: Create release archives
         run: |
-          VERSION=${{ env.LIBOQS_VERSION }}
+          FULL_VERSION=${{ env.FULL_VERSION }}
           mkdir -p release-archives
 
           # Linux x86_64
-          tar -czvf release-archives/liboqs-${VERSION}-linux-x86_64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-linux-x86_64.tar.gz \
             -C artifacts/liboqs-linux-x86_64 liboqs.so
 
           # Linux arm64
-          tar -czvf release-archives/liboqs-${VERSION}-linux-arm64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-linux-arm64.tar.gz \
             -C artifacts/liboqs-linux-arm64 liboqs.so
 
           # macOS arm64
-          tar -czvf release-archives/liboqs-${VERSION}-macos-arm64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-macos-arm64.tar.gz \
             -C artifacts/liboqs-macos-arm64 liboqs.dylib
 
           # macOS x86_64
-          tar -czvf release-archives/liboqs-${VERSION}-macos-x86_64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-macos-x86_64.tar.gz \
             -C artifacts/liboqs-macos-x86_64 liboqs.dylib
 
           # Windows x86_64 (zip format)
-          cd artifacts/liboqs-windows-x86_64 && zip ../../release-archives/liboqs-${VERSION}-windows-x86_64.zip oqs.dll && cd ../..
+          cd artifacts/liboqs-windows-x86_64 && zip ../../release-archives/liboqs-${FULL_VERSION}-windows-x86_64.zip oqs.dll && cd ../..
 
           # Android ABIs
           for abi in arm64-v8a armeabi-v7a x86_64; do
-            tar -czvf release-archives/liboqs-${VERSION}-android-${abi}.tar.gz \
+            tar -czvf release-archives/liboqs-${FULL_VERSION}-android-${abi}.tar.gz \
               -C artifacts/liboqs-android-${abi} liboqs.so
           done
 
           # iOS device arm64
-          tar -czvf release-archives/liboqs-${VERSION}-ios-device-arm64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-ios-device-arm64.tar.gz \
             -C artifacts/liboqs-ios-device-arm64 liboqs.dylib
 
           # iOS simulator arm64
-          tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-arm64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-ios-simulator-arm64.tar.gz \
             -C artifacts/liboqs-ios-simulator-arm64 liboqs.dylib
 
           # iOS simulator x86_64
-          tar -czvf release-archives/liboqs-${VERSION}-ios-simulator-x86_64.tar.gz \
+          tar -czvf release-archives/liboqs-${FULL_VERSION}-ios-simulator-x86_64.tar.gz \
             -C artifacts/liboqs-ios-simulator-x86_64 liboqs.dylib
 
           # Generate SHA256 checksums
           cd release-archives
-          sha256sum liboqs-${VERSION}-*.* > liboqs-${VERSION}-checksums.sha256
+          sha256sum liboqs-${FULL_VERSION}-*.* > liboqs-${FULL_VERSION}-checksums.sha256
           cd ..
 
           ls -lh release-archives/
@@ -282,47 +293,52 @@ jobs:
       - name: Create or Update Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: liboqs-${{ env.LIBOQS_VERSION }}
-          name: liboqs ${{ env.LIBOQS_VERSION }} - Native Libraries
+          tag_name: liboqs-${{ env.FULL_VERSION }}
+          name: liboqs ${{ env.LIBOQS_VERSION }} (Build ${{ env.NATIVE_BUILD }}) - Native Libraries
           make_latest: true
           files: |
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-linux-arm64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-device-arm64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz
-            release-archives/liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256
+            release-archives/liboqs-${{ env.FULL_VERSION }}-linux-x86_64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-linux-arm64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-macos-arm64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-macos-x86_64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-windows-x86_64.zip
+            release-archives/liboqs-${{ env.FULL_VERSION }}-android-arm64-v8a.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-android-armeabi-v7a.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-android-x86_64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-ios-device-arm64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-ios-simulator-arm64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-ios-simulator-x86_64.tar.gz
+            release-archives/liboqs-${{ env.FULL_VERSION }}-checksums.sha256
           body: |
-            ## liboqs ${{ env.LIBOQS_VERSION }} Native Libraries
+            ## liboqs ${{ env.LIBOQS_VERSION }} (Build ${{ env.NATIVE_BUILD }}) Native Libraries
 
             Pre-built native libraries for all supported platforms.
             **These archives are downloaded automatically by Dart Build Hooks.**
 
+            ### Version Info
+            - **liboqs version**: ${{ env.LIBOQS_VERSION }}
+            - **Build number**: ${{ env.NATIVE_BUILD }}
+            - **Full identifier**: ${{ env.FULL_VERSION }}
+
             ### Archive Format
-            Archives are named: `liboqs-{version}-{os}-{arch}.tar.gz` (or `.zip` for Windows)
+            Archives are named: `liboqs-{version}-{build}-{os}-{arch}.tar.gz` (or `.zip` for Windows)
 
             | Platform | Architecture | Archive |
             |----------|--------------|---------|
-            | Linux | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-x86_64.tar.gz` |
-            | Linux | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-linux-arm64.tar.gz` |
-            | macOS | arm64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-arm64.tar.gz` |
-            | macOS | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-macos-x86_64.tar.gz` |
-            | Windows | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-windows-x86_64.zip` |
-            | Android | arm64-v8a | `liboqs-${{ env.LIBOQS_VERSION }}-android-arm64-v8a.tar.gz` |
-            | Android | armeabi-v7a | `liboqs-${{ env.LIBOQS_VERSION }}-android-armeabi-v7a.tar.gz` |
-            | Android | x86_64 | `liboqs-${{ env.LIBOQS_VERSION }}-android-x86_64.tar.gz` |
-            | iOS | device (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-device-arm64.tar.gz` |
-            | iOS | simulator (arm64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-arm64.tar.gz` |
-            | iOS | simulator (x86_64) | `liboqs-${{ env.LIBOQS_VERSION }}-ios-simulator-x86_64.tar.gz` |
+            | Linux | x86_64 | `liboqs-${{ env.FULL_VERSION }}-linux-x86_64.tar.gz` |
+            | Linux | arm64 | `liboqs-${{ env.FULL_VERSION }}-linux-arm64.tar.gz` |
+            | macOS | arm64 | `liboqs-${{ env.FULL_VERSION }}-macos-arm64.tar.gz` |
+            | macOS | x86_64 | `liboqs-${{ env.FULL_VERSION }}-macos-x86_64.tar.gz` |
+            | Windows | x86_64 | `liboqs-${{ env.FULL_VERSION }}-windows-x86_64.zip` |
+            | Android | arm64-v8a | `liboqs-${{ env.FULL_VERSION }}-android-arm64-v8a.tar.gz` |
+            | Android | armeabi-v7a | `liboqs-${{ env.FULL_VERSION }}-android-armeabi-v7a.tar.gz` |
+            | Android | x86_64 | `liboqs-${{ env.FULL_VERSION }}-android-x86_64.tar.gz` |
+            | iOS | device (arm64) | `liboqs-${{ env.FULL_VERSION }}-ios-device-arm64.tar.gz` |
+            | iOS | simulator (arm64) | `liboqs-${{ env.FULL_VERSION }}-ios-simulator-arm64.tar.gz` |
+            | iOS | simulator (x86_64) | `liboqs-${{ env.FULL_VERSION }}-ios-simulator-x86_64.tar.gz` |
 
             ### Checksums
-            SHA256 checksums are available in `liboqs-${{ env.LIBOQS_VERSION }}-checksums.sha256`
+            SHA256 checksums are available in `liboqs-${{ env.FULL_VERSION }}-checksums.sha256`
 
             ### Usage
             Add `liboqs` to your `pubspec.yaml`. Build hooks will download the correct library automatically.

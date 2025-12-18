@@ -54,8 +54,8 @@ void main(List<String> args) async {
     }
 
     // For all cases, download from GitHub Releases and bundle with the app
-    final version = await _readVersion(packageRoot);
-    final assetInfo = _resolveAssetInfo(codeConfig, version);
+    final fullVersion = await _readFullVersion(packageRoot);
+    final assetInfo = _resolveAssetInfo(codeConfig, fullVersion);
 
     // Output directory for cached downloads
     // Use architecture-specific subdirectory for each platform/arch combination
@@ -91,8 +91,9 @@ void main(List<String> args) async {
       ),
     );
 
-    // Add dependency on version file for cache invalidation
+    // Add dependency on version files for cache invalidation
     output.dependencies.add(packageRoot.resolve('LIBOQS_VERSION'));
+    output.dependencies.add(packageRoot.resolve('NATIVE_BUILD'));
   });
 }
 
@@ -103,6 +104,23 @@ Future<String> _readVersion(Uri packageRoot) async {
     throw HookException('LIBOQS_VERSION file not found at ${versionFile.path}');
   }
   return (await versionFile.readAsString()).trim();
+}
+
+/// Reads the native build number from NATIVE_BUILD file.
+Future<String> _readNativeBuild(Uri packageRoot) async {
+  final buildFile = File.fromUri(packageRoot.resolve('NATIVE_BUILD'));
+  if (!buildFile.existsSync()) {
+    return '1'; // Default if file doesn't exist
+  }
+  final build = (await buildFile.readAsString()).trim();
+  return build.isEmpty ? '1' : build;
+}
+
+/// Reads full version (liboqs version + native build).
+Future<String> _readFullVersion(Uri packageRoot) async {
+  final version = await _readVersion(packageRoot);
+  final build = await _readNativeBuild(packageRoot);
+  return '$version-$build';
 }
 
 /// Information about a native asset for a specific platform.
@@ -121,9 +139,12 @@ class _AssetInfo {
 }
 
 /// Resolves asset information for the target platform.
-_AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
+///
+/// [fullVersion] is the complete version string including build number,
+/// e.g., "0.15.0-1" (liboqs version + native build number).
+_AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String fullVersion) {
   final baseUrl =
-      'https://github.com/$_githubRepo/releases/download/liboqs-$version';
+      'https://github.com/$_githubRepo/releases/download/liboqs-$fullVersion';
   final targetOS = codeConfig.targetOS;
   final targetArch = codeConfig.targetArchitecture;
 
@@ -131,8 +152,8 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
     case OS.linux:
       final linuxArch = _linuxArchName(targetArch);
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-linux-$linuxArch.tar.gz',
-        archiveFileName: 'liboqs-$version-linux-$linuxArch.tar.gz',
+        downloadUrl: '$baseUrl/liboqs-$fullVersion-linux-$linuxArch.tar.gz',
+        archiveFileName: 'liboqs-$fullVersion-linux-$linuxArch.tar.gz',
         fileName: 'liboqs.so',
         linkMode: DynamicLoadingBundled(),
       );
@@ -141,16 +162,16 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
       // Use architecture-specific binaries (Flutter will merge them with lipo)
       final arch = _macOSArchName(targetArch);
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-macos-$arch.tar.gz',
-        archiveFileName: 'liboqs-$version-macos-$arch.tar.gz',
+        downloadUrl: '$baseUrl/liboqs-$fullVersion-macos-$arch.tar.gz',
+        archiveFileName: 'liboqs-$fullVersion-macos-$arch.tar.gz',
         fileName: 'liboqs.dylib',
         linkMode: DynamicLoadingBundled(),
       );
 
     case OS.windows:
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-windows-x86_64.zip',
-        archiveFileName: 'liboqs-$version-windows-x86_64.zip',
+        downloadUrl: '$baseUrl/liboqs-$fullVersion-windows-x86_64.zip',
+        archiveFileName: 'liboqs-$fullVersion-windows-x86_64.zip',
         fileName: 'oqs.dll',
         linkMode: DynamicLoadingBundled(),
       );
@@ -158,8 +179,8 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
     case OS.android:
       final abi = _androidArchToAbi(targetArch);
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-android-$abi.tar.gz',
-        archiveFileName: 'liboqs-$version-android-$abi.tar.gz',
+        downloadUrl: '$baseUrl/liboqs-$fullVersion-android-$abi.tar.gz',
+        archiveFileName: 'liboqs-$fullVersion-android-$abi.tar.gz',
         fileName: 'liboqs.so',
         linkMode: DynamicLoadingBundled(),
       );
@@ -174,8 +195,8 @@ _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String version) {
       // - simulator-x86_64 for Intel simulators
       final iosTarget = _iOSTargetName(codeConfig, targetArch);
       return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$version-ios-$iosTarget.tar.gz',
-        archiveFileName: 'liboqs-$version-ios-$iosTarget.tar.gz',
+        downloadUrl: '$baseUrl/liboqs-$fullVersion-ios-$iosTarget.tar.gz',
+        archiveFileName: 'liboqs-$fullVersion-ios-$iosTarget.tar.gz',
         fileName: 'liboqs.dylib',
         linkMode: DynamicLoadingBundled(),
       );

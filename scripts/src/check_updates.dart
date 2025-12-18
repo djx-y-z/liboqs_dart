@@ -292,13 +292,25 @@ Future<void> updateVersionFiles({
 }) async {
   final packageDir = getPackageDir();
 
+  // Check if LIBOQS_VERSION is actually changing
+  final currentLiboqsVersion = getLiboqsVersion();
+  final versionChanged = currentLiboqsVersion != newLiboqsVersion;
+
   // 1. Update LIBOQS_VERSION
   if (!silent) logStep('Updating LIBOQS_VERSION...');
   final liboqsVersionFile = File('${packageDir.path}/LIBOQS_VERSION');
   await liboqsVersionFile.writeAsString('$newLiboqsVersion\n');
   if (!silent) logInfo('Updated LIBOQS_VERSION to $newLiboqsVersion');
 
-  // 2. Update pubspec.yaml
+  // 2. Reset NATIVE_BUILD to 1 if LIBOQS_VERSION changed
+  if (versionChanged) {
+    if (!silent) logStep('Resetting NATIVE_BUILD to 1 (version changed)...');
+    final nativeBuildFile = File('${packageDir.path}/NATIVE_BUILD');
+    await nativeBuildFile.writeAsString('1\n');
+    if (!silent) logInfo('Reset NATIVE_BUILD to 1');
+  }
+
+  // 3. Update pubspec.yaml
   if (!silent) logStep('Updating pubspec.yaml...');
   final pubspecFile = File('${packageDir.path}/pubspec.yaml');
   var pubspecContent = pubspecFile.readAsStringSync();
@@ -309,7 +321,7 @@ Future<void> updateVersionFiles({
   await pubspecFile.writeAsString(pubspecContent);
   if (!silent) logInfo('Updated pubspec.yaml version to $newPackageVersion');
 
-  // 3. Update CHANGELOG.md (unless skipped for CI)
+  // 4. Update CHANGELOG.md (unless skipped for CI)
   if (!skipChangelog) {
     if (!silent) logStep('Updating CHANGELOG.md...');
     await _updateChangelog(
@@ -412,6 +424,7 @@ void printUpdateSummary({
   if (updated) {
     print('Files updated:');
     print('  - LIBOQS_VERSION');
+    print('  - NATIVE_BUILD (reset to 1)');
     print('  - pubspec.yaml');
     print('  - CHANGELOG.md');
     print('');
