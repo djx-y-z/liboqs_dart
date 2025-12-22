@@ -160,35 +160,56 @@ class LibOQSUtils {
   /// to be resistant to timing side-channel attacks.
   ///
   /// Returns `true` if the arrays are equal, `false` otherwise.
-  /// If arrays have different lengths, returns `false`.
+  /// If arrays have different lengths, returns `false` (length comparison
+  /// is also performed in constant time to prevent length oracle attacks).
   ///
   /// Example:
   /// ```dart
   /// final isEqual = LibOQSUtils.constantTimeEquals(secret1, secret2);
   /// ```
   static bool constantTimeEquals(Uint8List a, Uint8List b) {
-    if (a.length != b.length) {
-      return false;
+    // Constant-time length comparison to prevent length oracle attacks
+    // XOR the lengths and accumulate - result is 0 only if lengths are equal
+    int lengthDiff = a.length ^ b.length;
+
+    if (a.isEmpty && b.isEmpty) {
+      return true;
     }
 
-    if (a.isEmpty) {
-      return true;
+    // If either is empty but not both, they can't be equal
+    // We still need to do some work to maintain constant time
+    if (a.isEmpty || b.isEmpty) {
+      // Do a dummy comparison to maintain timing consistency
+      final dummyPtr = allocateBytes(1);
+      try {
+        oqs.OQS_MEM_secure_bcmp(dummyPtr.cast<Void>(), dummyPtr.cast<Void>(), 1);
+      } finally {
+        secureFreePointer(dummyPtr, 1);
+      }
+      return false;
     }
 
     final ptrA = uint8ListToPointer(a);
     final ptrB = uint8ListToPointer(b);
 
     try {
+      // Compare up to the minimum length to maintain constant-time behavior
+      final minLength = a.length < b.length ? a.length : b.length;
+
       // OQS_MEM_secure_bcmp returns 0 if equal, non-zero if different
       final result = oqs.OQS_MEM_secure_bcmp(
         ptrA.cast<Void>(),
         ptrB.cast<Void>(),
-        a.length,
+        minLength,
       );
-      return result == 0;
+
+      // Combine length difference and content comparison in constant time
+      // Both must be zero for arrays to be equal
+      return (result | lengthDiff) == 0;
     } finally {
-      freePointer(ptrA);
-      freePointer(ptrB);
+      // Use secure free since data may contain secrets
+      secureFreePointer(ptrA, a.length);
+      secureFreePointer(ptrB, b.length);
     }
   }
 

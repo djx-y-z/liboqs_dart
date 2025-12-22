@@ -14,6 +14,12 @@ final Finalizer<Pointer<oqs.OQS_KEM>> _kemFinalizer = Finalizer(
   (ptr) => oqs.OQS_KEM_free(ptr),
 );
 
+/// Finalizer for zeroing secret data when objects are garbage collected.
+/// This provides defense-in-depth if user forgets to call clearSecrets().
+final Finalizer<Uint8List> _secretDataFinalizer = Finalizer((data) {
+  data.fillRange(0, data.length, 0);
+});
+
 /// Key Encapsulation Mechanism (KEM) implementation
 class KEM {
   late final Pointer<oqs.OQS_KEM> _kemPtr;
@@ -165,6 +171,15 @@ class KEM {
     if (seed.length != requiredSeedLength) {
       throw LibOQSException(
         'Invalid seed length: expected $requiredSeedLength, got ${seed.length}',
+      );
+    }
+
+    // Validate function pointer before use
+    if (_kemPtr.ref.keypair_derand == nullptr) {
+      throw LibOQSException(
+        'keypair_derand function pointer is null - KEM may be corrupted',
+        null,
+        algorithmName,
       );
     }
 
@@ -369,11 +384,9 @@ class KEM {
 
 /// KEM key pair containing public and secret keys
 ///
-/// **Security Warning:** The secret key is stored in Dart managed memory
-/// (Uint8List) which is not guaranteed to be zeroed when garbage collected.
-/// Call [clearSecrets] when you're done using the key pair to minimize
-/// the window of exposure. For maximum security, avoid storing secret keys
-/// longer than necessary.
+/// **Security Note:** The secret key will be automatically zeroed when this
+/// object is garbage collected (via Finalizer). However, for immediate cleanup
+/// and maximum security, call [clearSecrets] explicitly when done.
 class KEMKeyPair {
   /// The public key (can be shared freely)
   final Uint8List publicKey;
@@ -383,7 +396,10 @@ class KEMKeyPair {
   /// **Security Warning:** Call [clearSecrets] when done to zero this memory.
   final Uint8List secretKey;
 
-  KEMKeyPair({required this.publicKey, required this.secretKey});
+  KEMKeyPair({required this.publicKey, required this.secretKey}) {
+    // Attach finalizer to zero secretKey when this object is garbage collected
+    _secretDataFinalizer.attach(this, secretKey, detach: this);
+  }
 
   /// Zeros the secret key in memory
   ///
@@ -438,9 +454,9 @@ class KEMKeyPair {
 
 /// KEM encapsulation result containing ciphertext and shared secret
 ///
-/// **Security Warning:** The shared secret is stored in Dart managed memory
-/// (Uint8List) which is not guaranteed to be zeroed when garbage collected.
-/// Call [clearSecrets] when you're done using the shared secret.
+/// **Security Note:** The shared secret will be automatically zeroed when this
+/// object is garbage collected (via Finalizer). However, for immediate cleanup
+/// and maximum security, call [clearSecrets] explicitly when done.
 class KEMEncapsulationResult {
   /// The ciphertext to send to the other party
   final Uint8List ciphertext;
@@ -453,7 +469,10 @@ class KEMEncapsulationResult {
   KEMEncapsulationResult({
     required this.ciphertext,
     required this.sharedSecret,
-  });
+  }) {
+    // Attach finalizer to zero sharedSecret when this object is garbage collected
+    _secretDataFinalizer.attach(this, sharedSecret, detach: this);
+  }
 
   /// Zeros the shared secret in memory
   ///

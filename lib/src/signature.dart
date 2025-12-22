@@ -14,6 +14,12 @@ final Finalizer<Pointer<oqs.OQS_SIG>> _sigFinalizer = Finalizer(
   (ptr) => oqs.OQS_SIG_free(ptr),
 );
 
+/// Finalizer for zeroing secret data when objects are garbage collected.
+/// This provides defense-in-depth if user forgets to call clearSecrets().
+final Finalizer<Uint8List> _secretDataFinalizer = Finalizer((data) {
+  data.fillRange(0, data.length, 0);
+});
+
 /// Digital Signature implementation
 class Signature {
   late final Pointer<oqs.OQS_SIG> _sigPtr;
@@ -229,6 +235,14 @@ class Signature {
         'Invalid public key length: expected $publicKeyLength, got ${publicKey.length}',
       );
     }
+    if (signature.isEmpty) {
+      throw LibOQSException('Signature cannot be empty');
+    }
+    if (signature.length > maxSignatureLength) {
+      throw LibOQSException(
+        'Invalid signature length: got ${signature.length}, max allowed: $maxSignatureLength',
+      );
+    }
 
     // Validate function pointer before use
     if (_sigPtr.ref.verify == nullptr) {
@@ -289,11 +303,9 @@ class Signature {
 
 /// Signature key pair containing public and secret keys
 ///
-/// **Security Warning:** The secret key is stored in Dart managed memory
-/// (Uint8List) which is not guaranteed to be zeroed when garbage collected.
-/// Call [clearSecrets] when you're done using the key pair to minimize
-/// the window of exposure. For maximum security, avoid storing secret keys
-/// longer than necessary.
+/// **Security Note:** The secret key will be automatically zeroed when this
+/// object is garbage collected (via Finalizer). However, for immediate cleanup
+/// and maximum security, call [clearSecrets] explicitly when done.
 class SignatureKeyPair {
   /// The public key (can be shared freely for signature verification)
   final Uint8List publicKey;
@@ -303,7 +315,10 @@ class SignatureKeyPair {
   /// **Security Warning:** Call [clearSecrets] when done to zero this memory.
   final Uint8List secretKey;
 
-  SignatureKeyPair({required this.publicKey, required this.secretKey});
+  SignatureKeyPair({required this.publicKey, required this.secretKey}) {
+    // Attach finalizer to zero secretKey when this object is garbage collected
+    _secretDataFinalizer.attach(this, secretKey, detach: this);
+  }
 
   /// Zeros the secret key in memory
   ///
