@@ -206,6 +206,16 @@ class KEM {
   /// Generate a key pair
   KEMKeyPair generateKeyPair() {
     _checkDisposed();
+
+    // Validate function pointer before use
+    if (_kemPtr.ref.keypair == nullptr) {
+      throw LibOQSException(
+        'keypair function pointer is null - KEM may be corrupted',
+        null,
+        algorithmName,
+      );
+    }
+
     final publicKey = LibOQSUtils.allocateBytes(publicKeyLength);
     final secretKey = LibOQSUtils.allocateBytes(secretKeyLength);
 
@@ -238,6 +248,15 @@ class KEM {
     if (publicKey.length != publicKeyLength) {
       throw LibOQSException(
         'Invalid public key length: expected $publicKeyLength, got ${publicKey.length}',
+      );
+    }
+
+    // Validate function pointer before use
+    if (_kemPtr.ref.encaps == nullptr) {
+      throw LibOQSException(
+        'encaps function pointer is null - KEM may be corrupted',
+        null,
+        algorithmName,
       );
     }
 
@@ -294,6 +313,15 @@ class KEM {
       );
     }
 
+    // Validate function pointer before use
+    if (_kemPtr.ref.decaps == nullptr) {
+      throw LibOQSException(
+        'decaps function pointer is null - KEM may be corrupted',
+        null,
+        algorithmName,
+      );
+    }
+
     final sharedSecret = LibOQSUtils.allocateBytes(sharedSecretLength);
     final ciphertextPtr = LibOQSUtils.uint8ListToPointer(ciphertext);
     final secretKeyPtr = LibOQSUtils.uint8ListToPointer(secretKey);
@@ -325,23 +353,57 @@ class KEM {
   }
 
   /// Clean up resources
+  ///
+  /// This method securely frees the KEM instance. The order of operations is
+  /// important: first free the native memory, then detach the finalizer, then
+  /// set the disposed flag. This prevents potential memory leaks if an
+  /// exception occurs during cleanup.
   void dispose() {
     if (!_disposed) {
-      _disposed = true;
-      _kemFinalizer.detach(this);
       oqs.OQS_KEM_free(_kemPtr);
+      _kemFinalizer.detach(this);
+      _disposed = true;
     }
   }
 }
 
-/// KEM key pair
+/// KEM key pair containing public and secret keys
+///
+/// **Security Warning:** The secret key is stored in Dart managed memory
+/// (Uint8List) which is not guaranteed to be zeroed when garbage collected.
+/// Call [clearSecrets] when you're done using the key pair to minimize
+/// the window of exposure. For maximum security, avoid storing secret keys
+/// longer than necessary.
 class KEMKeyPair {
+  /// The public key (can be shared freely)
   final Uint8List publicKey;
+
+  /// The secret key (must be kept confidential)
+  ///
+  /// **Security Warning:** Call [clearSecrets] when done to zero this memory.
   final Uint8List secretKey;
 
-  const KEMKeyPair({required this.publicKey, required this.secretKey});
+  KEMKeyPair({required this.publicKey, required this.secretKey});
+
+  /// Zeros the secret key in memory
+  ///
+  /// Call this method when you're done using the key pair to minimize
+  /// the time sensitive data remains in memory. Note that Dart's garbage
+  /// collector may still retain copies of the data.
+  ///
+  /// After calling this method, the [secretKey] will contain all zeros
+  /// and should not be used for cryptographic operations.
+  void clearSecrets() {
+    secretKey.fillRange(0, secretKey.length, 0);
+  }
 
   /// Returns all Uint8List properties as base64 encoded strings
+  ///
+  /// **Security Warning:** This method exports the SECRET KEY in plaintext.
+  /// Only use for secure storage (e.g., encrypted database, secure enclave).
+  /// Never log the output or transmit it over insecure channels.
+  ///
+  /// For public key only, use [publicKeyBase64].
   Map<String, String> toStrings() {
     return {
       'publicKey': base64Encode(publicKey),
@@ -350,6 +412,11 @@ class KEMKeyPair {
   }
 
   /// Alternative method that returns properties as hex strings
+  ///
+  /// **Security Warning:** This method exports the SECRET KEY in plaintext.
+  /// Only use for secure storage. Never log the output.
+  ///
+  /// For public key only, use [publicKeyHex].
   Map<String, String> toHexStrings() {
     return {
       'publicKey': publicKey
@@ -360,19 +427,48 @@ class KEMKeyPair {
           .join(),
     };
   }
+
+  /// Returns the public key as a base64 encoded string (safe to share)
+  String get publicKeyBase64 => base64Encode(publicKey);
+
+  /// Returns the public key as a hex string (safe to share)
+  String get publicKeyHex =>
+      publicKey.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 }
 
-/// KEM encapsulation result
+/// KEM encapsulation result containing ciphertext and shared secret
+///
+/// **Security Warning:** The shared secret is stored in Dart managed memory
+/// (Uint8List) which is not guaranteed to be zeroed when garbage collected.
+/// Call [clearSecrets] when you're done using the shared secret.
 class KEMEncapsulationResult {
+  /// The ciphertext to send to the other party
   final Uint8List ciphertext;
+
+  /// The shared secret (must be kept confidential)
+  ///
+  /// **Security Warning:** Call [clearSecrets] when done to zero this memory.
   final Uint8List sharedSecret;
 
-  const KEMEncapsulationResult({
+  KEMEncapsulationResult({
     required this.ciphertext,
     required this.sharedSecret,
   });
 
+  /// Zeros the shared secret in memory
+  ///
+  /// Call this method when you're done using the shared secret to minimize
+  /// the time sensitive data remains in memory.
+  void clearSecrets() {
+    sharedSecret.fillRange(0, sharedSecret.length, 0);
+  }
+
   /// Returns all Uint8List properties as base64 encoded strings
+  ///
+  /// **Security Warning:** This method exports the SHARED SECRET in plaintext.
+  /// Only use for secure storage. Never log the output.
+  ///
+  /// For ciphertext only, use [ciphertextBase64].
   Map<String, String> toStrings() {
     return {
       'ciphertext': base64Encode(ciphertext),
@@ -381,6 +477,11 @@ class KEMEncapsulationResult {
   }
 
   /// Alternative method that returns properties as hex strings
+  ///
+  /// **Security Warning:** This method exports the SHARED SECRET in plaintext.
+  /// Only use for secure storage. Never log the output.
+  ///
+  /// For ciphertext only, use [ciphertextHex].
   Map<String, String> toHexStrings() {
     return {
       'ciphertext': ciphertext
@@ -391,4 +492,11 @@ class KEMEncapsulationResult {
           .join(),
     };
   }
+
+  /// Returns the ciphertext as a base64 encoded string (safe to transmit)
+  String get ciphertextBase64 => base64Encode(ciphertext);
+
+  /// Returns the ciphertext as a hex string (safe to transmit)
+  String get ciphertextHex =>
+      ciphertext.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 }

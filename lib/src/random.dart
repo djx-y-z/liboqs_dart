@@ -41,7 +41,8 @@ class OQSRandom {
     } catch (e) {
       throw LibOQSException('Failed to generate random bytes: $e');
     } finally {
-      LibOQSUtils.freePointer(randomPtr);
+      // Use secure free - random data may be used for key derivation
+      LibOQSUtils.secureFreePointer(randomPtr, length);
     }
   }
 

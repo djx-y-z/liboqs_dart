@@ -205,8 +205,11 @@ class _HomePageState extends State<HomePage> {
       );
       _appendOutput('[+] Decapsulated shared secret');
 
-      // Verify
-      final match = _compareBytes(encResult.sharedSecret, sharedSecret);
+      // Verify using constant-time comparison (prevents timing attacks)
+      final match = LibOQSUtils.constantTimeEquals(
+        encResult.sharedSecret,
+        sharedSecret,
+      );
       _appendOutput('[+] Secrets match: $match');
       _appendOutput('');
       _appendOutput('Shared secret (first 32 bytes):');
@@ -219,7 +222,10 @@ class _HomePageState extends State<HomePage> {
         final seed = OQSRandom.generateSeed(kem.seedLength!);
         final kp1 = kem.generateKeyPairDerand(seed);
         final kp2 = kem.generateKeyPairDerand(seed);
-        final identical = _compareBytes(kp1.publicKey, kp2.publicKey);
+        final identical = LibOQSUtils.constantTimeEquals(
+          kp1.publicKey,
+          kp2.publicKey,
+        );
         _appendOutput('[+] Same seed produces identical keys: $identical');
       }
     } finally {
@@ -313,14 +319,6 @@ class _HomePageState extends State<HomePage> {
     for (final alg in sigs) {
       _appendOutput('  - $alg');
     }
-  }
-
-  bool _compareBytes(Uint8List a, Uint8List b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
   }
 
   String _bytesToHex(List<int> bytes) {

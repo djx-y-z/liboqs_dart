@@ -37,8 +37,11 @@ void _kemDemo() {
     );
     print('[+] Decapsulated shared secret');
 
-    // Verify
-    final match = _compareBytes(encResult.sharedSecret, sharedSecret);
+    // Verify using constant-time comparison (prevents timing attacks)
+    final match = LibOQSUtils.constantTimeEquals(
+      encResult.sharedSecret,
+      sharedSecret,
+    );
     print('[+] Secrets match: $match');
   } finally {
     kem.dispose();
@@ -73,12 +76,4 @@ void _signatureDemo() {
   } finally {
     sig.dispose();
   }
-}
-
-bool _compareBytes(Uint8List a, Uint8List b) {
-  if (a.length != b.length) return false;
-  for (int i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
-  }
-  return true;
 }

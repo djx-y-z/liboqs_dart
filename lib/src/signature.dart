@@ -124,6 +124,16 @@ class Signature {
   /// Generate a key pair
   SignatureKeyPair generateKeyPair() {
     _checkDisposed();
+
+    // Validate function pointer before use
+    if (_sigPtr.ref.keypair == nullptr) {
+      throw LibOQSException(
+        'keypair function pointer is null - Signature may be corrupted',
+        null,
+        algorithmName,
+      );
+    }
+
     final publicKey = LibOQSUtils.allocateBytes(publicKeyLength);
     final secretKey = LibOQSUtils.allocateBytes(secretKeyLength);
 
@@ -156,6 +166,15 @@ class Signature {
     if (secretKey.length != secretKeyLength) {
       throw LibOQSException(
         'Invalid secret key length: expected $secretKeyLength, got ${secretKey.length}',
+      );
+    }
+
+    // Validate function pointer before use
+    if (_sigPtr.ref.sign == nullptr) {
+      throw LibOQSException(
+        'sign function pointer is null - Signature may be corrupted',
+        null,
+        algorithmName,
       );
     }
 
@@ -211,6 +230,15 @@ class Signature {
       );
     }
 
+    // Validate function pointer before use
+    if (_sigPtr.ref.verify == nullptr) {
+      throw LibOQSException(
+        'verify function pointer is null - Signature may be corrupted',
+        null,
+        algorithmName,
+      );
+    }
+
     final messagePtr = LibOQSUtils.uint8ListToPointer(message);
     final signaturePtr = LibOQSUtils.uint8ListToPointer(signature);
     final publicKeyPtr = LibOQSUtils.uint8ListToPointer(publicKey);
@@ -245,23 +273,57 @@ class Signature {
   }
 
   /// Clean up resources
+  ///
+  /// This method securely frees the Signature instance. The order of operations
+  /// is important: first free the native memory, then detach the finalizer, then
+  /// set the disposed flag. This prevents potential memory leaks if an
+  /// exception occurs during cleanup.
   void dispose() {
     if (!_disposed) {
-      _disposed = true;
-      _sigFinalizer.detach(this);
       oqs.OQS_SIG_free(_sigPtr);
+      _sigFinalizer.detach(this);
+      _disposed = true;
     }
   }
 }
 
-/// Signature key pair
+/// Signature key pair containing public and secret keys
+///
+/// **Security Warning:** The secret key is stored in Dart managed memory
+/// (Uint8List) which is not guaranteed to be zeroed when garbage collected.
+/// Call [clearSecrets] when you're done using the key pair to minimize
+/// the window of exposure. For maximum security, avoid storing secret keys
+/// longer than necessary.
 class SignatureKeyPair {
+  /// The public key (can be shared freely for signature verification)
   final Uint8List publicKey;
+
+  /// The secret key (must be kept confidential, used for signing)
+  ///
+  /// **Security Warning:** Call [clearSecrets] when done to zero this memory.
   final Uint8List secretKey;
 
-  const SignatureKeyPair({required this.publicKey, required this.secretKey});
+  SignatureKeyPair({required this.publicKey, required this.secretKey});
+
+  /// Zeros the secret key in memory
+  ///
+  /// Call this method when you're done using the key pair to minimize
+  /// the time sensitive data remains in memory. Note that Dart's garbage
+  /// collector may still retain copies of the data.
+  ///
+  /// After calling this method, the [secretKey] will contain all zeros
+  /// and should not be used for signing operations.
+  void clearSecrets() {
+    secretKey.fillRange(0, secretKey.length, 0);
+  }
 
   /// Returns all Uint8List properties as base64 encoded strings
+  ///
+  /// **Security Warning:** This method exports the SECRET KEY in plaintext.
+  /// Only use for secure storage (e.g., encrypted database, secure enclave).
+  /// Never log the output or transmit it over insecure channels.
+  ///
+  /// For public key only, use [publicKeyBase64].
   Map<String, String> toStrings() {
     return {
       'publicKey': base64Encode(publicKey),
@@ -270,6 +332,11 @@ class SignatureKeyPair {
   }
 
   /// Alternative method that returns properties as hex strings
+  ///
+  /// **Security Warning:** This method exports the SECRET KEY in plaintext.
+  /// Only use for secure storage. Never log the output.
+  ///
+  /// For public key only, use [publicKeyHex].
   Map<String, String> toHexStrings() {
     return {
       'publicKey': publicKey
@@ -280,4 +347,11 @@ class SignatureKeyPair {
           .join(),
     };
   }
+
+  /// Returns the public key as a base64 encoded string (safe to share)
+  String get publicKeyBase64 => base64Encode(publicKey);
+
+  /// Returns the public key as a hex string (safe to share)
+  String get publicKeyHex =>
+      publicKey.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 }

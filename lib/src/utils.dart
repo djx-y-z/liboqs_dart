@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 
+import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
 
 /// Memory-safe utility class with extensive validation
@@ -117,9 +118,23 @@ class LibOQSUtils {
   ///
   /// This is critical for secret keys, shared secrets, and other sensitive data.
   /// The memory is zeroed before freeing to prevent data recovery from freed memory.
+  ///
+  /// Uses liboqs `OQS_MEM_secure_free` which is designed to resist compiler
+  /// optimizations that might remove the zeroing operation.
   static void secureFreePointer(Pointer? ptr, int length) {
     if (ptr == null || ptr == nullptr || length <= 0) return;
 
+    try {
+      // Use liboqs secure free which is designed to resist compiler optimizations
+      oqs.OQS_MEM_secure_free(ptr.cast<Void>(), length);
+    } catch (_) {
+      // Fallback: manual zeroing + free if OQS_MEM_secure_free fails
+      _fallbackSecureFree(ptr, length);
+    }
+  }
+
+  /// Fallback secure free implementation using manual zeroing
+  static void _fallbackSecureFree(Pointer ptr, int length) {
     try {
       // Zero the memory before freeing
       // Using explicit loop to reduce chance of compiler optimization
@@ -135,6 +150,45 @@ class LibOQSUtils {
       calloc.free(ptr);
     } catch (_) {
       // Silent fail for cleanup
+    }
+  }
+
+  /// Constant-time comparison of two byte arrays
+  ///
+  /// This function compares two byte arrays in constant time to prevent
+  /// timing attacks. It uses liboqs `OQS_MEM_secure_bcmp` which is designed
+  /// to be resistant to timing side-channel attacks.
+  ///
+  /// Returns `true` if the arrays are equal, `false` otherwise.
+  /// If arrays have different lengths, returns `false`.
+  ///
+  /// Example:
+  /// ```dart
+  /// final isEqual = LibOQSUtils.constantTimeEquals(secret1, secret2);
+  /// ```
+  static bool constantTimeEquals(Uint8List a, Uint8List b) {
+    if (a.length != b.length) {
+      return false;
+    }
+
+    if (a.isEmpty) {
+      return true;
+    }
+
+    final ptrA = uint8ListToPointer(a);
+    final ptrB = uint8ListToPointer(b);
+
+    try {
+      // OQS_MEM_secure_bcmp returns 0 if equal, non-zero if different
+      final result = oqs.OQS_MEM_secure_bcmp(
+        ptrA.cast<Void>(),
+        ptrB.cast<Void>(),
+        a.length,
+      );
+      return result == 0;
+    } finally {
+      freePointer(ptrA);
+      freePointer(ptrB);
     }
   }
 
