@@ -87,10 +87,19 @@ make check ARGS="--update"
 
 When using this library:
 
-1. **Always call `dispose()`** on KEM and Signature instances to securely clear keys
-2. **Keep the library updated** to the latest version
-3. **Use NIST-standardized algorithms** (ML-KEM, ML-DSA, SLH-DSA) for production
-4. **Follow secure key storage practices** for your platform
+1. **Always call `dispose()`** on KEM and Signature instances to securely clear native resources
+2. **Call `clearSecrets()`** on key pairs and encapsulation results when done to zero sensitive data in Dart memory
+3. **Use `LibOQSUtils.constantTimeEquals()`** for comparing secrets (prevents timing attacks)
+4. **Keep the library updated** to the latest version
+5. **Use NIST-standardized algorithms** (ML-KEM, ML-DSA, SLH-DSA) for production
+6. **Follow secure key storage practices** for your platform
+7. **Never log or print** the output of `toStrings()` or `toHexStrings()` - they contain secret keys
+
+### Memory Security
+
+- Native memory is securely zeroed using `OQS_MEM_secure_free` before deallocation
+- Dart `Uint8List` containing secrets is **not automatically zeroed** by garbage collector - always call `clearSecrets()` when done
+- Use `publicKeyBase64` / `publicKeyHex` getters for safe serialization of public keys only
 
 ## Related Security Resources
 

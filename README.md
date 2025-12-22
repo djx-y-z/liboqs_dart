@@ -214,10 +214,28 @@ void main() {
 - Other algorithms may be experimental - validate against current security recommendations
 
 **Best Practices:**
-- Always call `dispose()` on KEM/Signature instances to securely clear secret keys
+- Always call `dispose()` on KEM/Signature instances to free native resources
+- Call `clearSecrets()` on key pairs when done to zero Dart memory
+- Use `LibOQSUtils.constantTimeEquals()` for comparing secrets (prevents timing attacks)
 - Use `OQSRandom.generateSeed()` for cryptographic key derivation
 - Keep the library updated to the latest version
-- Secret keys are automatically zeroed before memory is freed
+- Never log `toStrings()` or `toHexStrings()` output - they contain secret keys
+
+```dart
+// Secure usage example
+final kem = KEM.create('ML-KEM-768');
+final keyPair = kem.generateKeyPair();
+final encResult = kem.encapsulate(keyPair.publicKey);
+final sharedSecret = kem.decapsulate(encResult.ciphertext, keyPair.secretKey);
+
+// Verify secrets match using constant-time comparison
+final match = LibOQSUtils.constantTimeEquals(encResult.sharedSecret, sharedSecret);
+
+// Clean up sensitive data
+keyPair.clearSecrets();
+encResult.clearSecrets();
+kem.dispose();
+```
 
 ## Acknowledgements
 

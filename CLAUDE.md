@@ -191,6 +191,8 @@ make test ARGS="--reporter=expanded"
 
 ## Security Considerations
 
+> **Important:** See [SECURITY.md](SECURITY.md) for full security policy and best practices.
+
 ### Supply Chain Security
 - All native libraries are built from source in GitHub Actions
 - Pin to specific liboqs releases (no `main` branch builds)
@@ -201,6 +203,36 @@ make test ARGS="--reporter=expanded"
 2. Memory properly freed after use
 3. Sensitive data zeroed before freeing
 4. No timing side-channels
+
+### Security Rules for New Code
+
+When adding new cryptographic functionality:
+
+1. **Memory Management:**
+   - Use `LibOQSUtils.secureFreePointer(ptr, length)` for secret data (uses `OQS_MEM_secure_free`)
+   - Use `LibOQSUtils.freePointer(ptr)` only for non-sensitive data (public keys, ciphertext)
+   - Always free memory in `finally` blocks
+
+2. **Key/Secret Handling:**
+   - Add `clearSecrets()` method to any class holding secret keys or shared secrets
+   - Document with `/// **Security Warning:**` if methods expose secrets
+   - Provide safe alternatives (e.g., `publicKeyBase64` instead of `toStrings()`)
+
+3. **Comparisons:**
+   - Use `LibOQSUtils.constantTimeEquals()` for comparing secrets (prevents timing attacks)
+   - Never use `==` or loop-based comparison for secret data
+
+4. **Function Pointers:**
+   - Validate native function pointers before calling `asFunction()`
+   - Example: `if (_ptr.ref.func == nullptr) throw LibOQSException(...)`
+
+5. **dispose() Pattern:**
+   - Order: `free() -> detach() -> flag = true`
+   - This prevents memory leaks if exception occurs during cleanup
+
+6. **Documentation:**
+   - Add `/// **Security Warning:**` to methods that expose secrets
+   - Document Dart GC limitations for `Uint8List` containing secrets
 
 ## FVM (Flutter Version Management)
 
