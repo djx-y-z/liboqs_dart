@@ -215,7 +215,8 @@ void main() {
 
 **Best Practices:**
 - Always call `dispose()` on KEM/Signature instances to free native resources
-- Call `clearSecrets()` on key pairs when done to zero Dart memory
+- Call `clearSecrets()` on key pairs when done for immediate memory zeroing
+- Secrets are also auto-zeroed via Finalizers on GC (defense-in-depth), but don't rely solely on this
 - Use `LibOQSUtils.constantTimeEquals()` for comparing secrets (prevents timing attacks)
 - Use `OQSRandom.generateSeed()` for cryptographic key derivation
 - Keep the library updated to the latest version

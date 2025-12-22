@@ -98,8 +98,10 @@ When using this library:
 ### Memory Security
 
 - Native memory is securely zeroed using `OQS_MEM_secure_free` before deallocation
-- Dart `Uint8List` containing secrets is **not automatically zeroed** by garbage collector - always call `clearSecrets()` when done
+- **Automatic cleanup**: Finalizers automatically zero secrets when objects are garbage collected (defense-in-depth)
+- **Explicit cleanup** (recommended): Call `clearSecrets()` for immediate zeroing - don't rely solely on GC timing
 - Use `publicKeyBase64` / `publicKeyHex` getters for safe serialization of public keys only
+- `constantTimeEquals()` uses secure memory handling internally (no timing leaks, secure buffer cleanup)
 
 ## Related Security Resources
 

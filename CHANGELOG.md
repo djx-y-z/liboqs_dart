@@ -14,21 +14,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe getters: `publicKeyBase64`, `publicKeyHex`, `ciphertextBase64`, `ciphertextHex` (don't expose secrets)
 - Export `LibOQSUtils` from main library entry point
 - Security documentation in SECURITY.md, README.md, and CLAUDE.md
+- **Finalizers** for automatic secret zeroing on garbage collection (`KEMKeyPair`, `KEMEncapsulationResult`, `SignatureKeyPair`)
 
 ### Changed
 
 - `LibOQSUtils.secureFreePointer()` now uses native `OQS_MEM_secure_free` instead of manual zeroing
+- `LibOQSUtils.constantTimeEquals()` now performs constant-time length comparison (prevents length oracle attacks)
+- `LibOQSUtils.constantTimeEquals()` now uses `secureFreePointer()` for temporary buffers
 
 ### Fixed
 
 - `dispose()` operation order in KEM and Signature classes (free → detach → flag) to prevent memory leaks on exceptions
 - Null pointer checks for native function pointers before calling `asFunction()`
 - `OQSRandom.generateBytes()` now uses `secureFreePointer` for sensitive data
+- Added explicit `nullptr` check in `KEM.generateKeyPairDerand()` for `keypair_derand` function pointer
+- Added signature length validation in `Signature.verify()` (empty check and max length check)
 
 ### Security
 
 - Added security warnings to `toStrings()` and `toHexStrings()` methods that expose secret keys
 - Examples updated to use `constantTimeEquals()` instead of loop-based comparison
+- Defense-in-depth: Finalizers automatically zero secrets if user forgets to call `clearSecrets()`
 
 ## [1.0.3] - 2025-12-18
 

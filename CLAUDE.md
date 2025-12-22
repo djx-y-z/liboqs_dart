@@ -215,6 +215,13 @@ When adding new cryptographic functionality:
 
 2. **Key/Secret Handling:**
    - Add `clearSecrets()` method to any class holding secret keys or shared secrets
+   - Add `Finalizer` to auto-zero secrets on GC (defense-in-depth):
+     ```dart
+     final Finalizer<Uint8List> _secretDataFinalizer = Finalizer((data) {
+       data.fillRange(0, data.length, 0);
+     });
+     // In constructor: _secretDataFinalizer.attach(this, secretKey, detach: this);
+     ```
    - Document with `/// **Security Warning:**` if methods expose secrets
    - Provide safe alternatives (e.g., `publicKeyBase64` instead of `toStrings()`)
 
@@ -232,7 +239,7 @@ When adding new cryptographic functionality:
 
 6. **Documentation:**
    - Add `/// **Security Warning:**` to methods that expose secrets
-   - Document Dart GC limitations for `Uint8List` containing secrets
+   - Document that Finalizers provide automatic cleanup, but explicit `clearSecrets()` is recommended
 
 ## FVM (Flutter Version Management)
 
