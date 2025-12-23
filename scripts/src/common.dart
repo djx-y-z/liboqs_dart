@@ -198,6 +198,58 @@ Future<void> requireCommand(String command) async {
   }
 }
 
+/// Check if FVM is available
+Future<bool> fvmExists() async {
+  return await commandExists('fvm');
+}
+
+/// Run a Dart command using FVM if available, otherwise use dart directly
+Future<ProcessResult> runDart(
+  List<String> arguments, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  bool printOutput = true,
+}) async {
+  if (await fvmExists()) {
+    return runCommand(
+      'fvm',
+      ['dart', ...arguments],
+      workingDirectory: workingDirectory,
+      environment: environment,
+      printOutput: printOutput,
+    );
+  }
+  return runCommand(
+    'dart',
+    arguments,
+    workingDirectory: workingDirectory,
+    environment: environment,
+    printOutput: printOutput,
+  );
+}
+
+/// Run a Dart command and throw if it fails
+Future<void> runDartOrFail(
+  List<String> arguments, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  bool printOutput = true,
+}) async {
+  final result = await runDart(
+    arguments,
+    workingDirectory: workingDirectory,
+    environment: environment,
+    printOutput: printOutput,
+  );
+
+  if (result.exitCode != 0) {
+    throw Exception(
+      'Dart command failed with exit code ${result.exitCode}: '
+      'dart ${arguments.join(' ')}',
+    );
+  }
+}
+
 // ============================================
 // Git utilities
 // ============================================
