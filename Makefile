@@ -91,7 +91,8 @@ build:
 # =============================================================================
 
 regen:
-	$(FVM) dart run scripts/regenerate_bindings.dart $(ARGS)
+	@touch .skip_liboqs_hook
+	@$(FVM) dart run scripts/regenerate_bindings.dart $(ARGS); ret=$$?; rm -f .skip_liboqs_hook; exit $$ret
 
 check:
 	$(FVM) dart run scripts/check_updates.dart $(ARGS)

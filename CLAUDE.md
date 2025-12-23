@@ -65,6 +65,8 @@ make check ARGS="--json"                # Output JSON (for CI)
 make combine                            # Combine CI artifacts
 ```
 
+**Note:** `make regen` also creates a `.skip_liboqs_hook` marker file to prevent Build Hooks from running during regeneration. The marker is automatically removed after the command completes.
+
 ### Quality Assurance
 ```bash
 make test                                # Run all tests
