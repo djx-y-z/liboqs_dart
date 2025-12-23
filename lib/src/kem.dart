@@ -17,7 +17,7 @@ final Finalizer<Pointer<oqs.OQS_KEM>> _kemFinalizer = Finalizer(
 /// Finalizer for zeroing secret data when objects are garbage collected.
 /// This provides defense-in-depth if user forgets to call clearSecrets().
 final Finalizer<Uint8List> _secretDataFinalizer = Finalizer((data) {
-  data.fillRange(0, data.length, 0);
+  LibOQSUtils.zeroMemory(data);
 });
 
 /// Key Encapsulation Mechanism (KEM) implementation
@@ -404,13 +404,13 @@ class KEMKeyPair {
   /// Zeros the secret key in memory
   ///
   /// Call this method when you're done using the key pair to minimize
-  /// the time sensitive data remains in memory. Note that Dart's garbage
-  /// collector may still retain copies of the data.
+  /// the time sensitive data remains in memory. Uses `OQS_MEM_cleanse`
+  /// internally for compiler-optimization resistant zeroing.
   ///
   /// After calling this method, the [secretKey] will contain all zeros
   /// and should not be used for cryptographic operations.
   void clearSecrets() {
-    secretKey.fillRange(0, secretKey.length, 0);
+    LibOQSUtils.zeroMemory(secretKey);
   }
 
   /// Returns all Uint8List properties as base64 encoded strings
@@ -477,9 +477,10 @@ class KEMEncapsulationResult {
   /// Zeros the shared secret in memory
   ///
   /// Call this method when you're done using the shared secret to minimize
-  /// the time sensitive data remains in memory.
+  /// the time sensitive data remains in memory. Uses `OQS_MEM_cleanse`
+  /// internally for compiler-optimization resistant zeroing.
   void clearSecrets() {
-    sharedSecret.fillRange(0, sharedSecret.length, 0);
+    LibOQSUtils.zeroMemory(sharedSecret);
   }
 
   /// Returns all Uint8List properties as base64 encoded strings

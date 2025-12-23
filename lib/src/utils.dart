@@ -213,6 +213,42 @@ class LibOQSUtils {
     }
   }
 
+  /// Zero Dart-managed memory containing secrets
+  ///
+  /// This function securely zeros the contents of a Uint8List using liboqs
+  /// `OQS_MEM_cleanse` which is designed to resist compiler optimizations
+  /// that might remove the zeroing operation.
+  ///
+  /// Use this for clearing secret keys, shared secrets, and other sensitive
+  /// data stored in Dart memory before discarding the reference.
+  ///
+  /// Example:
+  /// ```dart
+  /// final secretKey = keyPair.secretKey;
+  /// // ... use secretKey ...
+  /// LibOQSUtils.zeroMemory(secretKey); // Clear when done
+  /// ```
+  static void zeroMemory(Uint8List data) {
+    if (data.isEmpty) return;
+
+    // Copy data to native memory, cleanse it, then copy back
+    // This ensures OQS_MEM_cleanse is used for compiler-optimization resistance
+    final ptr = calloc<Uint8>(data.length);
+    try {
+      // Copy Dart data to native
+      final nativeData = ptr.asTypedList(data.length);
+      nativeData.setAll(0, data);
+
+      // Use OQS_MEM_cleanse for secure zeroing
+      oqs.OQS_MEM_cleanse(ptr.cast<Void>(), data.length);
+
+      // Copy zeroed data back to Dart memory
+      data.setAll(0, nativeData);
+    } finally {
+      calloc.free(ptr);
+    }
+  }
+
   /// Validate algorithm name
   static void validateAlgorithmName(String name) {
     if (name.isEmpty) {

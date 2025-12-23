@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `LibOQSUtils.constantTimeEquals()` for timing-safe byte array comparison (prevents timing attacks)
+- `LibOQSUtils.zeroMemory()` for secure memory zeroing using native `OQS_MEM_cleanse` (compiler-optimization resistant)
 - `clearSecrets()` method to `KEMKeyPair`, `KEMEncapsulationResult`, and `SignatureKeyPair` for explicit secret zeroing
 - Safe getters: `publicKeyBase64`, `publicKeyHex`, `ciphertextBase64`, `ciphertextHex` (don't expose secrets)
 - Export `LibOQSUtils` from main library entry point
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LibOQSUtils.secureFreePointer()` now uses native `OQS_MEM_secure_free` instead of manual zeroing
 - `LibOQSUtils.constantTimeEquals()` now performs constant-time length comparison (prevents length oracle attacks)
 - `LibOQSUtils.constantTimeEquals()` now uses `secureFreePointer()` for temporary buffers
+- `clearSecrets()` and Finalizers now use `OQS_MEM_cleanse` via centralized `zeroMemory()` function
 
 ### Fixed
 
