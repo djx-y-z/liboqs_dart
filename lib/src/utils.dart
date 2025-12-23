@@ -128,7 +128,11 @@ class LibOQSUtils {
       // Use liboqs secure free which is designed to resist compiler optimizations
       oqs.OQS_MEM_secure_free(ptr.cast<Void>(), length);
     } catch (_) {
-      // Fallback: manual zeroing + free if OQS_MEM_secure_free fails
+      // Fallback: manual zeroing + free if OQS_MEM_secure_free fails.
+      // Silent failure is intentional (by design) for cryptographic libraries:
+      // - Logging cleanup errors could create side-channel information leaks
+      // - The fallback still provides memory zeroing, so security is maintained
+      // - Cleanup failures should not propagate exceptions to callers
       _fallbackSecureFree(ptr, length);
     }
   }

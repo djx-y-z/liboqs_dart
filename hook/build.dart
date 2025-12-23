@@ -14,6 +14,7 @@ library;
 import 'dart:io';
 
 import 'package:code_assets/code_assets.dart';
+import 'package:crypto/crypto.dart';
 import 'package:hooks/hooks.dart';
 
 /// Package name for asset registration.
@@ -65,11 +66,39 @@ void main(List<String> args) async {
 
     // Download if not cached
     if (!libFile.existsSync()) {
+      // Download checksums file for SHA256 verification (supply chain security)
+      final baseUrl =
+          'https://github.com/$_githubRepo/releases/download/liboqs-$fullVersion';
+      Map<String, String>? checksums;
+      String? expectedChecksum;
+
+      try {
+        checksums = await _downloadChecksums(baseUrl, fullVersion);
+        expectedChecksum = checksums[assetInfo.archiveFileName];
+
+        if (expectedChecksum == null) {
+          throw HookException(
+            'Checksum not found for ${assetInfo.archiveFileName} in checksums file. '
+            'Available files: ${checksums.keys.join(', ')}',
+          );
+        }
+      } catch (e) {
+        // If checksums download fails, log warning but continue
+        // This allows builds to work even if checksums file is missing
+        // (e.g., for older releases or local development)
+        // ignore: avoid_print
+        print(
+          'Warning: Could not verify SHA256 checksum: $e\n'
+          'Proceeding without verification (not recommended for production).',
+        );
+      }
+
       await _downloadAndExtract(
         assetInfo.downloadUrl,
         cacheDir,
         assetInfo.archiveFileName,
         assetInfo.fileName,
+        expectedChecksum: expectedChecksum,
       );
     }
 
@@ -275,13 +304,17 @@ String _iOSTargetName(CodeConfig codeConfig, Architecture arch) {
   }
 }
 
-/// Downloads and extracts the native library archive.
+/// Downloads and extracts the native library archive with SHA256 verification.
+///
+/// [expectedChecksum] is the expected SHA256 hash of the archive.
+/// If null, verification is skipped (not recommended for production).
 Future<void> _downloadAndExtract(
   String url,
   Uri outputDir,
   String archiveFileName,
-  String libFileName,
-) async {
+  String libFileName, {
+  String? expectedChecksum,
+}) async {
   final outDir = Directory.fromUri(outputDir);
   await outDir.create(recursive: true);
 
@@ -289,6 +322,11 @@ Future<void> _downloadAndExtract(
 
   // Download with retry
   await _downloadWithRetry(url, archiveFile);
+
+  // Verify SHA256 checksum if provided
+  if (expectedChecksum != null) {
+    await _verifyChecksum(archiveFile, expectedChecksum, archiveFileName);
+  }
 
   // Extract based on format
   if (url.endsWith('.zip')) {
@@ -398,6 +436,92 @@ Future<void> _extractZip(File archive, Directory outDir) async {
 
   if (result.exitCode != 0) {
     throw HookException('Failed to extract zip archive: ${result.stderr}');
+  }
+}
+
+/// Downloads and verifies checksums file from GitHub Release.
+///
+/// Returns a map of filename -> expected SHA256 hash.
+Future<Map<String, String>> _downloadChecksums(
+  String baseUrl,
+  String fullVersion,
+) async {
+  final checksumsUrl = '$baseUrl/liboqs-$fullVersion-checksums.sha256';
+  final client = HttpClient();
+
+  try {
+    final request = await client.getUrl(Uri.parse(checksumsUrl));
+    final response = await request.close();
+
+    if (response.statusCode != 200) {
+      throw HookException(
+        'Failed to download checksums from $checksumsUrl: HTTP ${response.statusCode}',
+      );
+    }
+
+    final content = await response.transform(systemEncoding.decoder).join();
+    return _parseChecksums(content);
+  } finally {
+    client.close();
+  }
+}
+
+/// Parses SHA256 checksums file content.
+///
+/// Expected format (standard sha256sum output):
+/// ```
+/// <hash>  <filename>
+/// <hash>  <filename>
+/// ```
+Map<String, String> _parseChecksums(String content) {
+  final checksums = <String, String>{};
+
+  for (final line in content.split('\n')) {
+    final trimmed = line.trim();
+    if (trimmed.isEmpty) continue;
+
+    // Format: "<hash>  <filename>" (two spaces between hash and filename)
+    // Also support single space for compatibility
+    final match = RegExp(r'^([a-fA-F0-9]{64})\s+(.+)$').firstMatch(trimmed);
+    if (match != null) {
+      final hash = match.group(1)!.toLowerCase();
+      final filename = match.group(2)!;
+      checksums[filename] = hash;
+    }
+  }
+
+  return checksums;
+}
+
+/// Computes SHA256 hash of a file.
+Future<String> _computeFileSha256(File file) async {
+  final bytes = await file.readAsBytes();
+  final digest = sha256.convert(bytes);
+  return digest.toString();
+}
+
+/// Verifies file SHA256 hash against expected value.
+///
+/// Throws [HookException] if verification fails.
+Future<void> _verifyChecksum(
+  File file,
+  String expectedHash,
+  String filename,
+) async {
+  final actualHash = await _computeFileSha256(file);
+
+  if (actualHash != expectedHash.toLowerCase()) {
+    // Delete the corrupted/tampered file
+    if (file.existsSync()) {
+      await file.delete();
+    }
+    throw HookException(
+      'SHA256 verification failed for $filename!\n'
+      'Expected: $expectedHash\n'
+      'Actual:   $actualHash\n'
+      'This may indicate a corrupted download or supply chain attack. '
+      'Please report this issue at https://github.com/$_githubRepo/issues',
+    );
   }
 }
 

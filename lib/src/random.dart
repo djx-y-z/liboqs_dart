@@ -12,6 +12,11 @@ import 'utils.dart';
 class OQSRandom {
   static const int _maxRandomSize = 1024 * 1024; // 1MB max
 
+  /// Maximum retry attempts for rejection sampling in generateInt().
+  /// With proper random distribution, hitting this limit is astronomically unlikely
+  /// (probability < 2^-1000 for reasonable ranges).
+  static const int _maxRejectionRetries = 1000;
+
   /// Generate cryptographically secure random bytes
   ///
   /// Uses the current liboqs random number generator (default: system RNG)
@@ -63,6 +68,7 @@ class OQSRandom {
   /// @param min Minimum value (inclusive)
   /// @param max Maximum value (exclusive)
   /// @return Random integer in range [min, max)
+  /// @throws LibOQSException if maximum retry attempts exceeded (indicates RNG failure)
   static int generateInt(int min, int max) {
     if (min >= max) {
       throw ArgumentError('min must be less than max');
@@ -80,7 +86,8 @@ class OQSRandom {
     final maxUsable = maxValue - (maxValue % range);
 
     // Rejection sampling: regenerate if value >= maxUsable
-    while (true) {
+    // Limit retries to prevent infinite loops (indicates RNG failure if exceeded)
+    for (var attempt = 0; attempt < _maxRejectionRetries; attempt++) {
       final randomBytes = generateBytes(bytesNeeded);
 
       int value = 0;
@@ -94,6 +101,12 @@ class OQSRandom {
       }
       // Otherwise, regenerate (loop continues)
     }
+
+    // If we get here, something is seriously wrong with the RNG
+    throw LibOQSException(
+      'Random number generation failed after $_maxRejectionRetries attempts. '
+      'This may indicate a problem with the random number generator.',
+    );
   }
 
   /// Switch to a different random number generator algorithm

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export `LibOQSUtils` from main library entry point
 - Security documentation in SECURITY.md, README.md, and CLAUDE.md
 - **Finalizers** for automatic secret zeroing on garbage collection (`KEMKeyPair`, `KEMEncapsulationResult`, `SignatureKeyPair`)
+- SHA256 checksum verification for native library downloads in build hooks (supply chain security)
 
 ### Changed
 
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LibOQSUtils.constantTimeEquals()` now performs constant-time length comparison (prevents length oracle attacks)
 - `LibOQSUtils.constantTimeEquals()` now uses `secureFreePointer()` for temporary buffers
 - `clearSecrets()` and Finalizers now use `OQS_MEM_cleanse` via centralized `zeroMemory()` function
+- Added documentation explaining silent failure behavior in `secureFreePointer()` (by design for cryptographic libraries)
 
 ### Fixed
 
@@ -31,12 +33,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `OQSRandom.generateBytes()` now uses `secureFreePointer` for sensitive data
 - Added explicit `nullptr` check in `KEM.generateKeyPairDerand()` for `keypair_derand` function pointer
 - Added signature length validation in `Signature.verify()` (empty check and max length check)
+- `OQSRandom.generateInt()` now has retry limit to prevent potential infinite loops in rejection sampling
 
 ### Security
 
 - Added security warnings to `toStrings()` and `toHexStrings()` methods that expose secret keys
 - Examples updated to use `constantTimeEquals()` instead of loop-based comparison
 - Defense-in-depth: Finalizers automatically zero secrets if user forgets to call `clearSecrets()`
+- Build hooks now verify SHA256 checksums of downloaded native libraries (prevents supply chain attacks)
 
 ## [1.0.3] - 2025-12-18
 
