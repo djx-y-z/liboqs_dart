@@ -29,7 +29,11 @@ void main() {
 
         // Verify secret key is not all zeros before clearing
         final hasNonZero = keyPair.secretKey.any((byte) => byte != 0);
-        expect(hasNonZero, isTrue, reason: 'Secret key should not be all zeros initially');
+        expect(
+          hasNonZero,
+          isTrue,
+          reason: 'Secret key should not be all zeros initially',
+        );
 
         // Store original length
         final originalLength = keyPair.secretKey.length;
@@ -39,7 +43,11 @@ void main() {
 
         // Verify secret key is now all zeros
         final allZeros = keyPair.secretKey.every((byte) => byte == 0);
-        expect(allZeros, isTrue, reason: 'Secret key should be all zeros after clearSecrets()');
+        expect(
+          allZeros,
+          isTrue,
+          reason: 'Secret key should be all zeros after clearSecrets()',
+        );
 
         // Length should remain the same
         expect(keyPair.secretKey.length, equals(originalLength));
@@ -57,7 +65,11 @@ void main() {
 
         // Verify shared secret is not all zeros before clearing
         final hasNonZero = encResult.sharedSecret.any((byte) => byte != 0);
-        expect(hasNonZero, isTrue, reason: 'Shared secret should not be all zeros initially');
+        expect(
+          hasNonZero,
+          isTrue,
+          reason: 'Shared secret should not be all zeros initially',
+        );
 
         // Store original length
         final originalLength = encResult.sharedSecret.length;
@@ -67,7 +79,11 @@ void main() {
 
         // Verify shared secret is now all zeros
         final allZeros = encResult.sharedSecret.every((byte) => byte == 0);
-        expect(allZeros, isTrue, reason: 'Shared secret should be all zeros after clearSecrets()');
+        expect(
+          allZeros,
+          isTrue,
+          reason: 'Shared secret should be all zeros after clearSecrets()',
+        );
 
         // Length should remain the same
         expect(encResult.sharedSecret.length, equals(originalLength));
@@ -87,7 +103,11 @@ void main() {
 
         // Verify secret key is not all zeros before clearing
         final hasNonZero = keyPair.secretKey.any((byte) => byte != 0);
-        expect(hasNonZero, isTrue, reason: 'Secret key should not be all zeros initially');
+        expect(
+          hasNonZero,
+          isTrue,
+          reason: 'Secret key should not be all zeros initially',
+        );
 
         // Store original length
         final originalLength = keyPair.secretKey.length;
@@ -97,7 +117,11 @@ void main() {
 
         // Verify secret key is now all zeros
         final allZeros = keyPair.secretKey.every((byte) => byte == 0);
-        expect(allZeros, isTrue, reason: 'Secret key should be all zeros after clearSecrets()');
+        expect(
+          allZeros,
+          isTrue,
+          reason: 'Secret key should be all zeros after clearSecrets()',
+        );
 
         // Length should remain the same
         expect(keyPair.secretKey.length, equals(originalLength));
@@ -177,7 +201,10 @@ void main() {
         expect(LibOQSUtils.constantTimeEquals(enc2.sharedSecret, dec2), isTrue);
 
         // Different encapsulations should produce different secrets
-        expect(LibOQSUtils.constantTimeEquals(enc1.sharedSecret, enc2.sharedSecret), isFalse);
+        expect(
+          LibOQSUtils.constantTimeEquals(enc1.sharedSecret, enc2.sharedSecret),
+          isFalse,
+        );
 
         // Cleanup
         keyPair.clearSecrets();

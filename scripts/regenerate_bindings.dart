@@ -86,10 +86,7 @@ Future<void> _checkRequirements() async {
 
   if (!result.stdout.toString().contains('ffigen')) {
     logWarn('ffigen not found in dependencies, running dart pub get...');
-    await runDartOrFail(
-      ['pub', 'get'],
-      workingDirectory: _packageDir.path,
-    );
+    await runDartOrFail(['pub', 'get'], workingDirectory: _packageDir.path);
   }
 
   logInfo('All requirements satisfied');
@@ -201,10 +198,10 @@ Future<void> _fixCyclicIncludes() async {
 Future<void> _generateBindings() async {
   logStep('Generating Dart FFI bindings...');
 
-  final result = await runDart(
-    ['run', 'ffigen'],
-    workingDirectory: _packageDir.path,
-  );
+  final result = await runDart([
+    'run',
+    'ffigen',
+  ], workingDirectory: _packageDir.path);
 
   if (result.exitCode != 0) {
     throw Exception('ffigen failed');
@@ -239,10 +236,10 @@ Future<bool> _runTests() async {
     return true;
   }
 
-  final result = await runDart(
-    ['test', 'test/quick_test.dart'],
-    workingDirectory: _packageDir.path,
-  );
+  final result = await runDart([
+    'test',
+    'test/quick_test.dart',
+  ], workingDirectory: _packageDir.path);
 
   if (result.exitCode == 0) {
     logInfo('Quick test passed!');

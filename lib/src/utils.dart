@@ -186,7 +186,11 @@ class LibOQSUtils {
       // Do a dummy comparison to maintain timing consistency
       final dummyPtr = allocateBytes(1);
       try {
-        oqs.OQS_MEM_secure_bcmp(dummyPtr.cast<Void>(), dummyPtr.cast<Void>(), 1);
+        oqs.OQS_MEM_secure_bcmp(
+          dummyPtr.cast<Void>(),
+          dummyPtr.cast<Void>(),
+          1,
+        );
       } finally {
         secureFreePointer(dummyPtr, 1);
       }
