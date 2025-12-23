@@ -2,6 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/liboqs.svg)](https://pub.dev/packages/liboqs)
 [![CI](https://github.com/djx-y-z/liboqs_dart/actions/workflows/test.yml/badge.svg)](https://github.com/djx-y-z/liboqs_dart/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/djx-y-z/d9cb3b92acef835005863e96294d984e/raw/coverage.json)](https://gist.github.com/djx-y-z/d9cb3b92acef835005863e96294d984e)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Dart](https://img.shields.io/badge/dart-%3E%3D3.10.0-brightgreen.svg)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/flutter-%3E%3D3.38.0-blue.svg)](https://flutter.dev)

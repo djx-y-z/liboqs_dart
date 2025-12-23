@@ -24,6 +24,7 @@ make build macos --arch arm64  # make interprets --arch as its own flag!
 | Show all commands | `make help` |
 | Build native library | `make build ARGS="<platform>"` |
 | Run tests | `make test` |
+| Run tests with coverage | `make coverage` |
 | Run analysis | `make analyze` |
 | Strict analysis | `make analyze ARGS="--fatal-infos"` |
 | Format code | `make format` |
@@ -71,6 +72,7 @@ make combine                            # Combine CI artifacts
 ```bash
 make test                                # Run all tests
 make test ARGS="test/kem_test.dart"      # Run specific test file
+make coverage                            # Run tests with coverage report
 make analyze                             # Run static analysis
 make analyze ARGS="--fatal-infos"        # Strict analysis
 make format                              # Format Dart code
