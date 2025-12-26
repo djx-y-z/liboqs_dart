@@ -120,29 +120,70 @@ void main(List<String> args) async {
       ),
     );
 
-    // Add dependency on version files for cache invalidation
-    output.dependencies.add(packageRoot.resolve('LIBOQS_VERSION'));
-    output.dependencies.add(packageRoot.resolve('NATIVE_BUILD'));
+    // Add dependency on pubspec.yaml for cache invalidation
+    // (contains liboqs.native_version and liboqs.native_build)
+    output.dependencies.add(packageRoot.resolve('pubspec.yaml'));
   });
 }
 
-/// Reads the liboqs version from LIBOQS_VERSION file.
+/// Reads the liboqs version from pubspec.yaml (liboqs.native_version).
 Future<String> _readVersion(Uri packageRoot) async {
-  final versionFile = File.fromUri(packageRoot.resolve('LIBOQS_VERSION'));
-  if (!versionFile.existsSync()) {
-    throw HookException('LIBOQS_VERSION file not found at ${versionFile.path}');
+  final pubspecFile = File.fromUri(packageRoot.resolve('pubspec.yaml'));
+  if (!pubspecFile.existsSync()) {
+    throw HookException('pubspec.yaml not found at ${pubspecFile.path}');
   }
-  return (await versionFile.readAsString()).trim();
+
+  final content = await pubspecFile.readAsString();
+
+  // Extract the liboqs: block (until next top-level key or EOF)
+  final blockMatch = RegExp(
+    r'^liboqs:\s*$([\s\S]*?)(?=^\w|\z)',
+    multiLine: true,
+  ).firstMatch(content);
+
+  if (blockMatch == null) {
+    throw HookException('liboqs: block not found in pubspec.yaml');
+  }
+
+  final block = blockMatch.group(1) ?? '';
+
+  // Extract native_version from the block
+  final versionMatch = RegExp(
+    r'native_version:\s*"?([^"\s\n]+)"?',
+  ).firstMatch(block);
+
+  if (versionMatch == null) {
+    throw HookException('native_version not found in liboqs block');
+  }
+
+  return versionMatch.group(1)!.trim();
 }
 
-/// Reads the native build number from NATIVE_BUILD file.
+/// Reads the native build number from pubspec.yaml (liboqs.native_build).
 Future<String> _readNativeBuild(Uri packageRoot) async {
-  final buildFile = File.fromUri(packageRoot.resolve('NATIVE_BUILD'));
-  if (!buildFile.existsSync()) {
-    return '1'; // Default if file doesn't exist
+  final pubspecFile = File.fromUri(packageRoot.resolve('pubspec.yaml'));
+  if (!pubspecFile.existsSync()) {
+    return '1';
   }
-  final build = (await buildFile.readAsString()).trim();
-  return build.isEmpty ? '1' : build;
+
+  final content = await pubspecFile.readAsString();
+
+  // Extract the liboqs: block
+  final blockMatch = RegExp(
+    r'^liboqs:\s*$([\s\S]*?)(?=^\w|\z)',
+    multiLine: true,
+  ).firstMatch(content);
+
+  if (blockMatch == null) {
+    return '1';
+  }
+
+  final block = blockMatch.group(1) ?? '';
+
+  // Extract native_build from the block
+  final buildMatch = RegExp(r'native_build:\s*(\d+)').firstMatch(block);
+
+  return buildMatch?.group(1)?.trim() ?? '1';
 }
 
 /// Reads full version (liboqs version + native build).

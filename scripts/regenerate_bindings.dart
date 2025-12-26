@@ -264,7 +264,7 @@ Usage:
   dart run scripts/regenerate_bindings.dart
 
 This script:
-  1. Reads version from LIBOQS_VERSION file
+  1. Reads version from pubspec.yaml (liboqs.native_version)
   2. Downloads liboqs source code
   3. Builds liboqs to generate headers
   4. Fixes cyclic includes in headers

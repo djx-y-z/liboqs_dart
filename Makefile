@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="windows" FVM="cmd //c fvm"
 
-.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version publish publish-dry-run
+.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version publish publish-dry-run
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -135,9 +135,17 @@ clean:
 	$(FVM) dart pub get --no-example
 
 version:
-	@echo "liboqs version: $$(cat LIBOQS_VERSION)"
-	@echo "Native build:   $$(cat NATIVE_BUILD 2>/dev/null || echo '1')"
-	@echo "Full version:   $$(cat LIBOQS_VERSION)-$$(cat NATIVE_BUILD 2>/dev/null || echo '1')"
+	@$(FVM) dart run scripts/get_version.dart
+
+# Internal target for getting version in scripts (outputs only the value)
+get-version:
+	@$(FVM) dart run scripts/get_version.dart --field version
+
+get-build:
+	@$(FVM) dart run scripts/get_version.dart --field build
+
+get-full-version:
+	@$(FVM) dart run scripts/get_version.dart --field full
 
 # =============================================================================
 # Publishing

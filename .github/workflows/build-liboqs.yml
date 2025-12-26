@@ -12,12 +12,12 @@
 #
 # Trigger:
 # - Manual dispatch (workflow_dispatch) - for first run or force rebuild
-# - Push to main when LIBOQS_VERSION file changes
+# - Push to main when pubspec.yaml changes (contains liboqs.native_version)
 #
 # After successful build, creates/updates GitHub Release with native library archives.
 # Build hooks download these archives automatically during app build.
 #
-# Version is read from LIBOQS_VERSION file in repository root
+# Version is read from liboqs.native_version and liboqs.native_build in pubspec.yaml
 
 name: Build liboqs Native Libraries
 
@@ -26,7 +26,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'LIBOQS_VERSION'
+      - 'pubspec.yaml'
 
 jobs:
   # ============================================
@@ -41,12 +41,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read version info
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Read version info from pubspec.yaml
         id: version
         run: |
-          VERSION=$(cat LIBOQS_VERSION | tr -d '[:space:]')
-          BUILD=$(cat NATIVE_BUILD 2>/dev/null | tr -d '[:space:]' || echo '1')
-          FULL_VERSION="${VERSION}-${BUILD}"
+          # Use centralized Dart script for version parsing
+          VERSION=$(make get-version)
+          BUILD=$(make get-build)
+          FULL_VERSION=$(make get-full-version)
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "build=$BUILD" >> $GITHUB_OUTPUT

@@ -116,7 +116,7 @@ liboqs/
 ├── scripts/                        # Build scripts (use via Makefile!)
 ├── test/                           # Tests
 ├── Makefile                        # Entry point for all commands
-├── LIBOQS_VERSION                  # Current liboqs version
+├── pubspec.yaml                    # Package config + liboqs.native_version
 └── .github/workflows/              # CI/CD workflows
 ```
 
@@ -124,10 +124,14 @@ liboqs/
 
 ### Update liboqs Version
 
-```bash
-# 1. Update version file
-echo "0.16.0" > LIBOQS_VERSION
+Native library version is stored in `pubspec.yaml` under `liboqs.native_version`.
 
+```bash
+# Option 1: Automatic update
+make check ARGS="--update"
+
+# Option 2: Manual update
+# 1. Edit pubspec.yaml - update liboqs.native_version to new version
 # 2. Regenerate FFI bindings
 make regen
 
@@ -135,7 +139,7 @@ make regen
 make test
 
 # 4. Commit and push (CI will build native libraries)
-git add LIBOQS_VERSION lib/src/bindings/
+git add pubspec.yaml lib/src/bindings/
 git commit -m "Update liboqs to 0.16.0"
 git push
 ```

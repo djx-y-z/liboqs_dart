@@ -138,7 +138,7 @@ Check for new liboqs releases and optionally update local files:
 # Just check for updates
 fvm dart run scripts/check_updates.dart
 
-# Check and update all files (LIBOQS_VERSION, pubspec.yaml, CHANGELOG.md)
+# Check and update pubspec.yaml and CHANGELOG.md
 fvm dart run scripts/check_updates.dart --update
 
 # Update to specific version
@@ -162,14 +162,17 @@ The workflow uses `--no-changelog` flag and generates AI-enhanced changelog sepa
 When updating liboqs version:
 
 ```bash
-# Update version
-echo "0.16.0" > LIBOQS_VERSION
+# Option 1: Automatic update (recommended)
+make check ARGS="--update"
+
+# Option 2: Manual update
+# Edit pubspec.yaml - update liboqs.native_version to new version
 
 # Regenerate bindings
-fvm dart run scripts/regenerate_bindings.dart
+make regen
 
 # Test
-fvm dart test
+make test
 ```
 
 ## Platform Requirements Summary

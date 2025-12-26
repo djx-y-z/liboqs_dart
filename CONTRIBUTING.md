@@ -308,8 +308,11 @@ All development tasks should be done via Makefile:
 When the liboqs version changes, you may need to regenerate Dart FFI bindings:
 
 ```bash
-# Update version
-echo "0.16.0" > LIBOQS_VERSION
+# Option 1: Automatic update (recommended)
+make check ARGS="--update"
+
+# Option 2: Manual update
+# Edit pubspec.yaml - update liboqs.native_version to new version
 
 # Regenerate bindings (downloads liboqs, builds headers, runs ffigen)
 make regen
@@ -319,7 +322,7 @@ make test
 ```
 
 **When to regenerate:**
-- After updating `LIBOQS_VERSION`
+- After updating `liboqs.native_version` in pubspec.yaml
 - If liboqs adds new functions you want to use
 - If struct layouts change in a new version
 
@@ -329,7 +332,7 @@ make test
 
 ### Building Native Libraries
 
-Native libraries are normally built automatically by CI when `LIBOQS_VERSION` changes.
+Native libraries are normally built automatically by CI when `liboqs.native_version` in pubspec.yaml changes.
 However, you can build them locally for testing or development.
 
 ```bash
@@ -391,7 +394,7 @@ This library wraps [liboqs](https://github.com/open-quantum-safe/liboqs). When u
 
 1. Review the liboqs changelog for security fixes
 2. Test all algorithms after update
-3. Update `LIBOQS_VERSION` file
+3. Update `liboqs.native_version` in pubspec.yaml (or use `make check ARGS="--update"`)
 4. Regenerate FFI bindings with `make regen`
 
 ## Questions?

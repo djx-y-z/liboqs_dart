@@ -3,7 +3,7 @@
 /// This module provides functionality to:
 /// - Check for new liboqs releases on GitHub
 /// - Compare versions using semver
-/// - Update LIBOQS_VERSION, pubspec.yaml, and CHANGELOG.md
+/// - Update pubspec.yaml (version, liboqs.native_version, liboqs.native_build) and CHANGELOG.md
 
 import 'dart:convert';
 import 'dart:io';
@@ -292,36 +292,51 @@ Future<void> updateVersionFiles({
 }) async {
   final packageDir = getPackageDir();
 
-  // Check if LIBOQS_VERSION is actually changing
+  // Check if native_version is actually changing
   final currentLiboqsVersion = getLiboqsVersion();
   final versionChanged = currentLiboqsVersion != newLiboqsVersion;
 
-  // 1. Update LIBOQS_VERSION
-  if (!silent) logStep('Updating LIBOQS_VERSION...');
-  final liboqsVersionFile = File('${packageDir.path}/LIBOQS_VERSION');
-  await liboqsVersionFile.writeAsString('$newLiboqsVersion\n');
-  if (!silent) logInfo('Updated LIBOQS_VERSION to $newLiboqsVersion');
-
-  // 2. Reset NATIVE_BUILD to 1 if LIBOQS_VERSION changed
-  if (versionChanged) {
-    if (!silent) logStep('Resetting NATIVE_BUILD to 1 (version changed)...');
-    final nativeBuildFile = File('${packageDir.path}/NATIVE_BUILD');
-    await nativeBuildFile.writeAsString('1\n');
-    if (!silent) logInfo('Reset NATIVE_BUILD to 1');
-  }
-
-  // 3. Update pubspec.yaml
+  // 1. Update pubspec.yaml (package version, liboqs.native_version, liboqs.native_build)
   if (!silent) logStep('Updating pubspec.yaml...');
   final pubspecFile = File('${packageDir.path}/pubspec.yaml');
   var pubspecContent = pubspecFile.readAsStringSync();
+
+  // Update package version
   pubspecContent = pubspecContent.replaceFirst(
     RegExp(r'^version:\s*.+$', multiLine: true),
     'version: $newPackageVersion',
   );
-  await pubspecFile.writeAsString(pubspecContent);
-  if (!silent) logInfo('Updated pubspec.yaml version to $newPackageVersion');
 
-  // 4. Update CHANGELOG.md (unless skipped for CI)
+  // Update liboqs.native_version
+  pubspecContent = pubspecContent.replaceFirstMapped(
+    RegExp(
+      r'(^liboqs:\s*\n(?:.*\n)*?\s*native_version:\s*)"?[^"\s\n]+"?',
+      multiLine: true,
+    ),
+    (match) => '${match.group(1)}"$newLiboqsVersion"',
+  );
+
+  // Reset liboqs.native_build to 1 if version changed
+  if (versionChanged) {
+    pubspecContent = pubspecContent.replaceFirstMapped(
+      RegExp(
+        r'(^liboqs:\s*\n(?:.*\n)*?\s*native_build:\s*)\d+',
+        multiLine: true,
+      ),
+      (match) => '${match.group(1)}1',
+    );
+    if (!silent) logInfo('Reset liboqs.native_build to 1 (version changed)');
+  }
+
+  await pubspecFile.writeAsString(pubspecContent);
+  if (!silent) {
+    logInfo('Updated pubspec.yaml:');
+    logInfo('  - version: $newPackageVersion');
+    logInfo('  - liboqs.native_version: $newLiboqsVersion');
+    if (versionChanged) logInfo('  - liboqs.native_build: 1');
+  }
+
+  // 2. Update CHANGELOG.md (unless skipped for CI)
   if (!skipChangelog) {
     if (!silent) logStep('Updating CHANGELOG.md...');
     await _updateChangelog(
@@ -423,9 +438,7 @@ void printUpdateSummary({
   print('');
   if (updated) {
     print('Files updated:');
-    print('  - LIBOQS_VERSION');
-    print('  - NATIVE_BUILD (reset to 1)');
-    print('  - pubspec.yaml');
+    print('  - pubspec.yaml (version, liboqs.native_version, liboqs.native_build)');
     print('  - CHANGELOG.md');
     print('');
     print('Next steps:');

@@ -3,7 +3,7 @@
 /// Check for liboqs updates
 ///
 /// This script checks for new liboqs releases and optionally updates
-/// local files (LIBOQS_VERSION, pubspec.yaml, CHANGELOG.md).
+/// pubspec.yaml (version, liboqs.native_version, liboqs.native_build) and CHANGELOG.md.
 ///
 /// Usage:
 ///   fvm dart run scripts/check_updates.dart [options]

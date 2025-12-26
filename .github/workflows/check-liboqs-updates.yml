@@ -2,12 +2,12 @@
 #
 # This workflow:
 # 1. Runs daily (or manually) to check for new liboqs releases
-# 2. Compares with current LIBOQS_VERSION using proper semver
+# 2. Compares with current liboqs.native_version in pubspec.yaml using proper semver
 # 3. If newer version found:
 #    - Fetches and analyzes liboqs changelog with AI (GitHub Models)
 #    - Determines appropriate version bump (major/minor/patch)
 #    - Handles RC/pre-release versions with -rc suffix
-#    - Updates LIBOQS_VERSION, pubspec.yaml, CHANGELOG.md
+#    - Updates pubspec.yaml (version, liboqs.native_version, liboqs.native_build), CHANGELOG.md
 #    - Creates PR with AI-generated analysis and recommendations
 # 4. The PR merge triggers build-liboqs.yml to build native libraries
 #
