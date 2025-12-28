@@ -27,15 +27,18 @@ class LibOQSUtils {
     Pointer<Uint8>? ptr;
     try {
       ptr = calloc<Uint8>(data.length);
+      // coverage:ignore-start
       if (ptr == nullptr) {
         throw LibOQSException('Failed to allocate ${data.length} bytes');
       }
+      // coverage:ignore-end
 
       // Validate the pointer before using it
       final nativeData = ptr.asTypedList(data.length);
       nativeData.setAll(0, data);
 
       return ptr;
+      // coverage:ignore-start
     } catch (e) {
       if (ptr != null && ptr != nullptr) {
         try {
@@ -44,13 +47,16 @@ class LibOQSUtils {
       }
       throw LibOQSException('Error converting Uint8List to pointer: $e');
     }
+    // coverage:ignore-end
   }
 
   /// Convert pointer to Uint8List with extensive validation
   static Uint8List pointerToUint8List(Pointer<Uint8> ptr, int length) {
+    // coverage:ignore-start
     if (ptr == nullptr) {
       throw LibOQSException('Cannot convert null pointer to Uint8List');
     }
+    // coverage:ignore-end
 
     if (length <= 0) {
       return Uint8List(0);
@@ -68,11 +74,13 @@ class LibOQSUtils {
       final sourceData = ptr.asTypedList(length);
       data.setAll(0, sourceData);
       return data;
+      // coverage:ignore-start
     } catch (e) {
       throw LibOQSException(
         'Error copying data from pointer (length: $length): $e',
       );
     }
+    // coverage:ignore-end
   }
 
   /// Allocate memory with safety checks
@@ -89,18 +97,22 @@ class LibOQSUtils {
 
     try {
       final ptr = calloc<Uint8>(size);
+      // coverage:ignore-start
       if (ptr == nullptr) {
         throw LibOQSException('Failed to allocate $size bytes - out of memory');
       }
+      // coverage:ignore-end
 
       // Initialize memory to zero for safety
       final data = ptr.asTypedList(size);
       data.fillRange(0, size, 0);
 
       return ptr;
+      // coverage:ignore-start
     } catch (e) {
       throw LibOQSException('Error allocating $size bytes: $e');
     }
+    // coverage:ignore-end
   }
 
   /// Safe pointer deallocation
@@ -127,6 +139,7 @@ class LibOQSUtils {
     try {
       // Use liboqs secure free which is designed to resist compiler optimizations
       oqs.OQS_MEM_secure_free(ptr.cast<Void>(), length);
+      // coverage:ignore-start
     } catch (_) {
       // Fallback: manual zeroing + free if OQS_MEM_secure_free fails.
       // Silent failure is intentional (by design) for cryptographic libraries:
@@ -135,9 +148,11 @@ class LibOQSUtils {
       // - Cleanup failures should not propagate exceptions to callers
       _fallbackSecureFree(ptr, length);
     }
+    // coverage:ignore-end
   }
 
   /// Fallback secure free implementation using manual zeroing
+  // coverage:ignore-start
   static void _fallbackSecureFree(Pointer ptr, int length) {
     try {
       // Zero the memory before freeing
@@ -156,6 +171,7 @@ class LibOQSUtils {
       // Silent fail for cleanup
     }
   }
+  // coverage:ignore-end
 
   /// Constant-time comparison of two byte arrays
   ///

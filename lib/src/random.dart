@@ -43,9 +43,12 @@ class OQSRandom {
       randomPtr = LibOQSUtils.allocateBytes(length);
       oqs.OQS_randombytes(randomPtr, length);
       return LibOQSUtils.pointerToUint8List(randomPtr, length);
+      // coverage:ignore-start
     } catch (e) {
       throw LibOQSException('Failed to generate random bytes: $e');
-    } finally {
+    }
+    // coverage:ignore-end
+    finally {
       // Use secure free - random data may be used for key derivation
       LibOQSUtils.secureFreePointer(randomPtr, length);
     }
@@ -103,10 +106,12 @@ class OQSRandom {
     }
 
     // If we get here, something is seriously wrong with the RNG
+    // coverage:ignore-start
     throw LibOQSException(
       'Random number generation failed after $_maxRejectionRetries attempts. '
       'This may indicate a problem with the random number generator.',
     );
+    // coverage:ignore-end
   }
 
   /// Switch to a different random number generator algorithm

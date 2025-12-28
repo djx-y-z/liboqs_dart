@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:liboqs/liboqs.dart';
@@ -357,6 +358,247 @@ void main() {
         () => KEM.create('NonExistentAlgorithm'),
         throwsA(isA<LibOQSException>()),
       );
+    });
+  });
+
+  group('KEM Property Getters', () {
+    test('algorithmVersion returns valid string', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final version = kem.algorithmVersion;
+        expect(version, isNotEmpty);
+        expect(version, isA<String>());
+        print('ML-KEM-768 algorithm version: $version');
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('claimedNistLevel returns valid level', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final level = kem.claimedNistLevel;
+        expect(level, greaterThan(0));
+        expect(level, lessThanOrEqualTo(5));
+        print('ML-KEM-768 NIST level: $level');
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('isIndCcaSecure returns boolean', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final secure = kem.isIndCcaSecure;
+        expect(secure, isA<bool>());
+        print('ML-KEM-768 IND-CCA secure: $secure');
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('property getters throw after dispose', () {
+      final kem = KEM.create('ML-KEM-768');
+      kem.dispose();
+
+      expect(() => kem.algorithmVersion, throwsStateError);
+      expect(() => kem.claimedNistLevel, throwsStateError);
+      expect(() => kem.isIndCcaSecure, throwsStateError);
+      expect(() => kem.seedLength, throwsStateError);
+      expect(() => kem.supportsDeterministicGeneration, throwsStateError);
+      expect(() => kem.publicKeyLength, throwsStateError);
+      expect(() => kem.secretKeyLength, throwsStateError);
+      expect(() => kem.ciphertextLength, throwsStateError);
+      expect(() => kem.sharedSecretLength, throwsStateError);
+    });
+
+    test('all ML-KEM variants have correct NIST levels', () {
+      final levels = {
+        'ML-KEM-512': 1,
+        'ML-KEM-768': 3,
+        'ML-KEM-1024': 5,
+      };
+
+      for (final entry in levels.entries) {
+        final kem = KEM.create(entry.key);
+        try {
+          expect(
+            kem.claimedNistLevel,
+            equals(entry.value),
+            reason: '${entry.key} should have NIST level ${entry.value}',
+          );
+        } finally {
+          kem.dispose();
+        }
+      }
+    });
+  });
+
+  group('KEMKeyPair Serialization', () {
+    test('toStrings returns base64 encoded keys', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final keyPair = kem.generateKeyPair();
+        final strings = keyPair.toStrings();
+
+        expect(strings.containsKey('publicKey'), isTrue);
+        expect(strings.containsKey('secretKey'), isTrue);
+        expect(strings['publicKey'], isNotEmpty);
+        expect(strings['secretKey'], isNotEmpty);
+
+        // Verify base64 decoding works
+        final decodedPublic = base64Decode(strings['publicKey']!);
+        final decodedSecret = base64Decode(strings['secretKey']!);
+
+        expect(decodedPublic, equals(keyPair.publicKey));
+        expect(decodedSecret, equals(keyPair.secretKey));
+
+        keyPair.clearSecrets();
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('toHexStrings returns hex encoded keys', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final keyPair = kem.generateKeyPair();
+        final hexStrings = keyPair.toHexStrings();
+
+        expect(hexStrings.containsKey('publicKey'), isTrue);
+        expect(hexStrings.containsKey('secretKey'), isTrue);
+
+        // Hex string length should be double the byte length
+        expect(
+          hexStrings['publicKey']!.length,
+          equals(keyPair.publicKey.length * 2),
+        );
+        expect(
+          hexStrings['secretKey']!.length,
+          equals(keyPair.secretKey.length * 2),
+        );
+
+        // Verify it contains only hex characters
+        expect(
+          RegExp(r'^[0-9a-f]+$').hasMatch(hexStrings['publicKey']!),
+          isTrue,
+        );
+        expect(
+          RegExp(r'^[0-9a-f]+$').hasMatch(hexStrings['secretKey']!),
+          isTrue,
+        );
+
+        keyPair.clearSecrets();
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('publicKeyBase64 and publicKeyHex work correctly', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final keyPair = kem.generateKeyPair();
+
+        // Test base64
+        final base64Key = keyPair.publicKeyBase64;
+        expect(base64Decode(base64Key), equals(keyPair.publicKey));
+
+        // Test hex
+        final hexKey = keyPair.publicKeyHex;
+        expect(hexKey.length, equals(keyPair.publicKey.length * 2));
+        expect(RegExp(r'^[0-9a-f]+$').hasMatch(hexKey), isTrue);
+
+        keyPair.clearSecrets();
+      } finally {
+        kem.dispose();
+      }
+    });
+  });
+
+  group('KEMEncapsulationResult Serialization', () {
+    test('toStrings returns base64 encoded values', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final keyPair = kem.generateKeyPair();
+        final encResult = kem.encapsulate(keyPair.publicKey);
+        final strings = encResult.toStrings();
+
+        expect(strings.containsKey('ciphertext'), isTrue);
+        expect(strings.containsKey('sharedSecret'), isTrue);
+        expect(strings['ciphertext'], isNotEmpty);
+        expect(strings['sharedSecret'], isNotEmpty);
+
+        // Verify base64 decoding works
+        final decodedCiphertext = base64Decode(strings['ciphertext']!);
+        final decodedSecret = base64Decode(strings['sharedSecret']!);
+
+        expect(decodedCiphertext, equals(encResult.ciphertext));
+        expect(decodedSecret, equals(encResult.sharedSecret));
+
+        keyPair.clearSecrets();
+        encResult.clearSecrets();
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('toHexStrings returns hex encoded values', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final keyPair = kem.generateKeyPair();
+        final encResult = kem.encapsulate(keyPair.publicKey);
+        final hexStrings = encResult.toHexStrings();
+
+        expect(hexStrings.containsKey('ciphertext'), isTrue);
+        expect(hexStrings.containsKey('sharedSecret'), isTrue);
+
+        // Hex string length should be double the byte length
+        expect(
+          hexStrings['ciphertext']!.length,
+          equals(encResult.ciphertext.length * 2),
+        );
+        expect(
+          hexStrings['sharedSecret']!.length,
+          equals(encResult.sharedSecret.length * 2),
+        );
+
+        // Verify it contains only hex characters
+        expect(
+          RegExp(r'^[0-9a-f]+$').hasMatch(hexStrings['ciphertext']!),
+          isTrue,
+        );
+        expect(
+          RegExp(r'^[0-9a-f]+$').hasMatch(hexStrings['sharedSecret']!),
+          isTrue,
+        );
+
+        keyPair.clearSecrets();
+        encResult.clearSecrets();
+      } finally {
+        kem.dispose();
+      }
+    });
+
+    test('ciphertextBase64 and ciphertextHex work correctly', () {
+      final kem = KEM.create('ML-KEM-768');
+      try {
+        final keyPair = kem.generateKeyPair();
+        final encResult = kem.encapsulate(keyPair.publicKey);
+
+        // Test base64
+        final base64Ct = encResult.ciphertextBase64;
+        expect(base64Decode(base64Ct), equals(encResult.ciphertext));
+
+        // Test hex
+        final hexCt = encResult.ciphertextHex;
+        expect(hexCt.length, equals(encResult.ciphertext.length * 2));
+        expect(RegExp(r'^[0-9a-f]+$').hasMatch(hexCt), isTrue);
+
+        keyPair.clearSecrets();
+        encResult.clearSecrets();
+      } finally {
+        kem.dispose();
+      }
     });
   });
 }

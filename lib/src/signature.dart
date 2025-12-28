@@ -10,9 +10,11 @@ import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
 import 'utils.dart';
 
+// coverage:ignore-start
 final Finalizer<Pointer<oqs.OQS_SIG>> _sigFinalizer = Finalizer(
   (ptr) => oqs.OQS_SIG_free(ptr),
 );
+// coverage:ignore-end
 
 /// Finalizer for zeroing secret data when objects are garbage collected.
 /// This provides defense-in-depth if user forgets to call clearSecrets().
@@ -132,6 +134,7 @@ class Signature {
     _checkDisposed();
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_sigPtr.ref.keypair == nullptr) {
       throw LibOQSException(
         'keypair function pointer is null - Signature may be corrupted',
@@ -139,6 +142,7 @@ class Signature {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final publicKey = LibOQSUtils.allocateBytes(publicKeyLength);
     final secretKey = LibOQSUtils.allocateBytes(secretKeyLength);
@@ -151,9 +155,11 @@ class Signature {
           >();
 
       final result = keypairFn(publicKey, secretKey);
+      // coverage:ignore-start
       if (result != 0) {
         throw LibOQSException('Failed to generate key pair', result);
       }
+      // coverage:ignore-end
 
       return SignatureKeyPair(
         publicKey: LibOQSUtils.pointerToUint8List(publicKey, publicKeyLength),
@@ -176,6 +182,7 @@ class Signature {
     }
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_sigPtr.ref.sign == nullptr) {
       throw LibOQSException(
         'sign function pointer is null - Signature may be corrupted',
@@ -183,6 +190,7 @@ class Signature {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final signature = LibOQSUtils.allocateBytes(maxSignatureLength);
     final signatureLength = calloc<Size>();
@@ -212,9 +220,11 @@ class Signature {
         secretKeyPtr,
       );
 
+      // coverage:ignore-start
       if (result != 0) {
         throw LibOQSException('Failed to sign message', result);
       }
+      // coverage:ignore-end
 
       final actualLength = signatureLength.value;
       return LibOQSUtils.pointerToUint8List(signature, actualLength);
@@ -245,6 +255,7 @@ class Signature {
     }
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_sigPtr.ref.verify == nullptr) {
       throw LibOQSException(
         'verify function pointer is null - Signature may be corrupted',
@@ -252,6 +263,7 @@ class Signature {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final messagePtr = LibOQSUtils.uint8ListToPointer(message);
     final signaturePtr = LibOQSUtils.uint8ListToPointer(signature);

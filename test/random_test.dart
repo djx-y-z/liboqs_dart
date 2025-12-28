@@ -90,6 +90,16 @@ void main() {
       expect(result, isTrue);
     });
 
+    test('switchAlgorithm throws on empty name', () {
+      expect(() => OQSRandom.switchAlgorithm(''), throwsArgumentError);
+    });
+
+    test('isAlgorithmLikelySupported returns correct values', () {
+      expect(OQSRandom.isAlgorithmLikelySupported('system'), isTrue);
+      expect(OQSRandom.isAlgorithmLikelySupported('OpenSSL'), isTrue);
+      expect(OQSRandom.isAlgorithmLikelySupported('nonexistent'), isFalse);
+    });
+
     test('generate large random data (1KB)', () {
       final bytes = OQSRandom.generateBytes(1024);
       expect(bytes.length, equals(1024));

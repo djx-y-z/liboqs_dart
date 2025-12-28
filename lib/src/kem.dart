@@ -10,9 +10,11 @@ import 'bindings/liboqs_bindings.dart' as oqs;
 import 'exception.dart';
 import 'utils.dart';
 
+// coverage:ignore-start
 final Finalizer<Pointer<oqs.OQS_KEM>> _kemFinalizer = Finalizer(
   (ptr) => oqs.OQS_KEM_free(ptr),
 );
+// coverage:ignore-end
 
 /// Finalizer for zeroing secret data when objects are garbage collected.
 /// This provides defense-in-depth if user forgets to call clearSecrets().
@@ -162,11 +164,13 @@ class KEM {
     }
 
     final requiredSeedLength = seedLength;
+    // coverage:ignore-start
     if (requiredSeedLength == null) {
       throw LibOQSException(
         'Cannot determine required seed length for $algorithmName',
       );
     }
+    // coverage:ignore-end
 
     if (seed.length != requiredSeedLength) {
       throw LibOQSException(
@@ -175,6 +179,7 @@ class KEM {
     }
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_kemPtr.ref.keypair_derand == nullptr) {
       throw LibOQSException(
         'keypair_derand function pointer is null - KEM may be corrupted',
@@ -182,6 +187,7 @@ class KEM {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final publicKey = LibOQSUtils.allocateBytes(publicKeyLength);
     final secretKey = LibOQSUtils.allocateBytes(secretKeyLength);
@@ -199,12 +205,14 @@ class KEM {
           >();
 
       final result = keypairDerandFn(publicKey, secretKey, seedPtr);
+      // coverage:ignore-start
       if (result != 0) {
         throw LibOQSException(
           'Failed to generate deterministic key pair',
           result,
         );
       }
+      // coverage:ignore-end
 
       return KEMKeyPair(
         publicKey: LibOQSUtils.pointerToUint8List(publicKey, publicKeyLength),
@@ -223,6 +231,7 @@ class KEM {
     _checkDisposed();
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_kemPtr.ref.keypair == nullptr) {
       throw LibOQSException(
         'keypair function pointer is null - KEM may be corrupted',
@@ -230,6 +239,7 @@ class KEM {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final publicKey = LibOQSUtils.allocateBytes(publicKeyLength);
     final secretKey = LibOQSUtils.allocateBytes(secretKeyLength);
@@ -242,9 +252,11 @@ class KEM {
           >();
 
       final result = keypairFn(publicKey, secretKey);
+      // coverage:ignore-start
       if (result != 0) {
         throw LibOQSException('Failed to generate key pair', result);
       }
+      // coverage:ignore-end
 
       return KEMKeyPair(
         publicKey: LibOQSUtils.pointerToUint8List(publicKey, publicKeyLength),
@@ -267,6 +279,7 @@ class KEM {
     }
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_kemPtr.ref.encaps == nullptr) {
       throw LibOQSException(
         'encaps function pointer is null - KEM may be corrupted',
@@ -274,6 +287,7 @@ class KEM {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final ciphertext = LibOQSUtils.allocateBytes(ciphertextLength);
     final sharedSecret = LibOQSUtils.allocateBytes(sharedSecretLength);
@@ -292,9 +306,11 @@ class KEM {
 
       final result = encapsFn(ciphertext, sharedSecret, publicKeyPtr);
 
+      // coverage:ignore-start
       if (result != 0) {
         throw LibOQSException('Failed to encapsulate', result);
       }
+      // coverage:ignore-end
 
       return KEMEncapsulationResult(
         ciphertext: LibOQSUtils.pointerToUint8List(
@@ -329,6 +345,7 @@ class KEM {
     }
 
     // Validate function pointer before use
+    // coverage:ignore-start
     if (_kemPtr.ref.decaps == nullptr) {
       throw LibOQSException(
         'decaps function pointer is null - KEM may be corrupted',
@@ -336,6 +353,7 @@ class KEM {
         algorithmName,
       );
     }
+    // coverage:ignore-end
 
     final sharedSecret = LibOQSUtils.allocateBytes(sharedSecretLength);
     final ciphertextPtr = LibOQSUtils.uint8ListToPointer(ciphertext);
@@ -354,9 +372,11 @@ class KEM {
 
       final result = decapsFn(sharedSecret, ciphertextPtr, secretKeyPtr);
 
+      // coverage:ignore-start
       if (result != 0) {
         throw LibOQSException('Failed to decapsulate', result);
       }
+      // coverage:ignore-end
 
       return LibOQSUtils.pointerToUint8List(sharedSecret, sharedSecretLength);
     } finally {
