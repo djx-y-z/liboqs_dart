@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-12-28
+
 ### Added
 
 - `LibOQSUtils.constantTimeEquals()` for timing-safe byte array comparison (prevents timing attacks)
@@ -17,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security documentation in SECURITY.md, README.md, and CLAUDE.md
 - **Finalizers** for automatic secret zeroing on garbage collection (`KEMKeyPair`, `KEMEncapsulationResult`, `SignatureKeyPair`)
 - SHA256 checksum verification for native library downloads in build hooks (supply chain security)
+- Comprehensive test coverage (100%): `exception_test.dart`, `utils_test.dart`, extended KEM/Signature/Random tests
+- Test coverage reporting with GitHub Gist badge
+- `make coverage` command for local coverage testing
+- Centralized `get_version.dart` script for version parsing
+- `runDart/runDartOrFail` helpers in `common.dart` for consistent FVM usage
+- `crypto` package dependency for SHA256 checksum verification
 
 ### Changed
 
@@ -25,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LibOQSUtils.constantTimeEquals()` now uses `secureFreePointer()` for temporary buffers
 - `clearSecrets()` and Finalizers now use `OQS_MEM_cleanse` via centralized `zeroMemory()` function
 - Added documentation explaining silent failure behavior in `secureFreePointer()` (by design for cryptographic libraries)
+- Native library version moved from `LIBOQS_VERSION`/`NATIVE_BUILD` files to `pubspec.yaml` (centralized version management)
+- All scripts now read version from `pubspec.yaml` via `get_version.dart`
+- `make regen` now creates `.skip_liboqs_hook` marker file to prevent Build Hooks during regeneration
+- `regenerate_bindings.dart` now uses FVM Dart when available
 
 ### Fixed
 
@@ -34,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added explicit `nullptr` check in `KEM.generateKeyPairDerand()` for `keypair_derand` function pointer
 - Added signature length validation in `Signature.verify()` (empty check and max length check)
 - `OQSRandom.generateInt()` now has retry limit to prevent potential infinite loops in rejection sampling
+- CI workflow now uses `--check-ignore` flag for coverage reporting (respects `coverage:ignore` annotations)
+- Regex replacement bug in `check_updates.dart` (`replaceFirst` → `replaceFirstMapped`)
 
 ### Security
 
@@ -41,6 +55,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Examples updated to use `constantTimeEquals()` instead of loop-based comparison
 - Defense-in-depth: Finalizers automatically zero secrets if user forgets to call `clearSecrets()`
 - Build hooks now verify SHA256 checksums of downloaded native libraries (prevents supply chain attacks)
+
+### Removed
+
+- `LIBOQS_VERSION` file (version now in `pubspec.yaml`)
+- `NATIVE_BUILD` file (build number now in `pubspec.yaml`)
 
 ## [1.0.3] - 2025-12-18
 
