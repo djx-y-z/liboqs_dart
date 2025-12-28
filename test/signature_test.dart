@@ -227,11 +227,7 @@ void main() {
     });
 
     test('all ML-DSA variants have correct NIST levels', () {
-      final levels = {
-        'ML-DSA-44': 2,
-        'ML-DSA-65': 3,
-        'ML-DSA-87': 5,
-      };
+      final levels = {'ML-DSA-44': 2, 'ML-DSA-65': 3, 'ML-DSA-87': 5};
 
       for (final entry in levels.entries) {
         final sig = Signature.create(entry.key);

@@ -413,11 +413,7 @@ void main() {
     });
 
     test('all ML-KEM variants have correct NIST levels', () {
-      final levels = {
-        'ML-KEM-512': 1,
-        'ML-KEM-768': 3,
-        'ML-KEM-1024': 5,
-      };
+      final levels = {'ML-KEM-512': 1, 'ML-KEM-768': 3, 'ML-KEM-1024': 5};
 
       for (final entry in levels.entries) {
         final kem = KEM.create(entry.key);

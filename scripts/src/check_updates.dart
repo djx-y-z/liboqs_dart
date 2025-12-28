@@ -438,7 +438,9 @@ void printUpdateSummary({
   print('');
   if (updated) {
     print('Files updated:');
-    print('  - pubspec.yaml (version, liboqs.native_version, liboqs.native_build)');
+    print(
+      '  - pubspec.yaml (version, liboqs.native_version, liboqs.native_build)',
+    );
     print('  - CHANGELOG.md');
     print('');
     print('Next steps:');
