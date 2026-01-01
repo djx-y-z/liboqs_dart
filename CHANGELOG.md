@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `make coverage` now uses `--check-ignore` flag (respects `coverage:ignore` annotations)
 - CI test workflow now uses `make coverage` instead of direct commands
 - Removed `print()` calls from tests (follow Dart best practices)
+- `build-liboqs.yml` workflow now skips build if release already exists (prevents unnecessary rebuilds when only package version changes)
 
 ## [1.1.0] - 2025-12-28
 
