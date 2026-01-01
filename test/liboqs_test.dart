@@ -20,7 +20,6 @@ void main() {
       final version = LibOQS.getVersion();
       expect(version, isNotEmpty);
       expect(version, contains('.'));
-      print('LibOQS version: $version');
     });
 
     test('should list supported KEM algorithms', () {
@@ -28,7 +27,6 @@ void main() {
       expect(kems, isNotEmpty);
       // liboqs 0.15+ uses NIST standardized names
       expect(kems, contains('ML-KEM-768'));
-      print('Supported KEMs: ${kems.length} algorithms');
     });
 
     test('should list supported signature algorithms', () {
@@ -36,7 +34,6 @@ void main() {
       expect(sigs, isNotEmpty);
       // liboqs 0.15+ uses NIST standardized names
       expect(sigs, contains('ML-DSA-65'));
-      print('Supported Signatures: ${sigs.length} algorithms');
     });
   });
 

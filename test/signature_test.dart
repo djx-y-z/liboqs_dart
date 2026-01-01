@@ -133,7 +133,6 @@ void main() {
 
     test('Falcon-512 key generation and signing', () {
       if (!Signature.isSupported('Falcon-512')) {
-        print('Falcon-512 not available - skipping test');
         return;
       }
 
@@ -173,7 +172,6 @@ void main() {
         }
       }
 
-      print('Signature algorithms: $successCount available');
       expect(successCount, greaterThan(0));
     });
   });
@@ -185,7 +183,6 @@ void main() {
         final version = sig.algorithmVersion;
         expect(version, isNotEmpty);
         expect(version, isA<String>());
-        print('ML-DSA-65 algorithm version: $version');
       } finally {
         sig.dispose();
       }
@@ -197,7 +194,6 @@ void main() {
         final level = sig.claimedNistLevel;
         expect(level, greaterThan(0));
         expect(level, lessThanOrEqualTo(5));
-        print('ML-DSA-65 NIST level: $level');
       } finally {
         sig.dispose();
       }
@@ -208,7 +204,6 @@ void main() {
       try {
         final secure = sig.isEufCmaSecure;
         expect(secure, isA<bool>());
-        print('ML-DSA-65 EUF-CMA secure: $secure');
       } finally {
         sig.dispose();
       }

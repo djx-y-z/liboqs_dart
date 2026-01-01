@@ -190,7 +190,7 @@ class LibOQSUtils {
   static bool constantTimeEquals(Uint8List a, Uint8List b) {
     // Constant-time length comparison to prevent length oracle attacks
     // XOR the lengths and accumulate - result is 0 only if lengths are equal
-    int lengthDiff = a.length ^ b.length;
+    final lengthDiff = a.length ^ b.length;
 
     if (a.isEmpty && b.isEmpty) {
       return true;

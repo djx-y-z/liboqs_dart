@@ -282,7 +282,6 @@ void main() {
         }
       }
 
-      print('KEM algorithms: $successCount available');
       expect(successCount, greaterThan(0));
     });
   });
@@ -368,7 +367,6 @@ void main() {
         final version = kem.algorithmVersion;
         expect(version, isNotEmpty);
         expect(version, isA<String>());
-        print('ML-KEM-768 algorithm version: $version');
       } finally {
         kem.dispose();
       }
@@ -380,7 +378,6 @@ void main() {
         final level = kem.claimedNistLevel;
         expect(level, greaterThan(0));
         expect(level, lessThanOrEqualTo(5));
-        print('ML-KEM-768 NIST level: $level');
       } finally {
         kem.dispose();
       }
@@ -391,7 +388,6 @@ void main() {
       try {
         final secure = kem.isIndCcaSecure;
         expect(secure, isA<bool>());
-        print('ML-KEM-768 IND-CCA secure: $secure');
       } finally {
         kem.dispose();
       }
