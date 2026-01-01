@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Refactored CI update workflow: moved AI analysis from bash to Dart script
+- Simplified `check-liboqs-updates.yml` workflow (~540 → ~190 lines)
+- Added `--ai`, `--no-ai`, `--ci` flags to `check_updates.dart` script
+- Script now writes directly to `GITHUB_OUTPUT` in CI mode (no jq parsing needed)
+- `make check` and `make combine` now create `.skip_liboqs_hook` to prevent build hooks during execution
+
 ## [1.1.0] - 2025-12-28
 
 ### Added
