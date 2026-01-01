@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `--ai`, `--no-ai`, `--ci` flags to `check_updates.dart` script
 - Script now writes directly to `GITHUB_OUTPUT` in CI mode (no jq parsing needed)
 - `make check` and `make combine` now create `.skip_liboqs_hook` to prevent build hooks during execution
+- `make coverage` now uses `--check-ignore` flag (respects `coverage:ignore` annotations)
+- CI test workflow now uses `make coverage` instead of direct commands
 - Removed `print()` calls from tests (follow Dart best practices)
 
 ## [1.1.0] - 2025-12-28
@@ -130,7 +132,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Secret keys are automatically zeroed before memory is freed
 - Based on liboqs 0.15.0 with NIST-standardized algorithms (FIPS 203, 204, 205)
 
-[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.3...v1.1.0
+[1.0.3]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/djx-y-z/liboqs_dart/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/djx-y-z/liboqs_dart/releases/tag/v1.0.0
