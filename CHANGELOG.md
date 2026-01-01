@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `analysis_options.yaml` with recommended lints and exclusions for auto-generated bindings
+- `make doc` command for local API documentation generation
+
+### Fixed
+
+- `.pubignore` now includes `CONTRIBUTING.md` in published package (needed for pub.dev links)
+- `.pubignore` now excludes generated `doc/` directory
 
 ### Changed
 

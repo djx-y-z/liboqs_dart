@@ -1,6 +1,5 @@
 # Development files
 TODO.md
-CONTRIBUTING.md
 Makefile
 .fvmrc
 .skip_liboqs_hook
@@ -33,3 +32,6 @@ example/ios/Pods/
 
 # FVM
 .fvm/
+
+# Generated documentation
+doc/
