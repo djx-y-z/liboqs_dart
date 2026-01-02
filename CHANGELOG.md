@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pre-commit git hook for format check and static analysis (configured via `make setup`)
+
 ## [1.1.1] - 2026-01-02
 
 ### Added
