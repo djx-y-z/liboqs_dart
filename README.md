@@ -33,7 +33,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  liboqs: ^1.1.0
+  liboqs: ^x.x.x
 ```
 
 ## Quick Start
