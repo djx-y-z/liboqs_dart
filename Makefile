@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="windows" FVM="cmd //c fvm"
 
-.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version doc publish publish-dry-run
+.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version check-release doc publish publish-dry-run
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -159,6 +159,10 @@ get-build:
 
 get-full-version:
 	@$(FVM) dart run scripts/get_version.dart --field full
+
+check-release:
+	@touch .skip_liboqs_hook
+	@$(FVM) dart run scripts/check_release.dart $(ARGS); ret=$$?; rm -f .skip_liboqs_hook; exit $$ret
 
 # =============================================================================
 # Publishing

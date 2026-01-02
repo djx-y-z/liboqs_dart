@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pre-commit git hook for format check and static analysis (configured via `make setup`)
 
+### Fixed
+
+- Fixed version parsing in `build-liboqs.yml` workflow (use Dart script instead of grep for reliable parsing)
+
 ## [1.1.1] - 2026-01-02
 
 ### Added
