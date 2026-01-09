@@ -127,31 +127,14 @@ jobs:
           fi
 
   # ============================================
-  # Run tests
+  # Run tests (multi-platform)
   # ============================================
   test:
     needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup FVM and Flutter
-        uses: ./.github/actions/setup-fvm
-
-      - name: Install dependencies
-        run: make get
-
-      - name: Analyze code
-        run: make analyze ARGS="--fatal-infos"
-
-      - name: Run tests
-        run: make test
-
-      - name: Check formatting
-        run: make format-check
-
-      - name: Validate package
-        run: make publish-dry-run
+    uses: ./.github/workflows/test-reusable.yml
+    with:
+      run-coverage: false
+      update-badge: false
 
   # ============================================
   # Publish to pub.dev
@@ -190,17 +173,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.validate.outputs.version }}
-          name: v${{ needs.validate.outputs.version }}
-          body: |
-            ## Changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ needs.validate.outputs.version }}" \
+            --title "v${{ needs.validate.outputs.version }}" \
+            --notes "$(cat <<'EOF'
+          ## Changes
 
-            ${{ needs.validate.outputs.changelog }}
+          ${{ needs.validate.outputs.changelog }}
 
-            ---
+          ---
 
-            **pub.dev:** https://pub.dev/packages/liboqs/versions/${{ needs.validate.outputs.version }}
-          draft: false
-          prerelease: false
+          **pub.dev:** https://pub.dev/packages/liboqs/versions/${{ needs.validate.outputs.version }}
+          EOF
+          )"

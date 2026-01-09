@@ -1,13 +1,10 @@
-# Automatically check for new liboqs releases and update the package
+# Automatically check for new liboqs releases and create PR to update pubspec.yaml
 #
 # This workflow:
 # 1. Runs daily (or manually) to check for new liboqs releases
 # 2. Compares with current liboqs.native_version in pubspec.yaml
-# 3. If newer version found:
-#    - Uses AI (GitHub Models) to analyze release notes
-#    - Updates pubspec.yaml and CHANGELOG.md
-#    - Creates PR with analysis and recommendations
-# 4. The PR merge triggers build-liboqs.yml to build native libraries
+# 3. If newer version found, updates pubspec.yaml and creates a PR
+# 4. After merge, manual steps are needed (see PR description)
 
 name: Check liboqs Updates
 
@@ -27,11 +24,6 @@ on:
         required: false
         default: ''
         type: string
-      skip_ai_analysis:
-        description: 'Skip AI analysis (faster, but less detailed)'
-        required: false
-        default: false
-        type: boolean
 
 jobs:
   check-updates:
@@ -39,22 +31,46 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      models: read  # Required for GitHub Models
 
     steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
 
       - name: Check for updates
         id: check
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Build arguments
+          ARGS="--ci"
+
+          if [ -n "${{ inputs.target_version }}" ]; then
+            ARGS="$ARGS --version ${{ inputs.target_version }}"
+          fi
+
+          if [ "${{ inputs.force_update }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+
+          echo "Running: make check ARGS=\"$ARGS\""
+          make check ARGS="$ARGS" || true
+
+          echo "Check completed. Outputs:"
+          cat $GITHUB_OUTPUT || true
+
+      - name: Update pubspec.yaml
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          # Build arguments for update
           ARGS="--update --ci"
 
           if [ -n "${{ inputs.target_version }}" ]; then
@@ -65,101 +81,71 @@ jobs:
             ARGS="$ARGS --force"
           fi
 
-          if [ "${{ inputs.skip_ai_analysis }}" = "true" ]; then
-            ARGS="$ARGS --no-ai"
-          fi
-
           echo "Running: make check ARGS=\"$ARGS\""
           make check ARGS="$ARGS"
 
-      - name: Prepare PR body
-        if: steps.check.outputs.needs_update == 'true'
-        id: pr_body
-        run: |
-          IS_RC="${{ steps.check.outputs.is_prerelease }}"
-          AI_AVAILABLE="${{ steps.check.outputs.ai_available }}"
-          BINDING_CHANGES="${{ steps.check.outputs.binding_changes }}"
-          BREAKING_CHANGES="${{ steps.check.outputs.breaking_changes }}"
-          AI_MODEL="${{ steps.check.outputs.ai_model }}"
-
-          # Build PR body
-          cat > /tmp/pr_body.md << 'PREOF'
-          ## Automated liboqs Update
-
-          This PR updates the liboqs native library.
-
-          ### Version Changes
-          PREOF
-
-          cat >> /tmp/pr_body.md << EOF
-          | Component | Old | New |
-          |-----------|-----|-----|
-          | liboqs | ${{ steps.check.outputs.current_version }} | ${{ steps.check.outputs.latest_version }} |
-          | Package | ${{ steps.check.outputs.pkg_current }} | ${{ steps.check.outputs.pkg_new }} |
-          | Bump Type | - | ${{ steps.check.outputs.bump_type }} |
-          EOF
-
-          if [ "$IS_RC" = "true" ]; then
-            cat >> /tmp/pr_body.md << 'PREOF'
-
-          > ⚠️ **Pre-release Version**: This includes a release candidate of liboqs.
-          > Consider waiting for stable release unless you need specific features.
-          PREOF
-          fi
-
-          if [ "$AI_AVAILABLE" = "true" ]; then
-            cat >> /tmp/pr_body.md << EOF
-
-          ### 🤖 AI Analysis (${AI_MODEL})
-
-          **Breaking Changes:** ${BREAKING_CHANGES}
-
-          **Binding Changes Needed:** ${BINDING_CHANGES}
-          EOF
-          fi
-
-          cat >> /tmp/pr_body.md << EOF
-
-          ### Release Notes
-          See [liboqs ${{ steps.check.outputs.latest_version }} release notes](${{ steps.check.outputs.release_url }})
-
-          ### ⚠️ Review Checklist
-
-          Before merging, please verify:
-          - [ ] Review liboqs release notes for breaking changes
-          - [ ] Check if FFI bindings need regeneration
-          - [ ] Verify no security vulnerabilities in the new version
-          - [ ] Run tests locally if bindings changed
-
-          ### What happens after merge
-
-          1. The \`build-liboqs.yml\` workflow will automatically trigger
-          2. Native libraries will be built for all platforms
-          3. Binaries will be committed to the repository
-
-          ---
-          🤖 This PR was created automatically by the liboqs update checker.
-          EOF
-
-          # Output body
-          {
-            echo "body<<BODYEOF"
-            cat /tmp/pr_body.md
-            echo "BODYEOF"
-          } >> $GITHUB_OUTPUT
-
       - name: Create Pull Request
-        if: steps.check.outputs.needs_update == 'true' && steps.check.outputs.updated == 'true'
-        uses: peter-evans/create-pull-request@v6
+        if: steps.check.outputs.needs_update == 'true'
+        uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
           commit-message: |
-            Update liboqs to ${{ steps.check.outputs.latest_version }}
+            chore(deps): update liboqs native_version to ${{ steps.check.outputs.latest_version }}
+          title: "Update liboqs to ${{ steps.check.outputs.latest_version }}"
+          body: |
+            ## Automated liboqs Update
 
-            - Package version: ${{ steps.check.outputs.pkg_current }} → ${{ steps.check.outputs.pkg_new }}
-            - Bump type: ${{ steps.check.outputs.bump_type }}
-          title: "⬆️ Update liboqs to ${{ steps.check.outputs.latest_version }}"
-          body: ${{ steps.pr_body.outputs.body }}
+            This PR updates the liboqs native library version in pubspec.yaml.
+
+            ### Version Change
+
+            | Component | Old | New |
+            |-----------|-----|-----|
+            | liboqs | ${{ steps.check.outputs.current_version }} | ${{ steps.check.outputs.latest_version }} |
+
+            ${{ steps.check.outputs.is_prerelease == 'true' && '> **Pre-release**: This is a release candidate. Consider waiting for stable release unless you need specific features.' || '' }}
+
+            ### Release Notes
+
+            See [liboqs ${{ steps.check.outputs.latest_version }} release notes](${{ steps.check.outputs.release_url }})
+
+            ### What Happens After Merge
+
+            1. **Automatic build starts**: The `build-liboqs.yml` workflow will automatically trigger and build native libraries for all platforms.
+
+            2. **Wait for build completion**: Monitor the [Actions](../../actions) page until the build succeeds and a new Release is published.
+
+            ### Manual Steps (after build completes)
+
+            Once native libraries are published to Releases, complete these steps:
+
+            1. **Regenerate FFI bindings (if API changed):**
+               ```bash
+               make regen
+               ```
+
+            2. **Update README.md badge** (line 9):
+               ```markdown
+               [![liboqs](https://img.shields.io/badge/liboqs-${{ steps.check.outputs.latest_version }}-blue.svg)](https://github.com/open-quantum-safe/liboqs)
+               ```
+
+            3. **Update CHANGELOG.md** with appropriate version entry
+
+            4. **Run tests to verify:**
+               ```bash
+               make test
+               ```
+
+            5. **Commit and push all changes:**
+               ```bash
+               git add .
+               git commit -m "chore: regenerate bindings and update docs for liboqs ${{ steps.check.outputs.latest_version }}"
+               git push
+               ```
+
+            ---
+            *This PR was created automatically by the liboqs update checker.*
           branch: update-liboqs-${{ steps.check.outputs.latest_version }}
           delete-branch: true
           labels: |
@@ -170,22 +156,17 @@ jobs:
       - name: Summary
         run: |
           if [ "${{ steps.check.outputs.needs_update }}" = "true" ]; then
-            echo "## ✅ Update Available" >> $GITHUB_STEP_SUMMARY
+            echo "## Update Available" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| Current liboqs | ${{ steps.check.outputs.current_version }} |" >> $GITHUB_STEP_SUMMARY
             echo "| New liboqs | ${{ steps.check.outputs.latest_version }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Package version | ${{ steps.check.outputs.pkg_current }} → ${{ steps.check.outputs.pkg_new }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Bump type | ${{ steps.check.outputs.bump_type }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Pre-release | ${{ steps.check.outputs.is_prerelease }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| AI Analysis | ${{ steps.check.outputs.ai_available }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| AI Model | ${{ steps.check.outputs.ai_model }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Updated | ${{ steps.check.outputs.updated }} |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "A pull request has been created for review." >> $GITHUB_STEP_SUMMARY
           else
-            echo "## ✅ Up to Date" >> $GITHUB_STEP_SUMMARY
+            echo "## Up to Date" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Current version **${{ steps.check.outputs.current_version }}** is the latest." >> $GITHUB_STEP_SUMMARY
           fi

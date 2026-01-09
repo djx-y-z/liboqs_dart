@@ -1,9 +1,12 @@
-# Run Dart tests for liboqs_dart
+# Run tests on multiple platforms
 #
-# Trigger:
-# - Push to main when library files change
-# - After native library build completes
-# - Manual dispatch
+# Triggers:
+# - Manual dispatch (workflow_dispatch)
+# - Push to main branch (relevant files)
+# - Pull requests (relevant files) - skipped for bot PRs (e.g., liboqs updates)
+# - After successful build-liboqs workflow
+#
+# Platforms: Linux x86_64, Linux ARM64, macOS ARM64, Windows x86_64
 
 name: Tests
 
@@ -15,54 +18,29 @@ on:
       - 'lib/**'
       - 'test/**'
       - 'pubspec.yaml'
-      - 'pubspec.lock'
+      - '.github/workflows/test.yml'
+      - '.github/workflows/test-reusable.yml'
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'pubspec.yaml'
   workflow_run:
     workflows: ["Build liboqs Native Libraries"]
-    types: [completed]
-    branches: [main]
+    types:
+      - completed
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # Native libraries are pre-built in bin/
-    # Skip if triggered by failed build workflow
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup FVM and Flutter
-        uses: ./.github/actions/setup-fvm
-
-      - name: Install dependencies
-        run: make get
-
-      - name: Install lcov
-        run: sudo apt-get install -y lcov
-
-      - name: Analyze code
-        run: make analyze ARGS="--fatal-infos"
-
-      - name: Run tests with coverage
-        run: make coverage
-
-      - name: Calculate coverage percentage
-        id: coverage
-        run: |
-          COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | sed 's/.*: //' | sed 's/%.*//')
-          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
-          echo "Coverage: $COVERAGE%"
-
-      - name: Update coverage badge
-        if: github.ref == 'refs/heads/main'
-        uses: schneegans/dynamic-badges-action@v1.7.0
-        with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gistID: ${{ vars.COVERAGE_GIST_ID }}
-          filename: coverage.json
-          label: coverage
-          message: ${{ steps.coverage.outputs.percentage }}%
-          valColorRange: ${{ steps.coverage.outputs.percentage }}
-          minColorRange: 50
-          maxColorRange: 90
-
-      - name: Check formatting
-        run: make format-check
+    # Skip tests for:
+    # - Failed workflow_run triggers
+    # - Bot PRs (automated liboqs updates) - native libraries not yet built
+    if: |
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') &&
+      (github.event_name != 'pull_request' || github.event.pull_request.user.type != 'Bot')
+    uses: ./.github/workflows/test-reusable.yml
+    with:
+      run-coverage: true
+      update-badge: ${{ github.ref == 'refs/heads/main' }}
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

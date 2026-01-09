@@ -10,10 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Pre-commit git hook for format check and static analysis (configured via `make setup`)
+- Multi-platform testing workflow (`test-reusable.yml`): Linux x86_64, Linux ARM64, macOS ARM64, Windows x86_64
+- GitHub App token support for signed commits in CI workflows
+- Skip tests for automated bot PRs (native libraries not yet built)
+
+### Changed
+
+- Simplified `check-liboqs-updates.yml` workflow: removed AI analysis, now only updates `native_version` in pubspec.yaml
+- Removed `--ai`, `--no-ai`, `--bump`, `--no-changelog` flags from `check_updates.dart` (script now focuses on version checking only)
+- Replaced `softprops/action-gh-release` with official `gh` CLI for release creation (build-liboqs.yml, publish.yml)
+- Updated GitHub Actions: `peter-evans/create-pull-request` v8, `actions/create-github-app-token` v2, `ilammy/msvc-dev-cmd` v1.13.0
+- Improved Windows FVM setup with PUB_CACHE detection and shell wrapper for Git Bash compatibility
+- Native library release description simplified: removed "Usage" section, renamed "Archive Format" to "Platforms"
 
 ### Fixed
 
 - Fixed version parsing in `build-liboqs.yml` workflow (use Dart script instead of grep for reliable parsing)
+- Added checkout step to create-release job (required for gh CLI)
+- FVM config changes are now discarded after setup to prevent unwanted modifications
+
+### Removed
+
+- `scripts/src/ai_analysis.dart` - AI-powered changelog generation removed
+- `.github/prompts/ai-analysis-prompt.md` - AI prompt template removed
 
 ## [1.1.1] - 2026-01-02
 
