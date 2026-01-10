@@ -99,17 +99,41 @@ void main() {
       sig.dispose();
     });
 
-    test('Empty message throws ArgumentError', () {
+    test('Empty message can be signed and verified', () {
       final sig = Signature.create('ML-DSA-65');
 
       final keyPair = sig.generateKeyPair();
       final emptyMessage = Uint8List(0);
 
-      // Empty messages are not allowed
-      expect(
-        () => sig.sign(emptyMessage, keyPair.secretKey),
-        throwsArgumentError,
-      );
+      // Empty messages are allowed per FIPS 204 and liboqs
+      final signature = sig.sign(emptyMessage, keyPair.secretKey);
+      expect(signature, isNotEmpty);
+
+      // Verify empty message signature
+      final isValid = sig.verify(emptyMessage, signature, keyPair.publicKey);
+      expect(isValid, isTrue);
+
+      sig.dispose();
+    });
+
+    test('Empty message signature is unique per key pair', () {
+      final sig = Signature.create('ML-DSA-65');
+
+      final keyPair1 = sig.generateKeyPair();
+      final keyPair2 = sig.generateKeyPair();
+      final emptyMessage = Uint8List(0);
+
+      final signature1 = sig.sign(emptyMessage, keyPair1.secretKey);
+      final signature2 = sig.sign(emptyMessage, keyPair2.secretKey);
+
+      // Signatures should be different for different key pairs
+      expect(signature1, isNot(equals(signature2)));
+
+      // Each signature should only verify with its corresponding public key
+      expect(sig.verify(emptyMessage, signature1, keyPair1.publicKey), isTrue);
+      expect(sig.verify(emptyMessage, signature1, keyPair2.publicKey), isFalse);
+      expect(sig.verify(emptyMessage, signature2, keyPair2.publicKey), isTrue);
+      expect(sig.verify(emptyMessage, signature2, keyPair1.publicKey), isFalse);
 
       sig.dispose();
     });

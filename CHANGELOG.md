@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Signature.sign()` and `Signature.verify()` now allow empty messages (valid per FIPS 204 and liboqs)
 - Simplified `check-liboqs-updates.yml` workflow: removed AI analysis, now only updates `native_version` in pubspec.yaml
 - Removed `--ai`, `--no-ai`, `--bump`, `--no-changelog` flags from `check_updates.dart` (script now focuses on version checking only)
 - Replaced `softprops/action-gh-release` with official `gh` CLI for release creation (build-liboqs.yml, publish.yml)

@@ -196,7 +196,8 @@ class Signature {
     final signatureLength = calloc<Size>();
     signatureLength.value = maxSignatureLength;
 
-    final messagePtr = LibOQSUtils.uint8ListToPointer(message);
+    // Allow empty messages - valid per FIPS 204 and liboqs
+    final messagePtr = LibOQSUtils.uint8ListToPointerAllowEmpty(message);
     final secretKeyPtr = LibOQSUtils.uint8ListToPointer(secretKey);
 
     try {
@@ -231,6 +232,7 @@ class Signature {
     } finally {
       LibOQSUtils.freePointer(signature);
       LibOQSUtils.freePointer(signatureLength.cast());
+      // messagePtr may be nullptr for empty messages - freePointer handles this
       LibOQSUtils.freePointer(messagePtr);
       // Secure free for sensitive data
       LibOQSUtils.secureFreePointer(secretKeyPtr, secretKey.length);
@@ -265,7 +267,8 @@ class Signature {
     }
     // coverage:ignore-end
 
-    final messagePtr = LibOQSUtils.uint8ListToPointer(message);
+    // Allow empty messages - valid per FIPS 204 and liboqs
+    final messagePtr = LibOQSUtils.uint8ListToPointerAllowEmpty(message);
     final signaturePtr = LibOQSUtils.uint8ListToPointer(signature);
     final publicKeyPtr = LibOQSUtils.uint8ListToPointer(publicKey);
 
@@ -292,6 +295,7 @@ class Signature {
 
       return result == 0;
     } finally {
+      // messagePtr may be nullptr for empty messages - freePointer handles this
       LibOQSUtils.freePointer(messagePtr);
       LibOQSUtils.freePointer(signaturePtr);
       LibOQSUtils.freePointer(publicKeyPtr);

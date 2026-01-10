@@ -50,6 +50,22 @@ class LibOQSUtils {
     // coverage:ignore-end
   }
 
+  /// Convert Uint8List to pointer, allowing empty data
+  ///
+  /// Unlike [uint8ListToPointer], this function allows empty data and returns
+  /// [nullptr] in that case. This is useful for message signing/verification
+  /// where empty messages are valid according to FIPS 204 and liboqs.
+  ///
+  /// Returns [nullptr] if data is empty, otherwise returns allocated pointer.
+  /// Caller is responsible for freeing the returned pointer (if not nullptr).
+  static Pointer<Uint8> uint8ListToPointerAllowEmpty(Uint8List data) {
+    if (data.isEmpty) {
+      return nullptr;
+    }
+
+    return uint8ListToPointer(data);
+  }
+
   /// Convert pointer to Uint8List with extensive validation
   static Uint8List pointerToUint8List(Pointer<Uint8> ptr, int length) {
     // coverage:ignore-start
