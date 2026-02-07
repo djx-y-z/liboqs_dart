@@ -69,7 +69,7 @@ Future<void> buildMacOS({MacOSArch arch = MacOSArch.universal}) async {
 
     final x86_64Lib = await _buildArch(
       arch: 'x86_64',
-      deploymentTarget: '10.15',
+      deploymentTarget: '10.14',
       sourceDir: sourceDir,
       tempDir: tempDir,
       buildTool: buildTool,
@@ -90,7 +90,7 @@ Future<void> buildMacOS({MacOSArch arch = MacOSArch.universal}) async {
   } else {
     // Build single architecture
     final archName = arch == MacOSArch.arm64 ? 'arm64' : 'x86_64';
-    final deploymentTarget = arch == MacOSArch.arm64 ? '11.0' : '10.15';
+    final deploymentTarget = arch == MacOSArch.arm64 ? '11.0' : '10.14';
 
     final libPath = await _buildArch(
       arch: archName,
