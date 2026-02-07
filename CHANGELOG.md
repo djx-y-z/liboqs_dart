@@ -1,3 +1,10 @@
+## [1.2.0] - 2026-02-07
+
+### Changed
+
+- Raised minimum iOS deployment target from 12.0 to 13.0 (matches Flutter 3.38.x minimum)
+- Raised minimum macOS deployment target from 10.14 to 10.15 (matches Flutter 3.32+ minimum)
+
 ## [1.1.3] - 2026-02-07
 
 ### Fixed
@@ -169,7 +176,8 @@
 - Secret keys are automatically zeroed before memory is freed
 - Based on liboqs 0.15.0 with NIST-standardized algorithms (FIPS 203, 204, 205)
 
-[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.3...HEAD
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.0...v1.1.1

@@ -199,7 +199,7 @@ Future<String> _buildIOSTarget({
     '-DCMAKE_SYSTEM_NAME=iOS',
     '-DCMAKE_SYSTEM_PROCESSOR=$processor',
     '-DCMAKE_OSX_ARCHITECTURES=$arch',
-    '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0',
+    '-DCMAKE_OSX_DEPLOYMENT_TARGET=13.0',
     '-DCMAKE_OSX_SYSROOT=$sdkPath',
     // Set install name for dynamic library loading
     '-DCMAKE_INSTALL_NAME_DIR=@rpath',
