@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Fixed
+
+- Android: native libraries are now built with LOAD segments aligned to 16 KB, so they load correctly on Android 15+ devices that use 16 KB memory pages ([#1](https://github.com/djx-y-z/liboqs_dart/issues/1)). The Android build script now passes `-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384` to the linker and verifies alignment on the 64-bit ABIs via `llvm-readelf`/`readelf` after the build.
+
 ## [1.2.0] - 2026-02-07
 
 ### Changed
