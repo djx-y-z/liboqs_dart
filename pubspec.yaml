@@ -9,8 +9,8 @@ issue_tracker: https://github.com/djx-y-z/liboqs_dart/issues
 
 # Native library version configuration
 liboqs:
-  native_version: "0.15.0"
-  native_build: 4
+  native_version: "0.16.0-rc1"
+  native_build: 1
 
 environment:
   sdk: ^3.10.0
