@@ -44,7 +44,23 @@ sections before upgrading.
 - **Breaking:** Legacy HQC identifiers `HQC-128`/`HQC-192`/`HQC-256` (renamed; see
   Changed).
 
+### Fixed
+
+- Build hook: the download cache key now includes the full version
+  (`native_version` + `native_build`) and the full platform variant. Previously
+  it keyed only on `os-arch`, which (1) let iOS device and simulator builds
+  share `ios-arm64` on Apple-silicon hosts and poison each other's cache (dyld
+  "incompatible platform" at runtime), and (2) omitted the version, so after a
+  version bump a stale binary from the previous release could be reused instead
+  of downloading the new one.
+
 ### Security
+
+- Build hook: SHA256 verification of downloaded native libraries is now
+  **fail-closed**. Previously a missing or unreachable checksums file (e.g. a
+  MITM blocking the checksums URL) was downgraded to a warning and the
+  unverified binary was installed anyway. The build now aborts unless the new
+  `LIBOQS_ALLOW_UNVERIFIED_DOWNLOAD=1` escape hatch is explicitly set.
 
 Includes the following upstream liboqs 0.16.0 security fixes:
 

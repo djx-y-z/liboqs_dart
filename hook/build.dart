@@ -39,6 +39,7 @@ void main(List<String> args) async {
     final codeConfig = input.config.code;
     final targetOS = codeConfig.targetOS;
     final targetArch = codeConfig.targetArchitecture;
+    final iosSdk = targetOS == OS.iOS ? codeConfig.iOS.targetSdk : null;
     final packageRoot = input.packageRoot;
 
     // Check for skip marker file (used during library building via `make build`)
@@ -58,40 +59,38 @@ void main(List<String> args) async {
     final fullVersion = await _readFullVersion(packageRoot);
     final assetInfo = _resolveAssetInfo(codeConfig, fullVersion);
 
-    // Output directory for cached downloads
-    // Use architecture-specific subdirectory for each platform/arch combination
-    final archSubdir = '${targetOS.name}-${targetArch.name}';
+    // Output directory for cached downloads.
+    //
+    // The subdirectory is keyed by the full version AND the full platform
+    // variant (see [downloadCacheSubdir]). Both the cache key and the download
+    // URL route through the same platform-arch string, so a cached binary can
+    // never be reused for a different version or a different platform (notably
+    // iOS device vs. simulator, which share targetOS/targetArch on Apple
+    // silicon).
+    final archSubdir = downloadCacheSubdir(
+      version: fullVersion,
+      targetOS: targetOS,
+      targetArchitecture: targetArch,
+      iosSdk: iosSdk,
+    );
     final cacheDir = input.outputDirectoryShared.resolve('$archSubdir/');
     final libFile = File.fromUri(cacheDir.resolve(assetInfo.fileName));
 
     // Download if not cached
     if (!libFile.existsSync()) {
-      // Download checksums file for SHA256 verification (supply chain security)
       final baseUrl =
           'https://github.com/$_githubRepo/releases/download/liboqs-$fullVersion';
-      Map<String, String>? checksums;
-      String? expectedChecksum;
 
-      try {
-        checksums = await _downloadChecksums(baseUrl, fullVersion);
-        expectedChecksum = checksums[assetInfo.archiveFileName];
-
-        if (expectedChecksum == null) {
-          throw HookException(
-            'Checksum not found for ${assetInfo.archiveFileName} in checksums file. '
-            'Available files: ${checksums.keys.join(', ')}',
-          );
-        }
-      } catch (e) {
-        // If checksums download fails, log warning but continue
-        // This allows builds to work even if checksums file is missing
-        // (e.g., for older releases or local development)
-        // ignore: avoid_print
-        print(
-          'Warning: Could not verify SHA256 checksum: $e\n'
-          'Proceeding without verification (not recommended for production).',
-        );
-      }
+      // SECURITY: resolve the expected SHA256 before fetching the binary.
+      // Fail-closed — if a trusted checksum cannot be obtained the build aborts
+      // (unless explicitly overridden via $_allowUnverifiedEnv), so a failed or
+      // interfered checksum fetch cannot silently downgrade to running an
+      // unverified native library.
+      final expectedChecksum = await _resolveExpectedChecksum(
+        baseUrl,
+        fullVersion,
+        assetInfo.archiveFileName,
+      );
 
       await _downloadAndExtract(
         assetInfo.downloadUrl,
@@ -211,66 +210,93 @@ class _AssetInfo {
 /// Resolves asset information for the target platform.
 ///
 /// [fullVersion] is the complete version string including build number,
-/// e.g., "0.15.0-1" (liboqs version + native build number).
+/// e.g., "0.16.0-1" (liboqs version + native build number).
+///
+/// The download URL and archive name are built from the same platform-arch
+/// string as the cache key ([downloadCacheSubdir]) — both route through
+/// [_getPlatformArchName] so they can never drift apart.
 _AssetInfo _resolveAssetInfo(CodeConfig codeConfig, String fullVersion) {
   final baseUrl =
       'https://github.com/$_githubRepo/releases/download/liboqs-$fullVersion';
   final targetOS = codeConfig.targetOS;
   final targetArch = codeConfig.targetArchitecture;
+  final iosSdk = targetOS == OS.iOS ? codeConfig.iOS.targetSdk : null;
 
+  final platformArch = _getPlatformArchName(targetOS, targetArch, iosSdk);
+
+  // Windows ships as a .zip; every other platform ships as a .tar.gz.
+  final archiveExt = targetOS == OS.windows ? 'zip' : 'tar.gz';
+  final archiveFileName = 'liboqs-$fullVersion-$platformArch.$archiveExt';
+
+  return _AssetInfo(
+    downloadUrl: '$baseUrl/$archiveFileName',
+    archiveFileName: archiveFileName,
+    // iOS: DynamicLoadingBundled - Flutter automatically converts the .dylib
+    // to the Framework format required by the App Store.
+    fileName: _libraryFileName(targetOS),
+    linkMode: DynamicLoadingBundled(),
+  );
+}
+
+/// Computes the subdirectory of the shared output directory in which a
+/// downloaded native library is cached.
+///
+/// The shared output directory is reused across build configurations, so the
+/// key must include every input that changes which artifact is downloaded: the
+/// full [version] (liboqs version + native build) and the full platform variant
+/// — notably iOS device vs. simulator, which share [targetOS] and
+/// [targetArchitecture] on Apple-silicon hosts.
+///
+/// Top-level and public so the hook tests can exercise it.
+String downloadCacheSubdir({
+  required String version,
+  required OS targetOS,
+  required Architecture targetArchitecture,
+  IOSSdk? iosSdk,
+}) {
+  return '$version-'
+      '${_getPlatformArchName(targetOS, targetArchitecture, iosSdk)}';
+}
+
+/// Gets the platform-architecture identity used in both the download URL and
+/// the cache key.
+///
+/// For iOS we download architecture-specific .dylib files:
+/// - `device-arm64` for physical devices
+/// - `simulator-arm64` for Apple Silicon simulators
+/// - `simulator-x86_64` for Intel simulators
+String _getPlatformArchName(
+  OS targetOS,
+  Architecture targetArch,
+  IOSSdk? iosSdk,
+) {
   switch (targetOS) {
     case OS.linux:
-      final linuxArch = _linuxArchName(targetArch);
-      return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$fullVersion-linux-$linuxArch.tar.gz',
-        archiveFileName: 'liboqs-$fullVersion-linux-$linuxArch.tar.gz',
-        fileName: 'liboqs.so',
-        linkMode: DynamicLoadingBundled(),
-      );
-
+      return 'linux-${_linuxArchName(targetArch)}';
     case OS.macOS:
-      // Use architecture-specific binaries (Flutter will merge them with lipo)
-      final arch = _macOSArchName(targetArch);
-      return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$fullVersion-macos-$arch.tar.gz',
-        archiveFileName: 'liboqs-$fullVersion-macos-$arch.tar.gz',
-        fileName: 'liboqs.dylib',
-        linkMode: DynamicLoadingBundled(),
-      );
-
+      return 'macos-${_macOSArchName(targetArch)}';
     case OS.windows:
-      return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$fullVersion-windows-x86_64.zip',
-        archiveFileName: 'liboqs-$fullVersion-windows-x86_64.zip',
-        fileName: 'oqs.dll',
-        linkMode: DynamicLoadingBundled(),
-      );
-
+      return 'windows-x86_64';
     case OS.android:
-      final abi = _androidArchToAbi(targetArch);
-      return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$fullVersion-android-$abi.tar.gz',
-        archiveFileName: 'liboqs-$fullVersion-android-$abi.tar.gz',
-        fileName: 'liboqs.so',
-        linkMode: DynamicLoadingBundled(),
-      );
-
+      return 'android-${_androidArchToAbi(targetArch)}';
     case OS.iOS:
-      // iOS: Use DynamicLoadingBundled - Flutter automatically converts
-      // .dylib to Framework format required by App Store.
-      //
-      // We download architecture-specific .dylib files:
-      // - device-arm64 for physical devices
-      // - simulator-arm64 for Apple Silicon simulators
-      // - simulator-x86_64 for Intel simulators
-      final iosTarget = _iOSTargetName(codeConfig, targetArch);
-      return _AssetInfo(
-        downloadUrl: '$baseUrl/liboqs-$fullVersion-ios-$iosTarget.tar.gz',
-        archiveFileName: 'liboqs-$fullVersion-ios-$iosTarget.tar.gz',
-        fileName: 'liboqs.dylib',
-        linkMode: DynamicLoadingBundled(),
-      );
+      return 'ios-${_iOSTargetName(iosSdk, targetArch)}';
+    default:
+      throw HookException('Unsupported target OS: $targetOS');
+  }
+}
 
+/// Returns the extracted native library filename for the target OS.
+String _libraryFileName(OS targetOS) {
+  switch (targetOS) {
+    case OS.linux:
+    case OS.android:
+      return 'liboqs.so';
+    case OS.macOS:
+    case OS.iOS:
+      return 'liboqs.dylib';
+    case OS.windows:
+      return 'oqs.dll';
     default:
       throw HookException('Unsupported target OS: $targetOS');
   }
@@ -314,15 +340,13 @@ String _linuxArchName(Architecture arch) {
   }
 }
 
-/// Determines iOS target name based on CodeConfig.
+/// Determines iOS target name based on the iOS SDK and architecture.
 ///
 /// For iOS, we need to determine if we're building for device or simulator,
-/// and which architecture. The CodeConfig provides this information.
-String _iOSTargetName(CodeConfig codeConfig, Architecture arch) {
-  // Check if building for simulator by looking at the iOS SDK
-  // iOS simulators use iphonesimulator SDK, devices use iphoneos SDK
-  // The CodeConfig.iOS.targetSdk property tells us which one
-  final isSimulator = codeConfig.iOS.targetSdk == IOSSdk.iPhoneSimulator;
+/// and which architecture. iOS simulators use the iphonesimulator SDK,
+/// devices use the iphoneos SDK.
+String _iOSTargetName(IOSSdk? iosSdk, Architecture arch) {
+  final isSimulator = iosSdk == IOSSdk.iPhoneSimulator;
 
   if (isSimulator) {
     // Simulator: can be arm64 (Apple Silicon) or x86_64 (Intel)
@@ -478,6 +502,72 @@ Future<void> _extractZip(File archive, Directory outDir) async {
   if (result.exitCode != 0) {
     throw HookException('Failed to extract zip archive: ${result.stderr}');
   }
+}
+
+/// Environment variable that downgrades a missing/unfetchable checksum from a
+/// hard build failure to a warning. Unset by default, so verification is
+/// fail-closed: a network problem or an interfered checksum fetch aborts the
+/// build instead of silently loading an unverified native library.
+const _allowUnverifiedEnv = 'LIBOQS_ALLOW_UNVERIFIED_DOWNLOAD';
+
+/// Whether the developer has explicitly opted out of checksum verification.
+bool _allowUnverifiedDownload() {
+  final value = Platform.environment[_allowUnverifiedEnv]?.trim().toLowerCase();
+  return value == '1' || value == 'true' || value == 'yes';
+}
+
+/// Resolves the expected SHA256 for [archiveFileName] from the release's
+/// checksums file.
+///
+/// Fail-closed: throws a [HookException] if the checksums file cannot be
+/// downloaded or has no entry for the archive, so an unverified binary is never
+/// used. Returns `null` (verification skipped, with a warning) only when the
+/// [_allowUnverifiedEnv] escape hatch is set.
+Future<String?> _resolveExpectedChecksum(
+  String baseUrl,
+  String fullVersion,
+  String archiveFileName,
+) async {
+  Map<String, String> checksums;
+  try {
+    checksums = await _downloadChecksums(baseUrl, fullVersion);
+  } catch (e) {
+    if (_allowUnverifiedDownload()) {
+      // ignore: avoid_print
+      print(
+        'Warning: could not download SHA256 checksums: $e\n'
+        '$_allowUnverifiedEnv is set — proceeding WITHOUT verification.',
+      );
+      return null;
+    }
+    throw HookException(
+      'Refusing to use an unverified native library: failed to download the '
+      'SHA256 checksums file for liboqs-$fullVersion.\n'
+      'Cause: $e\n'
+      'This guards against a corrupted or tampered download. If you are '
+      'deliberately building against a release with no checksums file, set '
+      '$_allowUnverifiedEnv=1 to override (NOT recommended for production).',
+    );
+  }
+
+  final expected = checksums[archiveFileName];
+  if (expected == null) {
+    if (_allowUnverifiedDownload()) {
+      // ignore: avoid_print
+      print(
+        'Warning: no checksum entry for $archiveFileName.\n'
+        '$_allowUnverifiedEnv is set — proceeding WITHOUT verification.',
+      );
+      return null;
+    }
+    throw HookException(
+      'Refusing to use an unverified native library: the checksums file for '
+      'liboqs-$fullVersion has no entry for $archiveFileName.\n'
+      'Available entries: ${checksums.keys.join(', ')}\n'
+      'Set $_allowUnverifiedEnv=1 to override (NOT recommended for production).',
+    );
+  }
+  return expected;
 }
 
 /// Downloads and verifies checksums file from GitHub Release.
