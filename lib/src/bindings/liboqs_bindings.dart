@@ -1914,6 +1914,315 @@ OQS_STATUS OQS_KEM_classic_mceliece_8192128f_decaps(
 );
 
 @ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_hqc_1_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_hqc_1_keypair',
+)
+external int _OQS_KEM_hqc_1_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_1_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(_OQS_KEM_hqc_1_keypair(public_key, secret_key));
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_1_keypair_derand')
+external int _OQS_KEM_hqc_1_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_hqc_1_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_1_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_1_encaps')
+external int _OQS_KEM_hqc_1_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_1_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_1_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_1_encaps_derand')
+external int _OQS_KEM_hqc_1_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_hqc_1_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_1_encaps_derand(ciphertext, shared_secret, public_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_1_decaps')
+external int _OQS_KEM_hqc_1_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_1_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_1_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_hqc_3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_hqc_3_keypair',
+)
+external int _OQS_KEM_hqc_3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(_OQS_KEM_hqc_3_keypair(public_key, secret_key));
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_3_keypair_derand')
+external int _OQS_KEM_hqc_3_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_hqc_3_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_3_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_3_encaps')
+external int _OQS_KEM_hqc_3_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_3_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_3_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_3_encaps_derand')
+external int _OQS_KEM_hqc_3_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_hqc_3_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_3_encaps_derand(ciphertext, shared_secret, public_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_3_decaps')
+external int _OQS_KEM_hqc_3_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_3_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_3_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_hqc_5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_hqc_5_keypair',
+)
+external int _OQS_KEM_hqc_5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(_OQS_KEM_hqc_5_keypair(public_key, secret_key));
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_5_keypair_derand')
+external int _OQS_KEM_hqc_5_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_hqc_5_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_5_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_5_encaps')
+external int _OQS_KEM_hqc_5_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_5_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_5_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_5_encaps_derand')
+external int _OQS_KEM_hqc_5_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_hqc_5_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_5_encaps_derand(ciphertext, shared_secret, public_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_hqc_5_decaps')
+external int _OQS_KEM_hqc_5_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_hqc_5_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_hqc_5_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
 external ffi.Pointer<OQS_KEM> OQS_KEM_kyber_512_new();
 
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
@@ -2616,6 +2925,35 @@ OQS_STATUS OQS_KEM_ntru_hps2048509_encaps(
     ffi.Pointer<ffi.Uint8>,
     ffi.Pointer<ffi.Uint8>,
     ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_ntru_hps2048509_encaps_derand')
+external int _OQS_KEM_ntru_hps2048509_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_ntru_hps2048509_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_ntru_hps2048509_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
   )
 >(symbol: 'OQS_KEM_ntru_hps2048509_decaps')
 external int _OQS_KEM_ntru_hps2048509_decaps(
@@ -2690,6 +3028,35 @@ OQS_STATUS OQS_KEM_ntru_hps2048677_encaps(
   ffi.Pointer<ffi.Uint8> public_key,
 ) => OQS_STATUS.fromValue(
   _OQS_KEM_ntru_hps2048677_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_ntru_hps2048677_encaps_derand')
+external int _OQS_KEM_ntru_hps2048677_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_ntru_hps2048677_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_ntru_hps2048677_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
 );
 
 @ffi.Native<
@@ -2778,6 +3145,35 @@ OQS_STATUS OQS_KEM_ntru_hps4096821_encaps(
     ffi.Pointer<ffi.Uint8>,
     ffi.Pointer<ffi.Uint8>,
     ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_ntru_hps4096821_encaps_derand')
+external int _OQS_KEM_ntru_hps4096821_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_ntru_hps4096821_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_ntru_hps4096821_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
   )
 >(symbol: 'OQS_KEM_ntru_hps4096821_decaps')
 external int _OQS_KEM_ntru_hps4096821_decaps(
@@ -2852,6 +3248,35 @@ OQS_STATUS OQS_KEM_ntru_hps40961229_encaps(
   ffi.Pointer<ffi.Uint8> public_key,
 ) => OQS_STATUS.fromValue(
   _OQS_KEM_ntru_hps40961229_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_ntru_hps40961229_encaps_derand')
+external int _OQS_KEM_ntru_hps40961229_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_ntru_hps40961229_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_ntru_hps40961229_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
 );
 
 @ffi.Native<
@@ -2939,6 +3364,35 @@ OQS_STATUS OQS_KEM_ntru_hrss701_encaps(
     ffi.Pointer<ffi.Uint8>,
     ffi.Pointer<ffi.Uint8>,
     ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_ntru_hrss701_encaps_derand')
+external int _OQS_KEM_ntru_hrss701_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_ntru_hrss701_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_ntru_hrss701_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
   )
 >(symbol: 'OQS_KEM_ntru_hrss701_decaps')
 external int _OQS_KEM_ntru_hrss701_decaps(
@@ -3013,6 +3467,35 @@ OQS_STATUS OQS_KEM_ntru_hrss1373_encaps(
   ffi.Pointer<ffi.Uint8> public_key,
 ) => OQS_STATUS.fromValue(
   _OQS_KEM_ntru_hrss1373_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_ntru_hrss1373_encaps_derand')
+external int _OQS_KEM_ntru_hrss1373_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_ntru_hrss1373_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_ntru_hrss1373_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
 );
 
 @ffi.Native<
@@ -3804,6 +4287,666 @@ OQS_STATUS OQS_KEM_frodokem_1344_shake_decaps(
   ffi.Pointer<ffi.Uint8> secret_key,
 ) => OQS_STATUS.fromValue(
   _OQS_KEM_frodokem_1344_shake_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_efrodokem_640_aes_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_efrodokem_640_aes_keypair',
+)
+external int _OQS_KEM_efrodokem_640_aes_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_aes_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_aes_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_aes_keypair_derand')
+external int _OQS_KEM_efrodokem_640_aes_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_aes_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_aes_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_aes_encaps')
+external int _OQS_KEM_efrodokem_640_aes_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_aes_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_aes_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_aes_encaps_derand')
+external int _OQS_KEM_efrodokem_640_aes_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_aes_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_aes_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_aes_decaps')
+external int _OQS_KEM_efrodokem_640_aes_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_aes_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_aes_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_efrodokem_640_shake_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_efrodokem_640_shake_keypair',
+)
+external int _OQS_KEM_efrodokem_640_shake_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_shake_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_shake_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_shake_keypair_derand')
+external int _OQS_KEM_efrodokem_640_shake_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_shake_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_shake_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_shake_encaps')
+external int _OQS_KEM_efrodokem_640_shake_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_shake_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_shake_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_shake_encaps_derand')
+external int _OQS_KEM_efrodokem_640_shake_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_shake_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_shake_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_640_shake_decaps')
+external int _OQS_KEM_efrodokem_640_shake_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_640_shake_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_640_shake_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_efrodokem_976_aes_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_efrodokem_976_aes_keypair',
+)
+external int _OQS_KEM_efrodokem_976_aes_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_aes_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_aes_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_aes_keypair_derand')
+external int _OQS_KEM_efrodokem_976_aes_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_aes_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_aes_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_aes_encaps')
+external int _OQS_KEM_efrodokem_976_aes_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_aes_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_aes_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_aes_encaps_derand')
+external int _OQS_KEM_efrodokem_976_aes_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_aes_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_aes_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_aes_decaps')
+external int _OQS_KEM_efrodokem_976_aes_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_aes_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_aes_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_efrodokem_976_shake_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_efrodokem_976_shake_keypair',
+)
+external int _OQS_KEM_efrodokem_976_shake_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_shake_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_shake_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_shake_keypair_derand')
+external int _OQS_KEM_efrodokem_976_shake_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_shake_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_shake_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_shake_encaps')
+external int _OQS_KEM_efrodokem_976_shake_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_shake_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_shake_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_shake_encaps_derand')
+external int _OQS_KEM_efrodokem_976_shake_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_shake_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_shake_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_976_shake_decaps')
+external int _OQS_KEM_efrodokem_976_shake_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_976_shake_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_976_shake_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_efrodokem_1344_aes_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_efrodokem_1344_aes_keypair',
+)
+external int _OQS_KEM_efrodokem_1344_aes_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_aes_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_aes_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_aes_keypair_derand')
+external int _OQS_KEM_efrodokem_1344_aes_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_aes_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_aes_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_aes_encaps')
+external int _OQS_KEM_efrodokem_1344_aes_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_aes_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_aes_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_aes_encaps_derand')
+external int _OQS_KEM_efrodokem_1344_aes_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_aes_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_aes_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_aes_decaps')
+external int _OQS_KEM_efrodokem_1344_aes_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_aes_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_aes_decaps(shared_secret, ciphertext, secret_key),
+);
+
+@ffi.Native<ffi.Pointer<OQS_KEM> Function()>()
+external ffi.Pointer<OQS_KEM> OQS_KEM_efrodokem_1344_shake_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_KEM_efrodokem_1344_shake_keypair',
+)
+external int _OQS_KEM_efrodokem_1344_shake_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_shake_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_shake_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_shake_keypair_derand')
+external int _OQS_KEM_efrodokem_1344_shake_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_shake_keypair_derand(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_shake_keypair_derand(public_key, secret_key, seed),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_shake_encaps')
+external int _OQS_KEM_efrodokem_1344_shake_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_shake_encaps(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_shake_encaps(ciphertext, shared_secret, public_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_shake_encaps_derand')
+external int _OQS_KEM_efrodokem_1344_shake_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_shake_encaps_derand(
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> seed,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_shake_encaps_derand(
+    ciphertext,
+    shared_secret,
+    public_key,
+    seed,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_KEM_efrodokem_1344_shake_decaps')
+external int _OQS_KEM_efrodokem_1344_shake_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_KEM_efrodokem_1344_shake_decaps(
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> ciphertext,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_KEM_efrodokem_1344_shake_decaps(shared_secret, ciphertext, secret_key),
 );
 
 /// Returns identifiers for available signature schemes in liboqs.  Used with OQS_SIG_new.
@@ -5238,1998 +6381,6 @@ OQS_STATUS OQS_SIG_falcon_padded_1024_verify_with_ctx_str(
   ffi.Pointer<ffi.Uint8> public_key,
 ) => OQS_STATUS.fromValue(
   _OQS_SIG_falcon_padded_1024_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_sha2_128f_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_sha2_128f_simple_keypair',
-)
-external int _OQS_SIG_sphincs_sha2_128f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128f_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128f_simple_sign')
-external int _OQS_SIG_sphincs_sha2_128f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128f_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128f_simple_verify')
-external int _OQS_SIG_sphincs_sha2_128f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128f_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128f_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_128f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128f_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128f_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_128f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128f_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_sha2_128s_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_sha2_128s_simple_keypair',
-)
-external int _OQS_SIG_sphincs_sha2_128s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128s_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128s_simple_sign')
-external int _OQS_SIG_sphincs_sha2_128s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128s_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128s_simple_verify')
-external int _OQS_SIG_sphincs_sha2_128s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128s_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128s_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_128s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128s_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_128s_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_128s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_128s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_128s_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_sha2_192f_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_sha2_192f_simple_keypair',
-)
-external int _OQS_SIG_sphincs_sha2_192f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192f_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192f_simple_sign')
-external int _OQS_SIG_sphincs_sha2_192f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192f_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192f_simple_verify')
-external int _OQS_SIG_sphincs_sha2_192f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192f_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192f_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_192f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192f_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192f_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_192f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192f_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_sha2_192s_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_sha2_192s_simple_keypair',
-)
-external int _OQS_SIG_sphincs_sha2_192s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192s_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192s_simple_sign')
-external int _OQS_SIG_sphincs_sha2_192s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192s_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192s_simple_verify')
-external int _OQS_SIG_sphincs_sha2_192s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192s_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192s_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_192s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192s_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_192s_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_192s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_192s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_192s_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_sha2_256f_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_sha2_256f_simple_keypair',
-)
-external int _OQS_SIG_sphincs_sha2_256f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256f_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256f_simple_sign')
-external int _OQS_SIG_sphincs_sha2_256f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256f_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256f_simple_verify')
-external int _OQS_SIG_sphincs_sha2_256f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256f_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256f_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_256f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256f_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256f_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_256f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256f_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_sha2_256s_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_sha2_256s_simple_keypair',
-)
-external int _OQS_SIG_sphincs_sha2_256s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256s_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256s_simple_sign')
-external int _OQS_SIG_sphincs_sha2_256s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256s_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256s_simple_verify')
-external int _OQS_SIG_sphincs_sha2_256s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256s_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256s_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_256s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256s_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_sha2_256s_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_sha2_256s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_sha2_256s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_sha2_256s_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_shake_128f_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_shake_128f_simple_keypair',
-)
-external int _OQS_SIG_sphincs_shake_128f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128f_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128f_simple_sign')
-external int _OQS_SIG_sphincs_shake_128f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128f_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128f_simple_verify')
-external int _OQS_SIG_sphincs_shake_128f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128f_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128f_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_128f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128f_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128f_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_128f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128f_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_shake_128s_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_shake_128s_simple_keypair',
-)
-external int _OQS_SIG_sphincs_shake_128s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128s_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128s_simple_sign')
-external int _OQS_SIG_sphincs_shake_128s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128s_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128s_simple_verify')
-external int _OQS_SIG_sphincs_shake_128s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128s_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128s_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_128s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128s_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_128s_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_128s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_128s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_128s_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_shake_192f_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_shake_192f_simple_keypair',
-)
-external int _OQS_SIG_sphincs_shake_192f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192f_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192f_simple_sign')
-external int _OQS_SIG_sphincs_shake_192f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192f_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192f_simple_verify')
-external int _OQS_SIG_sphincs_shake_192f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192f_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192f_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_192f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192f_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192f_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_192f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192f_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_shake_192s_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_shake_192s_simple_keypair',
-)
-external int _OQS_SIG_sphincs_shake_192s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192s_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192s_simple_sign')
-external int _OQS_SIG_sphincs_shake_192s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192s_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192s_simple_verify')
-external int _OQS_SIG_sphincs_shake_192s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192s_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192s_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_192s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192s_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_192s_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_192s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_192s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_192s_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_shake_256f_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_shake_256f_simple_keypair',
-)
-external int _OQS_SIG_sphincs_shake_256f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256f_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256f_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256f_simple_sign')
-external int _OQS_SIG_sphincs_shake_256f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256f_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256f_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256f_simple_verify')
-external int _OQS_SIG_sphincs_shake_256f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256f_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256f_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256f_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_256f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256f_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256f_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256f_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_256f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256f_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256f_simple_verify_with_ctx_str(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    ctx,
-    ctxlen,
-    public_key,
-  ),
-);
-
-@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
-external ffi.Pointer<OQS_SIG> OQS_SIG_sphincs_shake_256s_simple_new();
-
-@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
-  symbol: 'OQS_SIG_sphincs_shake_256s_simple_keypair',
-)
-external int _OQS_SIG_sphincs_shake_256s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256s_simple_keypair(
-  ffi.Pointer<ffi.Uint8> public_key,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256s_simple_keypair(public_key, secret_key),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256s_simple_sign')
-external int _OQS_SIG_sphincs_shake_256s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256s_simple_sign(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256s_simple_sign(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256s_simple_verify')
-external int _OQS_SIG_sphincs_shake_256s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256s_simple_verify(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256s_simple_verify(
-    message,
-    message_len,
-    signature,
-    signature_len,
-    public_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Pointer<ffi.Size>,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256s_simple_sign_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_256s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256s_simple_sign_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> signature,
-  ffi.Pointer<ffi.Size> signature_len,
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> secret_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256s_simple_sign_with_ctx_str(
-    signature,
-    signature_len,
-    message,
-    message_len,
-    ctx,
-    ctxlen,
-    secret_key,
-  ),
-);
-
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'OQS_SIG_sphincs_shake_256s_simple_verify_with_ctx_str')
-external int _OQS_SIG_sphincs_shake_256s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-);
-
-OQS_STATUS OQS_SIG_sphincs_shake_256s_simple_verify_with_ctx_str(
-  ffi.Pointer<ffi.Uint8> message,
-  int message_len,
-  ffi.Pointer<ffi.Uint8> signature,
-  int signature_len,
-  ffi.Pointer<ffi.Uint8> ctx,
-  int ctxlen,
-  ffi.Pointer<ffi.Uint8> public_key,
-) => OQS_STATUS.fromValue(
-  _OQS_SIG_sphincs_shake_256s_simple_verify_with_ctx_str(
     message,
     message_len,
     signature,
@@ -14849,6 +14000,1998 @@ OQS_STATUS OQS_SIG_snova_SNOVA_29_6_5_verify_with_ctx_str(
   ffi.Pointer<ffi.Uint8> public_key,
 ) => OQS_STATUS.fromValue(
   _OQS_SIG_snova_SNOVA_29_6_5_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_verify_with_ctx_str(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    ctx,
+    ctxlen,
+    public_key,
+  ),
+);
+
+@ffi.Native<ffi.Pointer<OQS_SIG> Function()>()
+external ffi.Pointer<OQS_SIG> OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_new();
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_keypair',
+)
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_keypair(
+  ffi.Pointer<ffi.Uint8> public_key,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_keypair(public_key, secret_key),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify(
+    message,
+    message_len,
+    signature,
+    signature_len,
+    public_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Size>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> signature,
+  ffi.Pointer<ffi.Size> signature_len,
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> secret_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_sign_with_ctx_str(
+    signature,
+    signature_len,
+    message,
+    message_len,
+    ctx,
+    ctxlen,
+    secret_key,
+  ),
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify_with_ctx_str')
+external int _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+);
+
+OQS_STATUS OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify_with_ctx_str(
+  ffi.Pointer<ffi.Uint8> message,
+  int message_len,
+  ffi.Pointer<ffi.Uint8> signature,
+  int signature_len,
+  ffi.Pointer<ffi.Uint8> ctx,
+  int ctxlen,
+  ffi.Pointer<ffi.Uint8> public_key,
+) => OQS_STATUS.fromValue(
+  _OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_verify_with_ctx_str(
     message,
     message_len,
     signature,
@@ -40913,6 +42056,21 @@ external int OQS_SIG_STFL_alg_count();
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Char>)>()
 external int OQS_SIG_STFL_alg_is_enabled(ffi.Pointer<ffi.Char> method_name);
 
+/// Returns 1 if liboqs was built with
+/// OQS_HAZARDOUS_EXPERIMENTAL_ENABLE_SIG_STFL_KEY_SIG_GEN, meaning
+/// OQS_SIG_STFL_new returns the full stateful-signature struct and
+/// OQS_SIG_STFL_keypair / OQS_SIG_STFL_sign are functional.
+/// Returns 0 otherwise, in which case only verification is supported.
+///
+/// This is the supported way for FFI consumers to detect the build mode at
+/// runtime. When this returns 0, the typedef `OQS_SIG_STFL` resolves to
+/// `OQS_SIG`, which has a different in-memory layout — callers must not
+/// dereference fields specific to the stateful struct.
+///
+/// @return 1 if stateful key generation and signing are supported, 0 otherwise.
+@ffi.Native<ffi.Int Function()>()
+external int OQS_SIG_STFL_keygen_and_sign_supported();
+
 /// Constructs an OQS_SIG_STFL object for a particular algorithm.
 ///
 /// Callers should always check whether the return value is `NULL`, which indicates either than an
@@ -43008,15 +44166,15 @@ final class OQS_SHA3_x4_callbacks extends ffi.Struct {
   SHA3_shake256_x4_inc_ctx_reset;
 }
 
-const String OQS_VERSION_TEXT = '0.15.0';
+const String OQS_VERSION_TEXT = '0.16.0';
 
 const int OQS_VERSION_MAJOR = 0;
 
-const int OQS_VERSION_MINOR = 15;
+const int OQS_VERSION_MINOR = 16;
 
 const int OQS_VERSION_PATCH = 0;
 
-const String OQS_COMPILE_BUILD_TARGET = 'arm64-Darwin-24.6.0';
+const String OQS_COMPILE_BUILD_TARGET = 'arm64-Darwin-25.5.0';
 
 const int OQS_DIST_BUILD = 1;
 
@@ -43058,6 +44216,18 @@ const int OQS_ENABLE_KEM_frodokem_1344_aes = 1;
 
 const int OQS_ENABLE_KEM_frodokem_1344_shake = 1;
 
+const int OQS_ENABLE_KEM_efrodokem_640_aes = 1;
+
+const int OQS_ENABLE_KEM_efrodokem_640_shake = 1;
+
+const int OQS_ENABLE_KEM_efrodokem_976_aes = 1;
+
+const int OQS_ENABLE_KEM_efrodokem_976_shake = 1;
+
+const int OQS_ENABLE_KEM_efrodokem_1344_aes = 1;
+
+const int OQS_ENABLE_KEM_efrodokem_1344_shake = 1;
+
 const int OQS_ENABLE_KEM_NTRUPRIME = 1;
 
 const int OQS_ENABLE_KEM_ntruprime_sntrup761 = 1;
@@ -43098,6 +44268,14 @@ const int OQS_ENABLE_KEM_classic_mceliece_8192128 = 1;
 
 const int OQS_ENABLE_KEM_classic_mceliece_8192128f = 1;
 
+const int OQS_ENABLE_KEM_HQC = 1;
+
+const int OQS_ENABLE_KEM_hqc_1 = 1;
+
+const int OQS_ENABLE_KEM_hqc_3 = 1;
+
+const int OQS_ENABLE_KEM_hqc_5 = 1;
+
 const int OQS_ENABLE_KEM_KYBER = 1;
 
 const int OQS_ENABLE_KEM_kyber_512 = 1;
@@ -43130,9 +44308,15 @@ const int OQS_ENABLE_SIG_ML_DSA = 1;
 
 const int OQS_ENABLE_SIG_ml_dsa_44 = 1;
 
+const int OQS_ENABLE_SIG_ml_dsa_44_aarch64 = 1;
+
 const int OQS_ENABLE_SIG_ml_dsa_65 = 1;
 
+const int OQS_ENABLE_SIG_ml_dsa_65_aarch64 = 1;
+
 const int OQS_ENABLE_SIG_ml_dsa_87 = 1;
+
+const int OQS_ENABLE_SIG_ml_dsa_87_aarch64 = 1;
 
 const int OQS_ENABLE_SIG_FALCON = 1;
 
@@ -43151,32 +44335,6 @@ const int OQS_ENABLE_SIG_falcon_padded_512_aarch64 = 1;
 const int OQS_ENABLE_SIG_falcon_padded_1024 = 1;
 
 const int OQS_ENABLE_SIG_falcon_padded_1024_aarch64 = 1;
-
-const int OQS_ENABLE_SIG_SPHINCS = 1;
-
-const int OQS_ENABLE_SIG_sphincs_sha2_128f_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_sha2_128s_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_sha2_192f_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_sha2_192s_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_sha2_256f_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_sha2_256s_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_shake_128f_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_shake_128s_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_shake_192f_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_shake_192s_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_shake_256f_simple = 1;
-
-const int OQS_ENABLE_SIG_sphincs_shake_256s_simple = 1;
 
 const int OQS_ENABLE_SIG_MAYO = 1;
 
@@ -43333,6 +44491,32 @@ const int OQS_ENABLE_SIG_snova_SNOVA_60_10_4_neon = 1;
 const int OQS_ENABLE_SIG_snova_SNOVA_29_6_5 = 1;
 
 const int OQS_ENABLE_SIG_snova_SNOVA_29_6_5_neon = 1;
+
+const int OQS_ENABLE_SIG_MQOM = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r3 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r5 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r3 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r5 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r3 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r5 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r3 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r5 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r3 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r5 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r3 = 1;
+
+const int OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r5 = 1;
 
 const int OQS_ENABLE_SIG_SLH_DSA = 1;
 
@@ -43683,11 +44867,11 @@ const String OQS_KEM_alg_classic_mceliece_8192128 = 'Classic-McEliece-8192128';
 const String OQS_KEM_alg_classic_mceliece_8192128f =
     'Classic-McEliece-8192128f';
 
-const String OQS_KEM_alg_hqc_128 = 'HQC-128';
+const String OQS_KEM_alg_hqc_1 = 'HQC-1';
 
-const String OQS_KEM_alg_hqc_192 = 'HQC-192';
+const String OQS_KEM_alg_hqc_3 = 'HQC-3';
 
-const String OQS_KEM_alg_hqc_256 = 'HQC-256';
+const String OQS_KEM_alg_hqc_5 = 'HQC-5';
 
 const String OQS_KEM_alg_kyber_512 = 'Kyber512';
 
@@ -43727,7 +44911,19 @@ const String OQS_KEM_alg_frodokem_1344_aes = 'FrodoKEM-1344-AES';
 
 const String OQS_KEM_alg_frodokem_1344_shake = 'FrodoKEM-1344-SHAKE';
 
-const int OQS_KEM_algs_length = 35;
+const String OQS_KEM_alg_efrodokem_640_aes = 'eFrodoKEM-640-AES';
+
+const String OQS_KEM_alg_efrodokem_640_shake = 'eFrodoKEM-640-SHAKE';
+
+const String OQS_KEM_alg_efrodokem_976_aes = 'eFrodoKEM-976-AES';
+
+const String OQS_KEM_alg_efrodokem_976_shake = 'eFrodoKEM-976-SHAKE';
+
+const String OQS_KEM_alg_efrodokem_1344_aes = 'eFrodoKEM-1344-AES';
+
+const String OQS_KEM_alg_efrodokem_1344_shake = 'eFrodoKEM-1344-SHAKE';
+
+const int OQS_KEM_algs_length = 41;
 
 const int OQS_KEM_bike_l1_length_secret_key = 5223;
 
@@ -43884,6 +45080,42 @@ const int OQS_KEM_classic_mceliece_8192128f_length_shared_secret = 32;
 const int OQS_KEM_classic_mceliece_8192128f_length_keypair_seed = 0;
 
 const int OQS_KEM_classic_mceliece_8192128f_length_encaps_seed = 0;
+
+const int OQS_KEM_hqc_1_length_public_key = 2241;
+
+const int OQS_KEM_hqc_1_length_secret_key = 2321;
+
+const int OQS_KEM_hqc_1_length_ciphertext = 4433;
+
+const int OQS_KEM_hqc_1_length_shared_secret = 32;
+
+const int OQS_KEM_hqc_1_length_keypair_seed = 0;
+
+const int OQS_KEM_hqc_1_length_encaps_seed = 0;
+
+const int OQS_KEM_hqc_3_length_public_key = 4514;
+
+const int OQS_KEM_hqc_3_length_secret_key = 4602;
+
+const int OQS_KEM_hqc_3_length_ciphertext = 8978;
+
+const int OQS_KEM_hqc_3_length_shared_secret = 32;
+
+const int OQS_KEM_hqc_3_length_keypair_seed = 0;
+
+const int OQS_KEM_hqc_3_length_encaps_seed = 0;
+
+const int OQS_KEM_hqc_5_length_public_key = 7237;
+
+const int OQS_KEM_hqc_5_length_secret_key = 7333;
+
+const int OQS_KEM_hqc_5_length_ciphertext = 14421;
+
+const int OQS_KEM_hqc_5_length_shared_secret = 32;
+
+const int OQS_KEM_hqc_5_length_keypair_seed = 0;
+
+const int OQS_KEM_hqc_5_length_encaps_seed = 0;
 
 const int OQS_KEM_kyber_512_length_public_key = 800;
 
@@ -44045,7 +45277,7 @@ const int OQS_KEM_frodokem_640_aes_length_public_key = 9616;
 
 const int OQS_KEM_frodokem_640_aes_length_secret_key = 19888;
 
-const int OQS_KEM_frodokem_640_aes_length_ciphertext = 9720;
+const int OQS_KEM_frodokem_640_aes_length_ciphertext = 9752;
 
 const int OQS_KEM_frodokem_640_aes_length_shared_secret = 16;
 
@@ -44057,7 +45289,7 @@ const int OQS_KEM_frodokem_640_shake_length_public_key = 9616;
 
 const int OQS_KEM_frodokem_640_shake_length_secret_key = 19888;
 
-const int OQS_KEM_frodokem_640_shake_length_ciphertext = 9720;
+const int OQS_KEM_frodokem_640_shake_length_ciphertext = 9752;
 
 const int OQS_KEM_frodokem_640_shake_length_shared_secret = 16;
 
@@ -44069,7 +45301,7 @@ const int OQS_KEM_frodokem_976_aes_length_public_key = 15632;
 
 const int OQS_KEM_frodokem_976_aes_length_secret_key = 31296;
 
-const int OQS_KEM_frodokem_976_aes_length_ciphertext = 15744;
+const int OQS_KEM_frodokem_976_aes_length_ciphertext = 15792;
 
 const int OQS_KEM_frodokem_976_aes_length_shared_secret = 24;
 
@@ -44081,7 +45313,7 @@ const int OQS_KEM_frodokem_976_shake_length_public_key = 15632;
 
 const int OQS_KEM_frodokem_976_shake_length_secret_key = 31296;
 
-const int OQS_KEM_frodokem_976_shake_length_ciphertext = 15744;
+const int OQS_KEM_frodokem_976_shake_length_ciphertext = 15792;
 
 const int OQS_KEM_frodokem_976_shake_length_shared_secret = 24;
 
@@ -44093,7 +45325,7 @@ const int OQS_KEM_frodokem_1344_aes_length_public_key = 21520;
 
 const int OQS_KEM_frodokem_1344_aes_length_secret_key = 43088;
 
-const int OQS_KEM_frodokem_1344_aes_length_ciphertext = 21632;
+const int OQS_KEM_frodokem_1344_aes_length_ciphertext = 21696;
 
 const int OQS_KEM_frodokem_1344_aes_length_shared_secret = 32;
 
@@ -44105,13 +45337,85 @@ const int OQS_KEM_frodokem_1344_shake_length_public_key = 21520;
 
 const int OQS_KEM_frodokem_1344_shake_length_secret_key = 43088;
 
-const int OQS_KEM_frodokem_1344_shake_length_ciphertext = 21632;
+const int OQS_KEM_frodokem_1344_shake_length_ciphertext = 21696;
 
 const int OQS_KEM_frodokem_1344_shake_length_shared_secret = 32;
 
 const int OQS_KEM_frodokem_1344_shake_length_keypair_seed = 0;
 
 const int OQS_KEM_frodokem_1344_shake_length_encaps_seed = 0;
+
+const int OQS_KEM_efrodokem_640_aes_length_public_key = 9616;
+
+const int OQS_KEM_efrodokem_640_aes_length_secret_key = 19888;
+
+const int OQS_KEM_efrodokem_640_aes_length_ciphertext = 9720;
+
+const int OQS_KEM_efrodokem_640_aes_length_shared_secret = 16;
+
+const int OQS_KEM_efrodokem_640_aes_length_keypair_seed = 0;
+
+const int OQS_KEM_efrodokem_640_aes_length_encaps_seed = 0;
+
+const int OQS_KEM_efrodokem_640_shake_length_public_key = 9616;
+
+const int OQS_KEM_efrodokem_640_shake_length_secret_key = 19888;
+
+const int OQS_KEM_efrodokem_640_shake_length_ciphertext = 9720;
+
+const int OQS_KEM_efrodokem_640_shake_length_shared_secret = 16;
+
+const int OQS_KEM_efrodokem_640_shake_length_keypair_seed = 0;
+
+const int OQS_KEM_efrodokem_640_shake_length_encaps_seed = 0;
+
+const int OQS_KEM_efrodokem_976_aes_length_public_key = 15632;
+
+const int OQS_KEM_efrodokem_976_aes_length_secret_key = 31296;
+
+const int OQS_KEM_efrodokem_976_aes_length_ciphertext = 15744;
+
+const int OQS_KEM_efrodokem_976_aes_length_shared_secret = 24;
+
+const int OQS_KEM_efrodokem_976_aes_length_keypair_seed = 0;
+
+const int OQS_KEM_efrodokem_976_aes_length_encaps_seed = 0;
+
+const int OQS_KEM_efrodokem_976_shake_length_public_key = 15632;
+
+const int OQS_KEM_efrodokem_976_shake_length_secret_key = 31296;
+
+const int OQS_KEM_efrodokem_976_shake_length_ciphertext = 15744;
+
+const int OQS_KEM_efrodokem_976_shake_length_shared_secret = 24;
+
+const int OQS_KEM_efrodokem_976_shake_length_keypair_seed = 0;
+
+const int OQS_KEM_efrodokem_976_shake_length_encaps_seed = 0;
+
+const int OQS_KEM_efrodokem_1344_aes_length_public_key = 21520;
+
+const int OQS_KEM_efrodokem_1344_aes_length_secret_key = 43088;
+
+const int OQS_KEM_efrodokem_1344_aes_length_ciphertext = 21632;
+
+const int OQS_KEM_efrodokem_1344_aes_length_shared_secret = 32;
+
+const int OQS_KEM_efrodokem_1344_aes_length_keypair_seed = 0;
+
+const int OQS_KEM_efrodokem_1344_aes_length_encaps_seed = 0;
+
+const int OQS_KEM_efrodokem_1344_shake_length_public_key = 21520;
+
+const int OQS_KEM_efrodokem_1344_shake_length_secret_key = 43088;
+
+const int OQS_KEM_efrodokem_1344_shake_length_ciphertext = 21632;
+
+const int OQS_KEM_efrodokem_1344_shake_length_shared_secret = 32;
+
+const int OQS_KEM_efrodokem_1344_shake_length_keypair_seed = 0;
+
+const int OQS_KEM_efrodokem_1344_shake_length_encaps_seed = 0;
 
 const String OQS_SIG_alg_ml_dsa_44 = 'ML-DSA-44';
 
@@ -44126,36 +45430,6 @@ const String OQS_SIG_alg_falcon_1024 = 'Falcon-1024';
 const String OQS_SIG_alg_falcon_padded_512 = 'Falcon-padded-512';
 
 const String OQS_SIG_alg_falcon_padded_1024 = 'Falcon-padded-1024';
-
-const String OQS_SIG_alg_sphincs_sha2_128f_simple = 'SPHINCS+-SHA2-128f-simple';
-
-const String OQS_SIG_alg_sphincs_sha2_128s_simple = 'SPHINCS+-SHA2-128s-simple';
-
-const String OQS_SIG_alg_sphincs_sha2_192f_simple = 'SPHINCS+-SHA2-192f-simple';
-
-const String OQS_SIG_alg_sphincs_sha2_192s_simple = 'SPHINCS+-SHA2-192s-simple';
-
-const String OQS_SIG_alg_sphincs_sha2_256f_simple = 'SPHINCS+-SHA2-256f-simple';
-
-const String OQS_SIG_alg_sphincs_sha2_256s_simple = 'SPHINCS+-SHA2-256s-simple';
-
-const String OQS_SIG_alg_sphincs_shake_128f_simple =
-    'SPHINCS+-SHAKE-128f-simple';
-
-const String OQS_SIG_alg_sphincs_shake_128s_simple =
-    'SPHINCS+-SHAKE-128s-simple';
-
-const String OQS_SIG_alg_sphincs_shake_192f_simple =
-    'SPHINCS+-SHAKE-192f-simple';
-
-const String OQS_SIG_alg_sphincs_shake_192s_simple =
-    'SPHINCS+-SHAKE-192s-simple';
-
-const String OQS_SIG_alg_sphincs_shake_256f_simple =
-    'SPHINCS+-SHAKE-256f-simple';
-
-const String OQS_SIG_alg_sphincs_shake_256s_simple =
-    'SPHINCS+-SHAKE-256s-simple';
 
 const String OQS_SIG_alg_mayo_1 = 'MAYO-1';
 
@@ -44249,6 +45523,42 @@ const String OQS_SIG_alg_snova_SNOVA_24_5_5 = 'SNOVA_24_5_5';
 const String OQS_SIG_alg_snova_SNOVA_60_10_4 = 'SNOVA_60_10_4';
 
 const String OQS_SIG_alg_snova_SNOVA_29_6_5 = 'SNOVA_29_6_5';
+
+const String OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r3 =
+    'mqom2_cat1_gf16_fast_r3';
+
+const String OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r5 =
+    'mqom2_cat1_gf16_fast_r5';
+
+const String OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r3 =
+    'mqom2_cat1_gf16_short_r3';
+
+const String OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r5 =
+    'mqom2_cat1_gf16_short_r5';
+
+const String OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r3 =
+    'mqom2_cat3_gf16_fast_r3';
+
+const String OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r5 =
+    'mqom2_cat3_gf16_fast_r5';
+
+const String OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r3 =
+    'mqom2_cat3_gf16_short_r3';
+
+const String OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r5 =
+    'mqom2_cat3_gf16_short_r5';
+
+const String OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r3 =
+    'mqom2_cat5_gf16_fast_r3';
+
+const String OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r5 =
+    'mqom2_cat5_gf16_fast_r5';
+
+const String OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r3 =
+    'mqom2_cat5_gf16_short_r3';
+
+const String OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r5 =
+    'mqom2_cat5_gf16_short_r5';
 
 const String OQS_SIG_alg_slh_dsa_pure_sha2_128s = 'SLH_DSA_PURE_SHA2_128S';
 
@@ -44752,78 +46062,6 @@ const int OQS_SIG_falcon_padded_1024_length_secret_key = 2305;
 
 const int OQS_SIG_falcon_padded_1024_length_signature = 1280;
 
-const int OQS_SIG_sphincs_sha2_128f_simple_length_public_key = 32;
-
-const int OQS_SIG_sphincs_sha2_128f_simple_length_secret_key = 64;
-
-const int OQS_SIG_sphincs_sha2_128f_simple_length_signature = 17088;
-
-const int OQS_SIG_sphincs_sha2_128s_simple_length_public_key = 32;
-
-const int OQS_SIG_sphincs_sha2_128s_simple_length_secret_key = 64;
-
-const int OQS_SIG_sphincs_sha2_128s_simple_length_signature = 7856;
-
-const int OQS_SIG_sphincs_sha2_192f_simple_length_public_key = 48;
-
-const int OQS_SIG_sphincs_sha2_192f_simple_length_secret_key = 96;
-
-const int OQS_SIG_sphincs_sha2_192f_simple_length_signature = 35664;
-
-const int OQS_SIG_sphincs_sha2_192s_simple_length_public_key = 48;
-
-const int OQS_SIG_sphincs_sha2_192s_simple_length_secret_key = 96;
-
-const int OQS_SIG_sphincs_sha2_192s_simple_length_signature = 16224;
-
-const int OQS_SIG_sphincs_sha2_256f_simple_length_public_key = 64;
-
-const int OQS_SIG_sphincs_sha2_256f_simple_length_secret_key = 128;
-
-const int OQS_SIG_sphincs_sha2_256f_simple_length_signature = 49856;
-
-const int OQS_SIG_sphincs_sha2_256s_simple_length_public_key = 64;
-
-const int OQS_SIG_sphincs_sha2_256s_simple_length_secret_key = 128;
-
-const int OQS_SIG_sphincs_sha2_256s_simple_length_signature = 29792;
-
-const int OQS_SIG_sphincs_shake_128f_simple_length_public_key = 32;
-
-const int OQS_SIG_sphincs_shake_128f_simple_length_secret_key = 64;
-
-const int OQS_SIG_sphincs_shake_128f_simple_length_signature = 17088;
-
-const int OQS_SIG_sphincs_shake_128s_simple_length_public_key = 32;
-
-const int OQS_SIG_sphincs_shake_128s_simple_length_secret_key = 64;
-
-const int OQS_SIG_sphincs_shake_128s_simple_length_signature = 7856;
-
-const int OQS_SIG_sphincs_shake_192f_simple_length_public_key = 48;
-
-const int OQS_SIG_sphincs_shake_192f_simple_length_secret_key = 96;
-
-const int OQS_SIG_sphincs_shake_192f_simple_length_signature = 35664;
-
-const int OQS_SIG_sphincs_shake_192s_simple_length_public_key = 48;
-
-const int OQS_SIG_sphincs_shake_192s_simple_length_secret_key = 96;
-
-const int OQS_SIG_sphincs_shake_192s_simple_length_signature = 16224;
-
-const int OQS_SIG_sphincs_shake_256f_simple_length_public_key = 64;
-
-const int OQS_SIG_sphincs_shake_256f_simple_length_secret_key = 128;
-
-const int OQS_SIG_sphincs_shake_256f_simple_length_signature = 49856;
-
-const int OQS_SIG_sphincs_shake_256s_simple_length_public_key = 64;
-
-const int OQS_SIG_sphincs_shake_256s_simple_length_secret_key = 128;
-
-const int OQS_SIG_sphincs_shake_256s_simple_length_signature = 29792;
-
 const int OQS_SIG_mayo_1_length_public_key = 1420;
 
 const int OQS_SIG_mayo_1_length_secret_key = 24;
@@ -45099,6 +46337,78 @@ const int OQS_SIG_snova_SNOVA_29_6_5_length_public_key = 2716;
 const int OQS_SIG_snova_SNOVA_29_6_5_length_secret_key = 48;
 
 const int OQS_SIG_snova_SNOVA_29_6_5_length_signature = 454;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_length_public_key = 60;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_length_secret_key = 88;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_fast_r3_length_signature = 3484;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_length_public_key = 60;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_length_secret_key = 88;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_fast_r5_length_signature = 3280;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_length_public_key = 60;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_length_secret_key = 88;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_short_r3_length_signature = 3060;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_length_public_key = 60;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_length_secret_key = 88;
+
+const int OQS_SIG_mqom_mqom2_cat1_gf16_short_r5_length_signature = 2916;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_length_public_key = 90;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_length_secret_key = 132;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_fast_r3_length_signature = 8224;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_length_public_key = 90;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_length_secret_key = 132;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_fast_r5_length_signature = 7738;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_length_public_key = 90;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_length_secret_key = 132;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_short_r3_length_signature = 6820;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_length_public_key = 90;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_length_secret_key = 132;
+
+const int OQS_SIG_mqom_mqom2_cat3_gf16_short_r5_length_signature = 6496;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_length_public_key = 122;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_length_secret_key = 180;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_fast_r3_length_signature = 14708;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_length_public_key = 122;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_length_secret_key = 180;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_fast_r5_length_signature = 13772;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_length_public_key = 122;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_length_secret_key = 180;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_short_r3_length_signature = 12664;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_length_public_key = 122;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_length_secret_key = 180;
+
+const int OQS_SIG_mqom_mqom2_cat5_gf16_short_r5_length_signature = 12014;
 
 const int OQS_SIG_slh_dsa_pure_sha2_128s_length_public_key = 32;
 

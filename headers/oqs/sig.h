@@ -46,30 +46,6 @@ extern "C" {
 #define OQS_SIG_alg_falcon_padded_512 "Falcon-padded-512"
 /** Algorithm identifier for Falcon-padded-1024 */
 #define OQS_SIG_alg_falcon_padded_1024 "Falcon-padded-1024"
-/** Algorithm identifier for SPHINCS+-SHA2-128f-simple */
-#define OQS_SIG_alg_sphincs_sha2_128f_simple "SPHINCS+-SHA2-128f-simple"
-/** Algorithm identifier for SPHINCS+-SHA2-128s-simple */
-#define OQS_SIG_alg_sphincs_sha2_128s_simple "SPHINCS+-SHA2-128s-simple"
-/** Algorithm identifier for SPHINCS+-SHA2-192f-simple */
-#define OQS_SIG_alg_sphincs_sha2_192f_simple "SPHINCS+-SHA2-192f-simple"
-/** Algorithm identifier for SPHINCS+-SHA2-192s-simple */
-#define OQS_SIG_alg_sphincs_sha2_192s_simple "SPHINCS+-SHA2-192s-simple"
-/** Algorithm identifier for SPHINCS+-SHA2-256f-simple */
-#define OQS_SIG_alg_sphincs_sha2_256f_simple "SPHINCS+-SHA2-256f-simple"
-/** Algorithm identifier for SPHINCS+-SHA2-256s-simple */
-#define OQS_SIG_alg_sphincs_sha2_256s_simple "SPHINCS+-SHA2-256s-simple"
-/** Algorithm identifier for SPHINCS+-SHAKE-128f-simple */
-#define OQS_SIG_alg_sphincs_shake_128f_simple "SPHINCS+-SHAKE-128f-simple"
-/** Algorithm identifier for SPHINCS+-SHAKE-128s-simple */
-#define OQS_SIG_alg_sphincs_shake_128s_simple "SPHINCS+-SHAKE-128s-simple"
-/** Algorithm identifier for SPHINCS+-SHAKE-192f-simple */
-#define OQS_SIG_alg_sphincs_shake_192f_simple "SPHINCS+-SHAKE-192f-simple"
-/** Algorithm identifier for SPHINCS+-SHAKE-192s-simple */
-#define OQS_SIG_alg_sphincs_shake_192s_simple "SPHINCS+-SHAKE-192s-simple"
-/** Algorithm identifier for SPHINCS+-SHAKE-256f-simple */
-#define OQS_SIG_alg_sphincs_shake_256f_simple "SPHINCS+-SHAKE-256f-simple"
-/** Algorithm identifier for SPHINCS+-SHAKE-256s-simple */
-#define OQS_SIG_alg_sphincs_shake_256s_simple "SPHINCS+-SHAKE-256s-simple"
 /** Algorithm identifier for MAYO-1 */
 #define OQS_SIG_alg_mayo_1 "MAYO-1"
 /** Algorithm identifier for MAYO-2 */
@@ -162,6 +138,30 @@ extern "C" {
 #define OQS_SIG_alg_snova_SNOVA_60_10_4 "SNOVA_60_10_4"
 /** Algorithm identifier for SNOVA_29_6_5 */
 #define OQS_SIG_alg_snova_SNOVA_29_6_5 "SNOVA_29_6_5"
+/** Algorithm identifier for mqom2_cat1_gf16_fast_r3 */
+#define OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r3 "mqom2_cat1_gf16_fast_r3"
+/** Algorithm identifier for mqom2_cat1_gf16_fast_r5 */
+#define OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r5 "mqom2_cat1_gf16_fast_r5"
+/** Algorithm identifier for mqom2_cat1_gf16_short_r3 */
+#define OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r3 "mqom2_cat1_gf16_short_r3"
+/** Algorithm identifier for mqom2_cat1_gf16_short_r5 */
+#define OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r5 "mqom2_cat1_gf16_short_r5"
+/** Algorithm identifier for mqom2_cat3_gf16_fast_r3 */
+#define OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r3 "mqom2_cat3_gf16_fast_r3"
+/** Algorithm identifier for mqom2_cat3_gf16_fast_r5 */
+#define OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r5 "mqom2_cat3_gf16_fast_r5"
+/** Algorithm identifier for mqom2_cat3_gf16_short_r3 */
+#define OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r3 "mqom2_cat3_gf16_short_r3"
+/** Algorithm identifier for mqom2_cat3_gf16_short_r5 */
+#define OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r5 "mqom2_cat3_gf16_short_r5"
+/** Algorithm identifier for mqom2_cat5_gf16_fast_r3 */
+#define OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r3 "mqom2_cat5_gf16_fast_r3"
+/** Algorithm identifier for mqom2_cat5_gf16_fast_r5 */
+#define OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r5 "mqom2_cat5_gf16_fast_r5"
+/** Algorithm identifier for mqom2_cat5_gf16_short_r3 */
+#define OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r3 "mqom2_cat5_gf16_short_r3"
+/** Algorithm identifier for mqom2_cat5_gf16_short_r5 */
+#define OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r5 "mqom2_cat5_gf16_short_r5"
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALG_IDENTIFIER_END
 ///// OQS_COPY_FROM_SLH_DSA_FRAGMENT_ALGID_START
 /** Algorithm identifier for slh_dsa_pure_sha2_128s */
@@ -740,9 +740,6 @@ OQS_API bool OQS_SIG_supports_ctx_str(const char *alg_name);
 #ifdef OQS_ENABLE_SIG_FALCON
 #include <oqs/sig_falcon.h>
 #endif /* OQS_ENABLE_SIG_FALCON */
-#ifdef OQS_ENABLE_SIG_SPHINCS
-#include <oqs/sig_sphincs.h>
-#endif /* OQS_ENABLE_SIG_SPHINCS */
 #ifdef OQS_ENABLE_SIG_MAYO
 #include <oqs/sig_mayo.h>
 #endif /* OQS_ENABLE_SIG_MAYO */
@@ -755,6 +752,9 @@ OQS_API bool OQS_SIG_supports_ctx_str(const char *alg_name);
 #ifdef OQS_ENABLE_SIG_SNOVA
 #include <oqs/sig_snova.h>
 #endif /* OQS_ENABLE_SIG_SNOVA */
+#ifdef OQS_ENABLE_SIG_MQOM
+#include <oqs/sig_mqom.h>
+#endif /* OQS_ENABLE_SIG_MQOM */
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_INCLUDE_END
 ///// OQS_COPY_FROM_SLH_DSA_FRAGMENT_INCLUDE_START
 #ifdef OQS_ENABLE_SIG_SLH_DSA

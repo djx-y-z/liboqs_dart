@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Dart](https://img.shields.io/badge/dart-%3E%3D3.10.0-brightgreen.svg)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/flutter-%3E%3D3.38.0-blue.svg)](https://flutter.dev)
-[![liboqs](https://img.shields.io/badge/liboqs-0.15.0-orange.svg)](https://github.com/open-quantum-safe/liboqs)
+[![liboqs](https://img.shields.io/badge/liboqs-0.16.0-orange.svg)](https://github.com/open-quantum-safe/liboqs)
 
 A Dart FFI wrapper for [liboqs](https://github.com/open-quantum-safe/liboqs), providing access to post-quantum cryptographic algorithms including key encapsulation mechanisms (KEMs), digital signatures, and cryptographically secure random number generation.
 
@@ -76,9 +76,9 @@ void main() {
 |-----------|----------------|--------|
 | ML-KEM-512, ML-KEM-768, ML-KEM-1024 | NIST Level 1/3/5 | FIPS 203 Standard |
 | Kyber512, Kyber768, Kyber1024 | NIST Level 1/3/5 | Legacy (use ML-KEM) |
-| HQC | Various | NIST Selected |
+| HQC-1, HQC-3, HQC-5 | NIST Level 1/3/5 | NIST Selected |
 | Classic McEliece variants | Various | ISO consideration |
-| FrodoKEM variants | Various | ISO consideration |
+| FrodoKEM-* (salted), eFrodoKEM-* (ephemeral) | Various | ISO consideration |
 | NTRU, NTRU-Prime | Various | Not NIST selected |
 
 ### Digital Signatures
@@ -88,8 +88,7 @@ void main() {
 | ML-DSA-44, ML-DSA-65, ML-DSA-87 | NIST Level 2/3/5 | FIPS 204 Standard |
 | SLH-DSA variants | Various | FIPS 205 Standard |
 | Falcon-512, Falcon-1024 | NIST Level 1/5 | NIST Selected |
-| SPHINCS+ variants | Various | Deprecated (use SLH-DSA) |
-| MAYO, CROSS, SNOVA, UOV | Various | Under NIST consideration |
+| MAYO, CROSS, SNOVA, UOV, MQOM | Various | Under NIST consideration |
 
 ### Listing Available Algorithms
 

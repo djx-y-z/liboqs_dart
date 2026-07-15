@@ -1,3 +1,65 @@
+## [2.0.0] - 2026-07-13
+
+Major release: upgrades the bundled liboqs native library from **0.15.0** to
+**0.16.0**. liboqs 0.16.0 removes and renames several algorithms, so this is a
+breaking release even though the Dart API surface (the `KEM`, `Signature`, and
+`OQSRandom` classes) is unchanged. Review the **Changed** and **Removed**
+sections before upgrading.
+
+### Changed
+
+- **Breaking:** Upgraded bundled liboqs native library from 0.15.0 to 0.16.0.
+- **Breaking (silent):** `FrodoKEM-640-AES`, `FrodoKEM-640-SHAKE`,
+  `FrodoKEM-976-AES`, `FrodoKEM-976-SHAKE`, `FrodoKEM-1344-AES`, and
+  `FrodoKEM-1344-SHAKE` now select the **salted** FrodoKEM variant instead of the
+  ephemeral variant used in 0.15.0. The identifiers are unchanged but keys and
+  ciphertexts are **not interoperable** with 0.15.0. The previous ephemeral
+  behavior is now available under the new `eFrodoKEM-*` identifiers (see Added).
+  Prefer `eFrodoKEM-*` when each keypair encapsulates only a few shared secrets,
+  and `FrodoKEM-*` (salted) for high-volume encapsulation.
+- **Breaking:** HQC identifiers were renamed `HQC-128`/`HQC-192`/`HQC-256` →
+  `HQC-1`/`HQC-3`/`HQC-5`. HQC is now enabled by default and updated to the
+  2025-08-22 specification. `KEM.create('HQC-128')` now returns `null`.
+- `ML-DSA-44`/`ML-DSA-65`/`ML-DSA-87` are now backed by the portable
+  `mldsa-native` implementation (with x86_64/aarch64 optimizations); identifiers
+  and behavior are unchanged.
+- `sntrup761` (NTRU Prime) now uses the public-domain OpenSSH implementation.
+- Regenerated FFI bindings for liboqs 0.16.0.
+
+### Added
+
+- Ephemeral FrodoKEM identifiers: `eFrodoKEM-640-AES`, `eFrodoKEM-640-SHAKE`,
+  `eFrodoKEM-976-AES`, `eFrodoKEM-976-SHAKE`, `eFrodoKEM-1344-AES`, and
+  `eFrodoKEM-1344-SHAKE`.
+- HQC (`HQC-1`, `HQC-3`, `HQC-5`) is now enabled by default.
+- Upstream runtime-detection API for stateful signature support (`OQS_SIG_STFL_*`).
+
+### Removed
+
+- **Breaking:** SPHINCS+ signature algorithms
+  (`SPHINCS+-SHA2-128f-simple`, `-128s-simple`, `-192f-simple`, `-192s-simple`,
+  `-256f-simple`, `-256s-simple`) were removed upstream in liboqs 0.16.0.
+  `Signature.create('SPHINCS+-…')` now returns `null`. Migrate to **SLH-DSA**
+  (FIPS 205, `SLH_DSA_PURE_*`) or **ML-DSA** (FIPS 204).
+- **Breaking:** Legacy HQC identifiers `HQC-128`/`HQC-192`/`HQC-256` (renamed; see
+  Changed).
+
+### Security
+
+Includes the following upstream liboqs 0.16.0 security fixes:
+
+- Fixed uninitialized `encaps_derand` pointer dereference
+  ([open-quantum-safe/liboqs#2460](https://github.com/open-quantum-safe/liboqs/pull/2460)).
+- Fixed out-of-bounds read in XMSS/XMSS^MT signature verification
+  ([open-quantum-safe/liboqs#2384](https://github.com/open-quantum-safe/liboqs/pull/2384)).
+- Fixed integer underflow in CROSS `crypto_sign_open()`.
+- Fixed incorrect array size when calling `secure_clean`.
+- Added the `OQS_MEM_BLACK_BOX` optimization barrier hardening FrodoKEM
+  `ct_select` constant-time protection
+  ([open-quantum-safe/liboqs#2431](https://github.com/open-quantum-safe/liboqs/pull/2431)).
+
+See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/liboqs/releases/tag/0.16.0).
+
 ## [1.2.1] - 2026-05-14
 
 ### Fixed
@@ -182,7 +244,9 @@
 - Secret keys are automatically zeroed before memory is freed
 - Based on liboqs 0.15.0 with NIST-standardized algorithms (FIPS 203, 204, 205)
 
-[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.1...v2.0.0
+[1.2.1]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.1...v1.1.2

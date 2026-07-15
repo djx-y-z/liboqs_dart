@@ -58,12 +58,12 @@ extern "C" {
 #define OQS_KEM_alg_classic_mceliece_8192128 "Classic-McEliece-8192128"
 /** Algorithm identifier for Classic-McEliece-8192128f KEM. */
 #define OQS_KEM_alg_classic_mceliece_8192128f "Classic-McEliece-8192128f"
-/** Algorithm identifier for HQC-128 KEM. */
-#define OQS_KEM_alg_hqc_128 "HQC-128"
-/** Algorithm identifier for HQC-192 KEM. */
-#define OQS_KEM_alg_hqc_192 "HQC-192"
-/** Algorithm identifier for HQC-256 KEM. */
-#define OQS_KEM_alg_hqc_256 "HQC-256"
+/** Algorithm identifier for HQC-1 KEM. */
+#define OQS_KEM_alg_hqc_1 "HQC-1"
+/** Algorithm identifier for HQC-3 KEM. */
+#define OQS_KEM_alg_hqc_3 "HQC-3"
+/** Algorithm identifier for HQC-5 KEM. */
+#define OQS_KEM_alg_hqc_5 "HQC-5"
 /** Algorithm identifier for Kyber512 KEM. */
 #define OQS_KEM_alg_kyber_512 "Kyber512"
 /** Algorithm identifier for Kyber768 KEM. */
@@ -103,11 +103,23 @@ extern "C" {
 #define OQS_KEM_alg_frodokem_1344_aes "FrodoKEM-1344-AES"
 /** Algorithm identifier for FrodoKEM-1344-SHAKE KEM. */
 #define OQS_KEM_alg_frodokem_1344_shake "FrodoKEM-1344-SHAKE"
+/** Algorithm identifier for eFrodoKEM-640-AES KEM. */
+#define OQS_KEM_alg_efrodokem_640_aes "eFrodoKEM-640-AES"
+/** Algorithm identifier for eFrodoKEM-640-SHAKE KEM. */
+#define OQS_KEM_alg_efrodokem_640_shake "eFrodoKEM-640-SHAKE"
+/** Algorithm identifier for eFrodoKEM-976-AES KEM. */
+#define OQS_KEM_alg_efrodokem_976_aes "eFrodoKEM-976-AES"
+/** Algorithm identifier for eFrodoKEM-976-SHAKE KEM. */
+#define OQS_KEM_alg_efrodokem_976_shake "eFrodoKEM-976-SHAKE"
+/** Algorithm identifier for eFrodoKEM-1344-AES KEM. */
+#define OQS_KEM_alg_efrodokem_1344_aes "eFrodoKEM-1344-AES"
+/** Algorithm identifier for eFrodoKEM-1344-SHAKE KEM. */
+#define OQS_KEM_alg_efrodokem_1344_shake "eFrodoKEM-1344-SHAKE"
 // EDIT-WHEN-ADDING-KEM
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALGS_LENGTH_START
 
 /** Number of algorithm identifiers above. */
-#define OQS_KEM_algs_length 35
+#define OQS_KEM_algs_length 41
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALGS_LENGTH_END
 
 /**

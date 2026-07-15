@@ -3,12 +3,12 @@
 /** 
  * Version of liboqs as a string. Equivalent to {MAJOR}.{MINOR}.{PATCH}{PRE_RELEASE} 
  */
-#define OQS_VERSION_TEXT "0.15.0"
+#define OQS_VERSION_TEXT "0.16.0"
 /** 
  * Version levels of liboqs as integers.
  */
 #define OQS_VERSION_MAJOR 0
-#define OQS_VERSION_MINOR 15
+#define OQS_VERSION_MINOR 16
 #define OQS_VERSION_PATCH 0
 /** 
  * OQS_VERSION_PRE_RELEASE is defined if this is a pre-release version of liboqs, otherwise it is undefined.
@@ -16,7 +16,7 @@
  */
 /* #undef OQS_VERSION_PRE_RELEASE */
 
-#define OQS_COMPILE_BUILD_TARGET "arm64-Darwin-24.6.0"
+#define OQS_COMPILE_BUILD_TARGET "arm64-Darwin-25.5.0"
 #define OQS_DIST_BUILD 1
 /* #undef OQS_DIST_X86_64_BUILD */
 /* #undef OQS_DIST_X86_BUILD */
@@ -42,6 +42,7 @@
 /* #undef OQS_OPENSSL_CRYPTO_SONAME */
 
 /* #undef OQS_EMBEDDED_BUILD */
+/* #undef OQS_MEMOPT_BUILD */
 
 #define OQS_USE_PTHREADS 1
 
@@ -86,10 +87,15 @@
 #define OQS_ENABLE_KEM_frodokem_976_shake 1
 #define OQS_ENABLE_KEM_frodokem_1344_aes 1
 #define OQS_ENABLE_KEM_frodokem_1344_shake 1
+#define OQS_ENABLE_KEM_efrodokem_640_aes 1
+#define OQS_ENABLE_KEM_efrodokem_640_shake 1
+#define OQS_ENABLE_KEM_efrodokem_976_aes 1
+#define OQS_ENABLE_KEM_efrodokem_976_shake 1
+#define OQS_ENABLE_KEM_efrodokem_1344_aes 1
+#define OQS_ENABLE_KEM_efrodokem_1344_shake 1
 
 #define OQS_ENABLE_KEM_NTRUPRIME 1
 #define OQS_ENABLE_KEM_ntruprime_sntrup761 1
-/* #undef OQS_ENABLE_KEM_ntruprime_sntrup761_avx2 */
 
 #define OQS_ENABLE_KEM_NTRU 1
 #define OQS_ENABLE_KEM_ntru_hps2048509 1
@@ -127,10 +133,10 @@
 #define OQS_ENABLE_KEM_classic_mceliece_8192128f 1
 /* #undef OQS_ENABLE_KEM_classic_mceliece_8192128f_avx2 */
 
-/* #undef OQS_ENABLE_KEM_HQC */
-/* #undef OQS_ENABLE_KEM_hqc_128 */
-/* #undef OQS_ENABLE_KEM_hqc_192 */
-/* #undef OQS_ENABLE_KEM_hqc_256 */
+#define OQS_ENABLE_KEM_HQC 1
+#define OQS_ENABLE_KEM_hqc_1 1
+#define OQS_ENABLE_KEM_hqc_3 1
+#define OQS_ENABLE_KEM_hqc_5 1
 
 #define OQS_ENABLE_KEM_KYBER 1
 #define OQS_ENABLE_KEM_kyber_512 1
@@ -162,11 +168,14 @@
 
 #define OQS_ENABLE_SIG_ML_DSA 1
 #define OQS_ENABLE_SIG_ml_dsa_44 1
-/* #undef OQS_ENABLE_SIG_ml_dsa_44_avx2 */
+/* #undef OQS_ENABLE_SIG_ml_dsa_44_x86_64 */
+#define OQS_ENABLE_SIG_ml_dsa_44_aarch64 1
 #define OQS_ENABLE_SIG_ml_dsa_65 1
-/* #undef OQS_ENABLE_SIG_ml_dsa_65_avx2 */
+/* #undef OQS_ENABLE_SIG_ml_dsa_65_x86_64 */
+#define OQS_ENABLE_SIG_ml_dsa_65_aarch64 1
 #define OQS_ENABLE_SIG_ml_dsa_87 1
-/* #undef OQS_ENABLE_SIG_ml_dsa_87_avx2 */
+/* #undef OQS_ENABLE_SIG_ml_dsa_87_x86_64 */
+#define OQS_ENABLE_SIG_ml_dsa_87_aarch64 1
 
 #define OQS_ENABLE_SIG_FALCON 1
 #define OQS_ENABLE_SIG_falcon_512 1
@@ -181,32 +190,6 @@
 #define OQS_ENABLE_SIG_falcon_padded_1024 1
 /* #undef OQS_ENABLE_SIG_falcon_padded_1024_avx2 */
 #define OQS_ENABLE_SIG_falcon_padded_1024_aarch64 1
-
-#define OQS_ENABLE_SIG_SPHINCS 1
-#define OQS_ENABLE_SIG_sphincs_sha2_128f_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_sha2_128f_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_sha2_128s_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_sha2_128s_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_sha2_192f_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_sha2_192f_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_sha2_192s_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_sha2_192s_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_sha2_256f_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_sha2_256f_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_sha2_256s_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_sha2_256s_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_shake_128f_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_shake_128f_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_shake_128s_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_shake_128s_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_shake_192f_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_shake_192f_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_shake_192s_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_shake_192s_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_shake_256f_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_shake_256f_simple_avx2 */
-#define OQS_ENABLE_SIG_sphincs_shake_256s_simple 1
-/* #undef OQS_ENABLE_SIG_sphincs_shake_256s_simple_avx2 */
 
 #define OQS_ENABLE_SIG_MAYO 1
 #define OQS_ENABLE_SIG_mayo_1 1
@@ -335,6 +318,44 @@
 #define OQS_ENABLE_SIG_snova_SNOVA_29_6_5 1
 /* #undef OQS_ENABLE_SIG_snova_SNOVA_29_6_5_avx2 */
 #define OQS_ENABLE_SIG_snova_SNOVA_29_6_5_neon 1
+
+#define OQS_ENABLE_SIG_MQOM 1
+#define OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r3 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r3_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r3_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r5 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r5_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_fast_r5_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r3 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r3_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r3_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r5 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r5_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat1_gf16_short_r5_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r3 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r3_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r3_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r5 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r5_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_fast_r5_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r3 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r3_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r3_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r5 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r5_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat3_gf16_short_r5_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r3 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r3_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r3_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r5 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r5_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_fast_r5_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r3 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r3_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r3_avx2 */
+#define OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r5 1
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r5_memopt */
+/* #undef OQS_ENABLE_SIG_mqom_mqom2_cat5_gf16_short_r5_avx2 */
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ADD_ALG_ENABLE_DEFINES_END
 ///// OQS_COPY_FROM_SLH_DSA_FRAGMENT_ADD_ALG_ENABLE_DEFINES_START
 #define OQS_ENABLE_SIG_SLH_DSA 1

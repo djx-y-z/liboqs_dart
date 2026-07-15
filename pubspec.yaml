@@ -1,7 +1,7 @@
 name: liboqs
-description: Dart FFI bindings for liboqs — high-performance post-quantum cryptography (PQC) with ML-KEM, ML-DSA, Falcon, SPHINCS+ for key encapsulation and signatures.
+description: Dart FFI bindings for liboqs — high-performance post-quantum cryptography (PQC) with ML-KEM, ML-DSA, Falcon, SLH-DSA for key encapsulation and signatures.
 
-version: 1.2.1
+version: 2.0.0
 license: MIT
 repository: https://github.com/djx-y-z/liboqs_dart
 homepage: https://github.com/djx-y-z/liboqs_dart
@@ -9,8 +9,8 @@ issue_tracker: https://github.com/djx-y-z/liboqs_dart/issues
 
 # Native library version configuration
 liboqs:
-  native_version: "0.15.0"
-  native_build: 4
+  native_version: "0.16.0"
+  native_build: 1
 
 environment:
   sdk: ^3.10.0

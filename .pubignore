@@ -21,6 +21,9 @@ headers/
 
 # Build artifacts
 build/
+# Local native-library build outputs (downloaded at build time via hooks, never bundled)
+bin/
+macos/Libraries/
 example/build/
 example/.dart_tool/
 example/.flutter-plugins

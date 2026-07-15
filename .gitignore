@@ -43,6 +43,11 @@ macos/*.xcworkspace/
 # Build output
 build/
 
+# Native library build outputs (produced by `make build`; downloaded at build
+# time via hooks for consumers — never committed or bundled in the package)
+bin/
+macos/Libraries/
+
 # Coverage
 coverage/
 

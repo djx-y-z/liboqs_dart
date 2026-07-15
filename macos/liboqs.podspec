@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.summary          = 'Post-quantum cryptography (liboqs) FFI bindings for Flutter'
   s.description      = <<-DESC
 Dart FFI bindings for liboqs — high-performance post-quantum cryptography (PQC)
-with ML-KEM, ML-DSA, Falcon, SPHINCS+ for key encapsulation and signatures.
+with ML-KEM, ML-DSA, Falcon, SLH-DSA for key encapsulation and signatures.
 Native libraries are bundled automatically via Flutter's native assets system.
                        DESC
   s.homepage         = 'https://github.com/djx-y-z/liboqs_dart'
