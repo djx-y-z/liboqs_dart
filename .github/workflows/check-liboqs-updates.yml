@@ -67,8 +67,28 @@ jobs:
           echo "Check completed. Outputs:"
           cat $GITHUB_OUTPUT || true
 
-      - name: Update pubspec.yaml
+      # Idempotency gate: if an open update PR for this exact version already
+      # exists, do nothing. peter-evans/create-pull-request force-pushes the PR
+      # branch on every run, so without this gate each scheduled run would wipe
+      # any manual commits a maintainer pushed onto the open PR (e.g. regenerated
+      # bindings, changelog edits). force_update bypasses the gate.
+      - name: Check for existing update PR
+        id: existing
         if: steps.check.outputs.needs_update == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          BRANCH="update-liboqs-${{ steps.check.outputs.latest_version }}"
+          OPEN_PRS=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$OPEN_PRS" != "0" ] && [ "${{ inputs.force_update }}" != "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::notice::Open update PR for branch $BRANCH already exists — skipping to avoid force-pushing over it."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update pubspec.yaml
+        if: steps.check.outputs.needs_update == 'true' && steps.existing.outputs.skip != 'true'
         run: |
           # Build arguments for update
           ARGS="--update --ci"
@@ -85,7 +105,7 @@ jobs:
           make check ARGS="$ARGS"
 
       - name: Create Pull Request
-        if: steps.check.outputs.needs_update == 'true'
+        if: steps.check.outputs.needs_update == 'true' && steps.existing.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -155,7 +175,12 @@ jobs:
 
       - name: Summary
         run: |
-          if [ "${{ steps.check.outputs.needs_update }}" = "true" ]; then
+          if [ "${{ steps.existing.outputs.skip }}" = "true" ]; then
+            echo "## Update PR Already Open" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "An open PR for **${{ steps.check.outputs.latest_version }}** already exists — nothing to do." >> $GITHUB_STEP_SUMMARY
+            echo "Re-run with \`force_update\` to regenerate it (this force-pushes the PR branch)." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.check.outputs.needs_update }}" = "true" ]; then
             echo "## Update Available" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY

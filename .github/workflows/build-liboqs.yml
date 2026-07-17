@@ -31,6 +31,20 @@ on:
     paths:
       - 'pubspec.yaml'
 
+# Serialize builds racing for the same release tag. Two fast pushes to
+# pubspec.yaml (or a manual dispatch overlapping a push) would otherwise run
+# overlapping multi-platform builds that both delete-then-recreate the single
+# liboqs-<version> release tag (see create-release). cancel-in-progress lets the
+# newer main win: the release tag is only ever touched after all build jobs pass.
+concurrency:
+  group: build-liboqs-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege default: jobs only read the repo. create-release opts up to
+# contents: write at the job level (job-level permissions replace, not merge).
+permissions:
+  contents: read
+
 jobs:
   # ============================================
   # Read version from file
@@ -218,8 +232,13 @@ jobs:
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
 
-      - name: Install dependencies
-        run: choco install ninja make -y
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      # Pinned GNU Make from GitHub Releases (retry + size check) instead of
+      # `choco install make` — avoids Chocolatey flakiness on the build path.
+      - name: Setup Make
+        uses: ./.github/actions/setup-make
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1.13.0

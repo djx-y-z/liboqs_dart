@@ -137,10 +137,28 @@ jobs:
       update-badge: false
 
   # ============================================
+  # Validate package (pub.dev dry-run)
+  # ============================================
+  validate-package:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      - name: Install dependencies
+        run: make get
+
+      - name: Validate package
+        run: make publish-dry-run
+
+  # ============================================
   # Publish to pub.dev
   # ============================================
   publish:
-    needs: [validate, test]
+    needs: [validate, test, validate-package]
     runs-on: ubuntu-latest
     environment: pub.dev
     steps:

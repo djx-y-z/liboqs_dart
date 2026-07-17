@@ -29,6 +29,10 @@ on:
         description: 'Coverage percentage (from Linux x86_64 run)'
         value: ${{ jobs.test.outputs.coverage }}
 
+# Least-privilege default: jobs only read the repo unless they opt into more.
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
@@ -56,9 +60,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install make (Windows)
+      # Install make (Windows only, pre-installed on Linux/macOS)
+      - name: Setup Make
         if: runner.os == 'Windows'
-        run: choco install make -y
+        uses: ./.github/actions/setup-make
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -73,6 +78,10 @@ jobs:
 
       - name: Check formatting
         run: make format-check
+        shell: bash
+
+      - name: Check deployment targets
+        run: make check-targets
         shell: bash
 
       # Run tests without coverage (non-Linux or coverage disabled)
