@@ -1,67 +1,70 @@
 ## [2.0.0] - 2026-07-13
 
-Major release: upgrades the bundled liboqs native library from **0.15.0** to
-**0.16.0**. liboqs 0.16.0 removes and renames several algorithms, so this is a
-breaking release even though the Dart API surface (the `KEM`, `Signature`, and
-`OQSRandom` classes) is unchanged. Review the **Changed** and **Removed**
-sections before upgrading.
+### For Users
 
-### Changed
+#### ✨ Highlights
 
-- **Breaking:** Upgraded bundled liboqs native library from 0.15.0 to 0.16.0.
-- **Breaking (silent):** `FrodoKEM-640-AES`, `FrodoKEM-640-SHAKE`,
-  `FrodoKEM-976-AES`, `FrodoKEM-976-SHAKE`, `FrodoKEM-1344-AES`, and
-  `FrodoKEM-1344-SHAKE` now select the **salted** FrodoKEM variant instead of the
-  ephemeral variant used in 0.15.0. The identifiers are unchanged but keys and
-  ciphertexts are **not interoperable** with 0.15.0. The previous ephemeral
-  behavior is now available under the new `eFrodoKEM-*` identifiers (see Added).
-  Prefer `eFrodoKEM-*` when each keypair encapsulates only a few shared secrets,
-  and `FrodoKEM-*` (salted) for high-volume encapsulation.
-- **Breaking:** HQC identifiers were renamed `HQC-128`/`HQC-192`/`HQC-256` →
+- **Bundled liboqs upgraded 0.15.0 → 0.16.0 (breaking)** — includes upstream
+  security fixes (see Security) plus the algorithm removals and renames below.
+- **Dart API unchanged** — `KEM`, `Signature`, and `OQSRandom` are
+  source-compatible; every breaking change is in *algorithm availability* or the
+  bundled native library, not the class API.
+- **SPHINCS+ removed (breaking)** — `Signature.create('SPHINCS+-…')` now returns
+  `null`; migrate to **SLH-DSA** (FIPS 205) or **ML-DSA** (FIPS 204).
+- **HQC renamed and enabled by default (breaking)** — `HQC-128`/`HQC-192`/`HQC-256`
+  → `HQC-1`/`HQC-3`/`HQC-5`, updated to the 2025-08-22 spec.
+- **FrodoKEM is now the salted variant (silent breaking)** — keys/ciphertexts are
+  **not interoperable** with 0.15.0; the old ephemeral behavior moved to the new
+  `eFrodoKEM-*` identifiers.
+- **Now usable from standalone Dart** — the package dropped its Flutter SDK
+  constraint (pure `dart:ffi`), so it works outside Flutter and shows both the
+  Dart and Flutter badges on pub.dev.
+
+#### Changed (Breaking)
+
+- Upgraded bundled liboqs native library from 0.15.0 to 0.16.0.
+- `FrodoKEM-640-AES`, `FrodoKEM-640-SHAKE`, `FrodoKEM-976-AES`,
+  `FrodoKEM-976-SHAKE`, `FrodoKEM-1344-AES`, and `FrodoKEM-1344-SHAKE` now select
+  the **salted** FrodoKEM variant instead of the ephemeral variant used in
+  0.15.0. The identifiers are unchanged but keys and ciphertexts are **not
+  interoperable** with 0.15.0. The previous ephemeral behavior is now available
+  under the new `eFrodoKEM-*` identifiers (see Added). Prefer `eFrodoKEM-*` when
+  each keypair encapsulates only a few shared secrets, and `FrodoKEM-*` (salted)
+  for high-volume encapsulation.
+- HQC identifiers were renamed `HQC-128`/`HQC-192`/`HQC-256` →
   `HQC-1`/`HQC-3`/`HQC-5`. HQC is now enabled by default and updated to the
   2025-08-22 specification. `KEM.create('HQC-128')` now returns `null`.
+
+#### Changed
+
 - `ML-DSA-44`/`ML-DSA-65`/`ML-DSA-87` are now backed by the portable
   `mldsa-native` implementation (with x86_64/aarch64 optimizations); identifiers
   and behavior are unchanged.
 - `sntrup761` (NTRU Prime) now uses the public-domain OpenSSH implementation.
-- Regenerated FFI bindings for liboqs 0.16.0.
 - Dropped the `flutter: ">=3.38.0"` SDK constraint. The package contains no
   Flutter imports (pure `dart:ffi`), so it is now usable from standalone Dart as
   well as Flutter, and pub.dev reports both the **Dart** and **Flutter** SDK
   badges (previously Flutter only). Verified with `pana`.
 
-### Added
+#### Added
 
 - Ephemeral FrodoKEM identifiers: `eFrodoKEM-640-AES`, `eFrodoKEM-640-SHAKE`,
   `eFrodoKEM-976-AES`, `eFrodoKEM-976-SHAKE`, `eFrodoKEM-1344-AES`, and
   `eFrodoKEM-1344-SHAKE`.
 - HQC (`HQC-1`, `HQC-3`, `HQC-5`) is now enabled by default.
 - Upstream runtime-detection API for stateful signature support (`OQS_SIG_STFL_*`).
-- `make check-targets` — guard that keeps the iOS/macOS deployment targets in
-  the native build scripts internally consistent
-  (`scripts/check_deployment_targets.dart`).
 
-### Removed
+#### Removed (Breaking)
 
-- **Breaking:** SPHINCS+ signature algorithms
+- SPHINCS+ signature algorithms
   (`SPHINCS+-SHA2-128f-simple`, `-128s-simple`, `-192f-simple`, `-192s-simple`,
   `-256f-simple`, `-256s-simple`) were removed upstream in liboqs 0.16.0.
   `Signature.create('SPHINCS+-…')` now returns `null`. Migrate to **SLH-DSA**
   (FIPS 205, `SLH_DSA_PURE_*`) or **ML-DSA** (FIPS 204).
-- **Breaking:** Legacy HQC identifiers `HQC-128`/`HQC-192`/`HQC-256` (renamed; see
-  Changed).
-- All platform-plugin scaffolding: the `ios/macos/liboqs.podspec` files, the
-  `ios/Classes/LiboqsPlugin.swift` stub, the `android/` Gradle project
-  (`build.gradle`, `settings.gradle`, `AndroidManifest.xml`), and the
-  `linux/`/`windows/` `CMakeLists.txt` (plus stale generated app registrants).
-  This is a plain Dart FFI package, not a Flutter plugin, so none of these files
-  were ever consumed — a consuming app's `pod install` installs only
-  `Flutter`/`FlutterMacOS`, and platform support is declared purely via the
-  top-level `platforms:` key. Verified with `pana` (all five platform badges
-  unchanged) and by rebuilding/running the iOS and macOS example. Native
-  libraries continue to ship via Build Hooks.
+- Legacy HQC identifiers `HQC-128`/`HQC-192`/`HQC-256` (renamed; see Changed
+  (Breaking)).
 
-### Fixed
+#### Fixed
 
 - Build hook: the download cache key now includes the full version
   (`native_version` + `native_build`) and the full platform variant. Previously
@@ -71,7 +74,7 @@ sections before upgrading.
   version bump a stale binary from the previous release could be reused instead
   of downloading the new one.
 
-### Security
+#### Security
 
 - Build hook: SHA256 verification of downloaded native libraries is now
   **fail-closed**. Previously a missing or unreachable checksums file (e.g. a
@@ -92,6 +95,44 @@ Includes the following upstream liboqs 0.16.0 security fixes:
   ([open-quantum-safe/liboqs#2431](https://github.com/open-quantum-safe/liboqs/pull/2431)).
 
 See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/liboqs/releases/tag/0.16.0).
+
+### For Contributors
+
+#### Added
+
+- `make check-targets` — guard that keeps the iOS/macOS deployment targets in the
+  native build scripts internally consistent
+  (`scripts/check_deployment_targets.dart`); now also enforced in CI (see
+  Changed).
+
+#### Changed
+
+- Regenerated FFI bindings for liboqs 0.16.0.
+- **CI hardening & reliability (Phase 4).** Workflows now run with a
+  least-privilege `GITHUB_TOKEN` (workflow-level `contents: read`; only the
+  release-publishing job opts up to `contents: write`). The native-library build
+  workflow serializes via a `concurrency` group, so two quick `pubspec.yaml`
+  pushes can no longer race to delete-and-recreate the same release tag. Windows
+  runners install GNU Make from a pinned GitHub release (with retry + size check)
+  via a `setup-make` composite action instead of Chocolatey. The
+  deployment-target guard (`make check-targets`) runs in the CI quality checks
+  alongside `analyze`/`format-check`. The publish workflow gained a dedicated
+  package-validation (`publish-dry-run`) job that gates publishing. The liboqs
+  update checker skips when an open update PR for the same version already
+  exists, so scheduled runs no longer force-push over manual commits on that PR.
+
+#### Removed
+
+- All platform-plugin scaffolding: the `ios/macos/liboqs.podspec` files, the
+  `ios/Classes/LiboqsPlugin.swift` stub, the `android/` Gradle project
+  (`build.gradle`, `settings.gradle`, `AndroidManifest.xml`), and the
+  `linux/`/`windows/` `CMakeLists.txt` (plus stale generated app registrants).
+  This is a plain Dart FFI package, not a Flutter plugin, so none of these files
+  were ever consumed — a consuming app's `pod install` installs only
+  `Flutter`/`FlutterMacOS`, and platform support is declared purely via the
+  top-level `platforms:` key. Verified with `pana` (all five platform badges
+  unchanged) and by rebuilding/running the iOS and macOS example. Native
+  libraries continue to ship via Build Hooks.
 
 ## [1.2.1] - 2026-05-14
 
