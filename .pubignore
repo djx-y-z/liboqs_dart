@@ -23,7 +23,12 @@ headers/
 build/
 # Local native-library build outputs (downloaded at build time via hooks, never bundled)
 bin/
-macos/Libraries/
+# The package ships no podspec / plugin scaffolding; the top-level ios/ and macos/
+# dirs hold only local build outputs (Libraries/) and stale Xcode artifacts, none
+# of which belong in the published package (native delivery is via hook/build.dart).
+# Anchored with a leading slash so example/ios and example/macos are unaffected.
+/ios/
+/macos/
 example/build/
 example/.dart_tool/
 example/.flutter-plugins

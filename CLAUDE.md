@@ -28,6 +28,7 @@ make build macos --arch arm64  # make interprets --arch as its own flag!
 | Run analysis | `make analyze` |
 | Strict analysis | `make analyze ARGS="--fatal-infos"` |
 | Format code | `make format` |
+| Check deployment targets (iOS/macOS) | `make check-targets` |
 | Generate documentation | `make doc` |
 | Regenerate FFI bindings | `make regen` |
 | Check for updates | `make check` |
@@ -46,8 +47,8 @@ make setup                        # Install FVM + Flutter + dependencies (run on
 make build ARGS="<platform> [options]"     # Build native libraries
 make build ARGS="macos"                    # Build for macOS (universal)
 make build ARGS="macos --arch arm64"       # Build for specific architecture
-make build ARGS="ios"                      # Build for iOS (xcframework)
-make build ARGS="ios --target simulator"   # Build for iOS simulator only
+make build ARGS="ios"                      # Build for iOS (device + simulator dylibs)
+make build ARGS="ios --target simulator-arm64"   # Build for a single iOS target
 make build ARGS="android"                  # Build for Android (all ABIs)
 make build ARGS="android --abi arm64-v8a"
 make build ARGS="linux"                    # Build for Linux
@@ -78,6 +79,8 @@ make analyze                             # Run static analysis
 make analyze ARGS="--fatal-infos"        # Strict analysis
 make format                              # Format Dart code
 make format-check                        # Check formatting without changes
+make check-targets                       # Check iOS/macOS deployment target consistency
+make check-targets ARGS="--update"       # Fix deployment target drift in-place
 ```
 
 ### Utilities
@@ -112,7 +115,7 @@ liboqs/
 │   ├── macos/liboqs.dylib
 │   └── windows/oqs.dll
 ├── android/src/main/jniLibs/       # Android libraries
-├── ios/Frameworks/                 # iOS xcframework
+├── ios/Libraries/                  # iOS per-target dylibs (local builds)
 ├── macos/Libraries/                # macOS Flutter library
 ├── scripts/                        # Build scripts (use via Makefile!)
 ├── test/                           # Tests
@@ -195,8 +198,21 @@ make test ARGS="--reporter=expanded"
 | Linux | x86_64 | `bin/linux/liboqs.so` |
 | macOS | Universal (arm64 + x86_64) | `bin/macos/liboqs.dylib` |
 | Windows | x86_64 | `bin/windows/oqs.dll` |
-| iOS | XCFramework | `ios/Frameworks/liboqs.xcframework` |
+| iOS | device arm64; simulator arm64, x86_64 | `ios/Libraries/<target>-<arch>/liboqs.dylib` |
 | Android | arm64-v8a, armeabi-v7a, x86_64 | `android/src/main/jniLibs/` |
+
+**Native delivery — no platform folders:** the package is a plain Dart FFI package.
+It is **not** a Flutter plugin (no `flutter: plugin:` section) and ships **no**
+platform scaffolding — no `ios/macos` podspecs, no `android/` Gradle project, no
+`linux/windows` CMake files. Native libraries are delivered exclusively through the
+Build Hook (`hook/build.dart`) as native assets; on iOS/macOS Flutter converts the
+`.dylib` to a framework and embeds/signs it, on Android/Linux/Windows it bundles the
+`.so`/`.dll`. Platform support is declared purely via the top-level `platforms:` key
+in `pubspec.yaml` (verified with `pana`: all five platform tags plus `sdk:dart` +
+`sdk:flutter`). A fresh `pod install` in a consuming app installs only
+`Flutter`/`FlutterMacOS`. The `ios/Libraries`, `macos/Libraries`, and
+`android/src/main/jniLibs` directories are **local** `make build` outputs only
+(git-ignored; consumers download prebuilt libs via the hook).
 
 ## Security Considerations
 

@@ -25,6 +25,10 @@ sections before upgrading.
   and behavior are unchanged.
 - `sntrup761` (NTRU Prime) now uses the public-domain OpenSSH implementation.
 - Regenerated FFI bindings for liboqs 0.16.0.
+- Dropped the `flutter: ">=3.38.0"` SDK constraint. The package contains no
+  Flutter imports (pure `dart:ffi`), so it is now usable from standalone Dart as
+  well as Flutter, and pub.dev reports both the **Dart** and **Flutter** SDK
+  badges (previously Flutter only). Verified with `pana`.
 
 ### Added
 
@@ -33,6 +37,9 @@ sections before upgrading.
   `eFrodoKEM-1344-SHAKE`.
 - HQC (`HQC-1`, `HQC-3`, `HQC-5`) is now enabled by default.
 - Upstream runtime-detection API for stateful signature support (`OQS_SIG_STFL_*`).
+- `make check-targets` — guard that keeps the iOS/macOS deployment targets in
+  the native build scripts internally consistent
+  (`scripts/check_deployment_targets.dart`).
 
 ### Removed
 
@@ -43,6 +50,16 @@ sections before upgrading.
   (FIPS 205, `SLH_DSA_PURE_*`) or **ML-DSA** (FIPS 204).
 - **Breaking:** Legacy HQC identifiers `HQC-128`/`HQC-192`/`HQC-256` (renamed; see
   Changed).
+- All platform-plugin scaffolding: the `ios/macos/liboqs.podspec` files, the
+  `ios/Classes/LiboqsPlugin.swift` stub, the `android/` Gradle project
+  (`build.gradle`, `settings.gradle`, `AndroidManifest.xml`), and the
+  `linux/`/`windows/` `CMakeLists.txt` (plus stale generated app registrants).
+  This is a plain Dart FFI package, not a Flutter plugin, so none of these files
+  were ever consumed — a consuming app's `pod install` installs only
+  `Flutter`/`FlutterMacOS`, and platform support is declared purely via the
+  top-level `platforms:` key. Verified with `pana` (all five platform badges
+  unchanged) and by rebuilding/running the iOS and macOS example. Native
+  libraries continue to ship via Build Hooks.
 
 ### Fixed
 

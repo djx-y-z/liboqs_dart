@@ -47,6 +47,8 @@ build/
 # time via hooks for consumers — never committed or bundled in the package)
 bin/
 macos/Libraries/
+ios/Libraries/
+android/src/main/jniLibs/
 
 # Coverage
 coverage/

@@ -51,6 +51,8 @@ help:
 	@echo "                                        Example: make analyze ARGS=\"--fatal-infos\""
 	@echo "    make format                       - Format Dart code"
 	@echo "    make format-check                 - Check Dart code formatting"
+	@echo "    make check-targets                - Check deployment target consistency (iOS/macOS)"
+	@echo "                                        Example: make check-targets ARGS=\"--update\""
 	@echo "    make doc                          - Generate API documentation"
 	@echo ""
 	@echo "  PUBLISHING"
@@ -128,6 +130,9 @@ format:
 
 format-check:
 	$(FVM) dart format --set-exit-if-changed . $(ARGS)
+
+check-targets:
+	@$(FVM) dart scripts/check_deployment_targets.dart $(ARGS)
 
 doc:
 	rm -rf doc

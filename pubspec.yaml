@@ -14,7 +14,6 @@ liboqs:
 
 environment:
   sdk: ^3.10.0
-  flutter: ">=3.38.0"
 
 dependencies:
   ffi: ^2.1.4
