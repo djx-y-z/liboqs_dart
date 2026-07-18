@@ -45,6 +45,11 @@
   Flutter imports (pure `dart:ffi`), so it is now usable from standalone Dart as
   well as Flutter, and pub.dev reports both the **Dart** and **Flutter** SDK
   badges (previously Flutter only). Verified with `pana`.
+- `SECURITY.md` substantially expanded: secret lifetime and memory model (what
+  the native/Dart layers guarantee and what garbage-collected memory cannot),
+  timing-attack prevention, key-material handling, randomness, supply-chain
+  integrity of the prebuilt native libraries (including the honest limits of
+  same-release SHA256 verification), and a contributor security checklist.
 
 #### Added
 
