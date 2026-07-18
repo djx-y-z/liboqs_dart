@@ -56,6 +56,53 @@ bool confirm(String prompt) {
   return answer == 'y' || answer == 'yes';
 }
 
+/// Whether the native release for a given full version exists.
+enum NativeReleaseStatus { exists, missing, inconclusive }
+
+/// Outcome of a native-release existence check.
+class NativeCheck {
+  NativeCheck(this.status, [this.detail = '']);
+  final NativeReleaseStatus status;
+  final String detail;
+}
+
+/// Checks whether the GitHub Release `liboqs-<fullVersion>` exists, using the
+/// `gh` CLI (which auto-resolves the repo from the git remote).
+///
+/// Distinguishes a definite "missing" (gh reports "release not found") from an
+/// "inconclusive" result (gh absent, not authenticated, or a network/API
+/// error) so the caller can fail closed on both while giving a useful message.
+Future<NativeCheck> checkNativeRelease(String fullVersion) async {
+  final tag = 'liboqs-$fullVersion';
+
+  if (!await commandExists('gh')) {
+    return NativeCheck(
+      NativeReleaseStatus.inconclusive,
+      'the `gh` CLI is not installed',
+    );
+  }
+
+  final result = await Process.run('gh', [
+    'release',
+    'view',
+    tag,
+    '--json',
+    'tagName',
+  ]);
+  if (result.exitCode == 0) {
+    return NativeCheck(NativeReleaseStatus.exists);
+  }
+
+  final stderr = (result.stderr as String).trim();
+  if (stderr.toLowerCase().contains('release not found')) {
+    return NativeCheck(NativeReleaseStatus.missing);
+  }
+  return NativeCheck(
+    NativeReleaseStatus.inconclusive,
+    stderr.isEmpty ? 'gh release view exited ${result.exitCode}' : stderr,
+  );
+}
+
 /// Returns true if [a] is a strictly greater X.Y.Z version than [b].
 ///
 /// If either side can't be parsed as X.Y.Z, logs a warning and returns true so

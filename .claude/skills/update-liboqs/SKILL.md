@@ -66,7 +66,16 @@ git commit -m "Update liboqs to 0.13.0"
 git push
 ```
 
-CI will automatically build native libraries for all platforms.
+Merging to `main` does NOT build anything by itself. After the merge, from an
+up-to-date `main`, trigger the native build with:
+
+```bash
+make release-native
+```
+
+It creates and pushes the signed tag `liboqs-<native_version>-<native_build>`,
+which triggers `build-liboqs.yml` to build all platforms and publish the
+GitHub Release.
 
 ## Check Options
 

@@ -11,9 +11,11 @@ Guide for publishing a new version of the `liboqs` Dart package to pub.dev.
 > package's build hook downloads the precompiled native libraries from the
 > GitHub Release `liboqs-<native_version>-<native_build>` (e.g.
 > `liboqs-0.16.0-1`). That release is created by `build-liboqs.yml`, which
-> triggers on a push to `main` that changes `pubspec.yaml`. So: merge your
-> changes into `main` first, let the native build finish, then release.
-> `make release` verifies this automatically (see below).
+> triggers on a push of the `liboqs-<fullVersion>` tag — merging a version
+> bump into `main` does NOT start a build by itself. So: merge your changes
+> into `main`, run `make release-native` (creates and pushes the signed tag),
+> let the native build finish, then release. `make release` verifies the
+> release exists automatically (see below).
 
 > **One-time note for 2.0.0:** the `## [2.0.0]` CHANGELOG section was
 > finalized (with a date) ahead of the actual release, and `pubspec.yaml`
@@ -26,6 +28,11 @@ Guide for publishing a new version of the `liboqs` Dart package to pub.dev.
 ```bash
 # 0. Your SSH signing key must be in ssh-agent (commits/tags are signed):
 ssh-add -l   # if empty: ssh-add ~/.ssh/<your-signing-key>
+
+# If the native release liboqs-<fullVersion> doesn't exist yet
+# (first release after a liboqs bump), tag-trigger the native build and
+# wait for it to finish:
+make release-native
 
 # From a clean, up-to-date main, after the native build has finished:
 make release ARGS="--version 2.1.0"
@@ -149,7 +156,11 @@ make release ARGS="--version X.Y.Z"
 
 - Publish workflow: `.github/workflows/publish.yml`
 - Release script: `scripts/release.dart` (logic in `scripts/src/release.dart`)
-- Native build workflow: `.github/workflows/build-liboqs.yml`
+- Native release script: `make release-native` (`scripts/release_native.dart`)
+- Native build workflow: `.github/workflows/build-liboqs.yml` (tag-triggered:
+  `liboqs-<fullVersion>`)
+- Repo protections (release tags, native-build environment):
+  `.github/rulesets/README.md`
 - AI changelog for liboqs bumps: `make update-changelog`
   (`scripts/update_changelog.dart`, used by `check-liboqs-updates.yml`)
 - [pub.dev Publishing Guide](https://dart.dev/tools/pub/publishing)

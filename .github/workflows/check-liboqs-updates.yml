@@ -148,15 +148,9 @@ jobs:
 
             See [liboqs ${{ steps.check.outputs.latest_version }} release notes](${{ steps.check.outputs.release_url }})
 
-            ### What Happens After Merge
+            ### Before Merging (on this PR branch)
 
-            1. **Automatic build starts**: The `build-liboqs.yml` workflow will automatically trigger and build native libraries for all platforms.
-
-            2. **Wait for build completion**: Monitor the [Actions](../../actions) page until the build succeeds and a new Release is published.
-
-            ### Manual Steps (after build completes)
-
-            Once native libraries are published to Releases, complete these steps:
+            Merging no longer builds anything by itself, so finish the update here first:
 
             1. **Regenerate FFI bindings (if API changed):**
                ```bash
@@ -177,12 +171,26 @@ jobs:
                make test
                ```
 
-            5. **Commit and push all changes:**
+            5. **Commit and push to this branch:**
                ```bash
                git add .
                git commit -m "chore: regenerate bindings and update docs for liboqs ${{ steps.check.outputs.latest_version }}"
                git push
                ```
+
+            ### After Merge
+
+            The native build is **tag-triggered** — it does NOT start on merge. From an up-to-date `main`:
+
+            1. **Trigger the native build:**
+               ```bash
+               make release-native
+               ```
+               This creates and pushes the signed tag `liboqs-${{ steps.check.outputs.latest_version }}-<native_build>`, which starts `build-liboqs.yml`.
+
+            2. **Wait for build completion**: Monitor the [Actions](../../actions) page until the build succeeds and the Release is published.
+
+            3. **Release the package** when ready: `make release ARGS="--version X.Y.Z"` (see the release-package skill).
 
             ---
             *This PR was created automatically by the liboqs update checker.*

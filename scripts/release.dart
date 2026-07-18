@@ -97,9 +97,9 @@ What it does:
      must be loaded in ssh-agent).
   7. Pushes main and the tag, which triggers the pub.dev publish workflow.
 
-The native libraries must already be published: merging the version bump into
-main triggers build-liboqs.yml, which builds them and creates the
-liboqs-<fullVersion> release. Run `make release` only after that build
-finished.
+The native libraries must already be published: after the version bump merges
+into main, `make release-native` pushes the liboqs-<fullVersion> tag, which
+triggers build-liboqs.yml to build them and create the release. Run
+`make release` only after that build finished.
 ''');
 }

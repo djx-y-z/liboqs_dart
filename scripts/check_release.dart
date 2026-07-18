@@ -63,6 +63,16 @@ Future<void> main(List<String> args) async {
         await file.writeAsString(buffer.toString(), mode: FileMode.append);
       }
 
+      // Surface a skipped run in the workflow UI: a green run that built
+      // nothing is easy to misread as "rebuilt".
+      if (exists) {
+        print(
+          '::notice::Release $tagName already exists - all build jobs will '
+          'be skipped. To rebuild, delete the release and its tag first: '
+          'gh release delete $tagName --cleanup-tag --yes',
+        );
+      }
+
       // Also print for logging
       _printResults(outputs, exists);
     } else {

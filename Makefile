@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="windows" FVM="cmd //c fvm"
 
-.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version check-release doc publish publish-dry-run update-changelog release
+.PHONY: help setup setup-repo-protections build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version check-release doc publish publish-dry-run update-changelog release release-native
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -31,6 +31,7 @@ help:
 	@echo ""
 	@echo "  SETUP"
 	@echo "    make setup                        - Install FVM and project Flutter version (run once)"
+	@echo "    make setup-repo-protections       - Apply GitHub rulesets + native-build env (one-time, needs gh admin)"
 	@echo ""
 	@echo "  BUILD"
 	@echo "    make build ARGS=\"<platform>\"      - Build native libraries"
@@ -58,6 +59,7 @@ help:
 	@echo "    make doc                          - Generate API documentation"
 	@echo ""
 	@echo "  PUBLISHING"
+	@echo "    make release-native               - Release native libraries (signed tag liboqs-<fullVersion>, triggers CI build)"
 	@echo "    make release                      - Release the package (bump, finalize CHANGELOG, tag, push)"
 	@echo "                                        Example: make release ARGS=\"--version 2.0.1\""
 	@echo "    make publish-dry-run              - Validate package before publishing"
@@ -88,6 +90,14 @@ setup:
 	git config core.hooksPath .githooks
 	@echo ""
 	@echo "Setup complete! You can now use 'make help' to see available commands."
+
+# Apply the committed repository rulesets (.github/rulesets/*.json) and the
+# native-build environment to the GitHub repo via `gh` (one-time; run after the
+# GitHub repo exists). Idempotent by ruleset name; needs `gh` as a repo admin.
+#   make setup-repo-protections                  # apply (skips existing rulesets)
+#   make setup-repo-protections ARGS="--update"  # overwrite existing rulesets
+setup-repo-protections:
+	@$(FVM) dart scripts/setup_repo_protections.dart $(ARGS)
 
 # =============================================================================
 # Build
@@ -179,6 +189,13 @@ check-release:
 # =============================================================================
 # Publishing
 # =============================================================================
+
+# Release the native libraries: signed tag `liboqs-<fullVersion>` on
+# origin/main, pushed — triggers build-liboqs.yml. Run AFTER the version-bump
+# PR merged (merging alone no longer builds). Commits nothing.
+#   Example: make release-native
+release-native:
+	@$(FVM) dart scripts/release_native.dart $(ARGS)
 
 release:
 	@$(FVM) dart scripts/release.dart $(ARGS)

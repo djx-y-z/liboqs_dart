@@ -223,7 +223,9 @@ void printUpdateSummary({
     print('  2. Update README.md badge');
     print('  3. Update CHANGELOG.md');
     print('  4. Run tests: make test');
-    print('  5. Commit and push');
+    print('  5. Commit and push (PR -> main)');
+    print('  6. After merge: make release-native (tags liboqs-<fullVersion>,');
+    print('     which triggers the native build)');
   } else if (checkResult.needsUpdate) {
     print('To update, run:');
     print('  make check ARGS="--update"');

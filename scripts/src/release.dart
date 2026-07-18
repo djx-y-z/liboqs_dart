@@ -106,18 +106,19 @@ Future<void> releasePackage({
     );
   } else {
     logStep('Verifying the native release liboqs-$fullVersion exists...');
-    final check = await _checkNativeRelease(fullVersion);
+    final check = await checkNativeRelease(fullVersion);
     switch (check.status) {
-      case _NativeReleaseStatus.exists:
+      case NativeReleaseStatus.exists:
         logInfo('Found native release liboqs-$fullVersion.');
-      case _NativeReleaseStatus.missing:
+      case NativeReleaseStatus.missing:
         throw Exception(
           'Native release liboqs-$fullVersion does not exist yet. '
-          'Merge the version bump into main and let build-liboqs.yml finish '
-          '(it publishes the native libraries), or pass --skip-release-check '
-          'if you have verified the release exists manually.',
+          'Run `make release-native` on main (it pushes the liboqs-$fullVersion '
+          'tag, which triggers build-liboqs.yml) and let the build finish, or '
+          'pass --skip-release-check if you have verified the release exists '
+          'manually.',
         );
-      case _NativeReleaseStatus.inconclusive:
+      case NativeReleaseStatus.inconclusive:
         throw Exception(
           'Could not verify the native release liboqs-$fullVersion '
           '(${check.detail}). Verify it exists on GitHub Releases, then '
@@ -307,53 +308,6 @@ String finalizeChangelog(
   ]);
 
   return lines.join('\n');
-}
-
-/// Whether the native release for the current full version exists.
-enum _NativeReleaseStatus { exists, missing, inconclusive }
-
-/// Outcome of a native-release existence check.
-class _NativeCheck {
-  _NativeCheck(this.status, [this.detail = '']);
-  final _NativeReleaseStatus status;
-  final String detail;
-}
-
-/// Checks whether the GitHub Release `liboqs-<fullVersion>` exists, using the
-/// `gh` CLI (which auto-resolves the repo from the git remote).
-///
-/// Distinguishes a definite "missing" (gh reports "release not found") from an
-/// "inconclusive" result (gh absent, not authenticated, or a network/API
-/// error) so the caller can fail closed on both while giving a useful message.
-Future<_NativeCheck> _checkNativeRelease(String fullVersion) async {
-  final tag = 'liboqs-$fullVersion';
-
-  if (!await commandExists('gh')) {
-    return _NativeCheck(
-      _NativeReleaseStatus.inconclusive,
-      'the `gh` CLI is not installed',
-    );
-  }
-
-  final result = await Process.run('gh', [
-    'release',
-    'view',
-    tag,
-    '--json',
-    'tagName',
-  ]);
-  if (result.exitCode == 0) {
-    return _NativeCheck(_NativeReleaseStatus.exists);
-  }
-
-  final stderr = (result.stderr as String).trim();
-  if (stderr.toLowerCase().contains('release not found')) {
-    return _NativeCheck(_NativeReleaseStatus.missing);
-  }
-  return _NativeCheck(
-    _NativeReleaseStatus.inconclusive,
-    stderr.isEmpty ? 'gh release view exited ${result.exitCode}' : stderr,
-  );
 }
 
 /// Today's date as `YYYY-MM-DD` (local time).

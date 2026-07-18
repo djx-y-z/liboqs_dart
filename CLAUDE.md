@@ -33,7 +33,9 @@ make build macos --arch arm64  # make interprets --arch as its own flag!
 | Regenerate FFI bindings | `make regen` |
 | Check for updates | `make check` |
 | Update CHANGELOG for a liboqs bump (AI) | `make update-changelog ARGS="--version 0.17.0 --from 0.16.0"` |
+| Release the native libraries (tag-trigger CI build) | `make release-native` |
 | Release the package | `make release ARGS="--version X.Y.Z"` |
+| Apply repo protections (one-time, gh admin) | `make setup-repo-protections` |
 | Get dependencies | `make get` |
 | Show liboqs version | `make version` |
 
@@ -144,10 +146,14 @@ make regen
 # 3. Run tests
 make test
 
-# 4. Commit and push (CI will build native libraries)
+# 4. Commit and push (PR -> main; merging does NOT build anything by itself)
 git add pubspec.yaml lib/src/bindings/
 git commit -m "Update liboqs to 0.16.0"
 git push
+
+# 5. After the bump merges to main: trigger the native build from an
+#    up-to-date main (signed tag liboqs-<fullVersion> -> build-liboqs.yml)
+make release-native
 ```
 
 ### Check for liboqs Updates
@@ -310,7 +316,8 @@ Releases go through `make release` (see the `release-package` skill in
 
 ```bash
 # Preconditions: clean up-to-date main, native release liboqs-<fullVersion>
-# already built by CI, SSH signing key loaded (ssh-add -l).
+# already built by CI (tag pushed via `make release-native` after the version
+# bump merged), SSH signing key loaded (ssh-add -l).
 make release ARGS="--version X.Y.Z"
 ```
 

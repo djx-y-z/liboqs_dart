@@ -48,7 +48,9 @@ fvm dart run scripts/build.dart windows
 | `check_updates.dart` | Check for liboqs updates and update files |
 | `combine_artifacts.dart` | Combine CI artifacts (used by GitHub Actions) |
 | `update_changelog.dart` | AI-generated CHANGELOG entry for a liboqs bump (`make update-changelog`) |
+| `release_native.dart` | Release the native libraries: signed tag `liboqs-<fullVersion>`, push — triggers the CI build (`make release-native`) |
 | `release.dart` | Release the Dart package: bump, finalize CHANGELOG, tag, push (`make release`) |
+| `setup_repo_protections.dart` | Apply `.github/rulesets/*.json` + the `native-build` environment to GitHub (`make setup-repo-protections`) |
 
 ## Build Commands
 
@@ -189,13 +191,13 @@ make test
 
 ## CI Integration
 
-These scripts are used by GitHub Actions workflow (`.github/workflows/build-liboqs.yml`).
+These scripts are used by GitHub Actions workflow (`.github/workflows/build-liboqs.yml`),
+which triggers on a `liboqs-<fullVersion>` tag push (`make release-native`).
 The workflow:
-1. Builds each platform on appropriate runners
-2. Uploads artifacts
-3. Combines artifacts using `combine_artifacts.dart`
-4. Regenerates FFI bindings
-5. Commits to repository
+1. Validates the tag against `pubspec.yaml` (`check_release.dart`)
+2. Builds each platform on appropriate runners
+3. Uploads artifacts
+4. Publishes a GitHub Release with the archives on the same tag
 
 ## Why Dart Scripts?
 

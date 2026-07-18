@@ -124,6 +124,16 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   The liboqs update checker now includes such a draft `[Unreleased]` entry in
   its automated PRs (requires the `AI_MODELS_TOKEN` repository secret;
   non-fatal when absent).
+- `make release-native` — deliberate, scripted release of the native libraries
+  (`scripts/release_native.dart`): verifies a clean `main` exactly in sync with
+  `origin/main` and that `liboqs-<fullVersion>` (tag and release) doesn't exist
+  yet, then creates a signed `liboqs-<fullVersion>` tag and pushes it, which
+  triggers the native build.
+- `make setup-repo-protections` — applies the committed repository rulesets
+  (`.github/rulesets/*.json`: protected release tags, protected `main`, signed
+  commits, no branch deletion) and configures the `native-build` environment
+  with a required reviewer via `gh` (`scripts/setup_repo_protections.dart`;
+  runbook in `.github/rulesets/README.md`).
 
 #### Changed
 
@@ -140,6 +150,14 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   package-validation (`publish-dry-run`) job that gates publishing. The liboqs
   update checker skips when an open update PR for the same version already
   exists, so scheduled runs no longer force-push over manual commits on that PR.
+- **Tag-triggered native builds.** `build-liboqs.yml` now triggers on a
+  `liboqs-<fullVersion>` tag push (created by `make release-native`) instead of
+  every `pubspec.yaml` push to `main`: merging a version bump no longer builds
+  or publishes anything by itself, the tag is validated against `pubspec.yaml`
+  at the tagged commit, the GitHub Release is created on that same tag (the
+  delete-then-recreate step is gone), and the release-publishing job is gated
+  by the `native-build` environment (mirrors the pub.dev publish gate; inert
+  until reviewers are configured).
 
 #### Removed
 

@@ -259,9 +259,13 @@ When using this library:
 
 ## Security Updates
 
-### Automatic Updates
+### Updates
 
-Native libraries are automatically rebuilt when new liboqs versions are released via GitHub Actions. Subscribe to releases to stay informed.
+New liboqs versions are detected automatically (a bot PR bumps
+`liboqs.native_version`); after the bump merges, a maintainer deliberately
+triggers the native rebuild by pushing a signed `liboqs-<fullVersion>` tag
+(`make release-native`) — builds are never started implicitly. Subscribe to
+releases to stay informed.
 
 ### Checking for Updates
 

@@ -11,13 +11,26 @@
 # - Windows x86_64 (dynamic .dll)
 #
 # Trigger:
-# - Manual dispatch (workflow_dispatch) - for first run or force rebuild
-# - Push to main when pubspec.yaml changes (contains liboqs.native_version)
+# - Push of a `liboqs-<fullVersion>` tag (created by `make release-native`) -
+#   this is the normal path: a liboqs version bump merges to main WITHOUT
+#   triggering a build, then a deliberate `make release-native` on main pushes
+#   the matching tag, which builds and publishes the native binaries.
+# - Manual dispatch (workflow_dispatch) - for a first run or a forced rebuild
+#   (reads the version from pubspec.yaml on the dispatched ref).
 #
-# Note: If release with tag liboqs-{version}-{build} already exists, build is skipped.
-# This prevents unnecessary rebuilds when only package version changes (not native version).
+# The tag name must equal `liboqs-<native_version>-<native_build>` from
+# pubspec.yaml at the tagged commit (validated below). The GitHub Release is
+# created on that same tag, so the tag you push IS the release tag. On a
+# dispatch the tag usually does not exist yet and is created by
+# `gh release create` on the dispatched ref's HEAD; if it already exists, the
+# release attaches to the originally tagged commit, not HEAD.
 #
-# After successful build, creates/updates GitHub Release with native library archives.
+# Note: If the release liboqs-{version}-{build} already exists, the build is
+# skipped. To rebuild the same fullVersion, delete the release AND its tag
+# (gh release delete liboqs-X.Y.Z-N --cleanup-tag --yes), then re-run
+# `make release-native`.
+#
+# After successful build, creates GitHub Release with native library archives.
 # Build hooks download these archives automatically during app build.
 #
 # Version is read from liboqs.native_version and liboqs.native_build in pubspec.yaml
@@ -27,15 +40,18 @@ name: Build liboqs Native Libraries
 on:
   workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - 'pubspec.yaml'
+    tags:
+      - 'liboqs-*'
 
-# Serialize builds racing for the same release tag. Two fast pushes to
-# pubspec.yaml (or a manual dispatch overlapping a push) would otherwise run
-# overlapping multi-platform builds that both delete-then-recreate the single
-# liboqs-<version> release tag (see create-release). cancel-in-progress lets the
-# newer main win: the release tag is only ever touched after all build jobs pass.
+# One concurrency group per ref (libsignal-style): tag-push runs serialize per
+# release tag, manual dispatches per branch. cancel-in-progress is nearly a
+# no-op for tags (a given tag is pushed once; a re-push after a rebuild cleanup
+# cancels a stale run of the same tag) but lets a newer dispatch supersede an
+# older one. A dispatch (refs/heads/main) and a tag push (refs/tags/liboqs-*)
+# land in different groups and may race for the same release; that is safe:
+# both check release existence up front, and if both still reach create-release
+# the slower `gh release create` fails loudly — nothing is deleted or
+# overwritten (there is no delete-then-recreate step anymore).
 concurrency:
   group: build-liboqs-${{ github.ref }}
   cancel-in-progress: true
@@ -74,6 +90,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: make check-release ARGS="--ci"
+
+      # On a tag push, the tag must equal `liboqs-<full_version>` from the
+      # pubspec.yaml at the tagged commit. This guards against tagging a commit
+      # whose pubspec wasn't bumped to match (mirrors publish.yml's tag/pubspec
+      # validation).
+      - name: Validate tag matches pubspec version
+        if: github.ref_type == 'tag'
+        env:
+          EXPECTED_TAG: ${{ steps.check.outputs.tag }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "$EXPECTED_TAG" ]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' does not match pubspec.yaml (expected '$EXPECTED_TAG' from liboqs.native_version/native_build). Tag the commit that carries the matching pubspec, or use 'make release-native'."
+            exit 1
+          fi
+          echo "Tag matches pubspec version: $EXPECTED_TAG"
 
   # ============================================
   # Linux (x86_64 + arm64 on separate runners)
@@ -260,6 +291,15 @@ jobs:
     needs: [read-version, build-linux, build-macos, build-ios, build-android, build-windows]
     if: needs.read-version.outputs.skip != 'true'
     runs-on: ubuntu-latest
+    # Supply-chain gate: publishing the consumer-downloaded native binaries
+    # requires a human to approve the `native-build` environment deployment.
+    # This mirrors publish.yml's `pub.dev` environment and is the ONLY control
+    # that also covers the workflow_dispatch trigger — a tag ruleset cannot gate
+    # a dispatch-triggered run. Configure required reviewers at
+    # Settings → Environments → native-build (make setup-repo-protections does
+    # it); until then the gate is inactive (the environment auto-creates with no
+    # protection and does not block). See .github/rulesets/README.md.
+    environment: native-build
     env:
       LIBOQS_VERSION: ${{ needs.read-version.outputs.version }}
       NATIVE_BUILD: ${{ needs.read-version.outputs.build }}
@@ -330,8 +370,11 @@ jobs:
           TAG="liboqs-${{ env.FULL_VERSION }}"
           TITLE="liboqs ${{ env.LIBOQS_VERSION }} (Build ${{ env.NATIVE_BUILD }}) - Native Libraries"
 
-          # Delete existing release if it exists (for rebuild scenarios)
-          gh release delete "$TAG" --yes 2>/dev/null || true
+          # The release is created ON the pushed tag (on a dispatch without an
+          # existing tag, gh creates it on the dispatched ref's HEAD). No
+          # delete-then-recreate: read-version skips the whole run when the
+          # release already exists, and if a dispatch/tag race slips past that
+          # check, the slower create fails loudly instead of clobbering.
 
           # Create release with all assets
           gh release create "$TAG" \
