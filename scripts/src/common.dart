@@ -50,6 +50,10 @@ void logStep(String message) {
   print(Colors.colorize('[STEP]', Colors.blue) + ' $message');
 }
 
+void logSuccess(String message) {
+  print(Colors.colorize('[OK]', Colors.green) + ' $message');
+}
+
 void logPlatform(String platform, String message) {
   print(Colors.colorize('[$platform]', Colors.cyan) + ' $message');
 }
@@ -155,6 +159,28 @@ String getNativeBuild() {
 /// Get full version string (liboqs version + native build)
 String getFullVersion() {
   return '${getLiboqsVersion()}-${getNativeBuild()}';
+}
+
+/// Get the Dart package version from pubspec.yaml (top-level `version:`)
+String getPackageVersion() {
+  final packageDir = getPackageDir();
+  final pubspecFile = File('${packageDir.path}/pubspec.yaml');
+
+  if (!pubspecFile.existsSync()) {
+    throw Exception('pubspec.yaml not found');
+  }
+
+  final content = pubspecFile.readAsStringSync();
+  final match = RegExp(
+    r'^version:\s*(\S+)\s*$',
+    multiLine: true,
+  ).firstMatch(content);
+
+  if (match == null) {
+    throw Exception('Top-level version: not found in pubspec.yaml');
+  }
+
+  return match.group(1)!.trim();
 }
 
 // ============================================

@@ -104,6 +104,24 @@ jobs:
           echo "Running: make check ARGS=\"$ARGS\""
           make check ARGS="$ARGS"
 
+      # Records the liboqs dependency change in the CHANGELOG (Highlights +
+      # Changed entry under [Unreleased]) so the update PR ships with a draft
+      # entry for the maintainer to review. Does NOT bump the Dart package
+      # version — that happens at release time (`make release`). Failure is
+      # non-fatal: the PR is still created, with a warning to update manually.
+      - name: Update CHANGELOG.md
+        id: changelog
+        if: steps.check.outputs.needs_update == 'true' && steps.existing.outputs.skip != 'true'
+        env:
+          AI_MODELS_TOKEN: ${{ secrets.AI_MODELS_TOKEN }}
+        run: |
+          if make update-changelog ARGS="--version ${{ steps.check.outputs.latest_version }} --from ${{ steps.check.outputs.current_version }} --ci"; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "::warning::AI changelog update failed. Please update CHANGELOG.md manually."
+          fi
+
       - name: Create Pull Request
         if: steps.check.outputs.needs_update == 'true' && steps.existing.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v8
@@ -150,7 +168,9 @@ jobs:
                [![liboqs](https://img.shields.io/badge/liboqs-${{ steps.check.outputs.latest_version }}-blue.svg)](https://github.com/open-quantum-safe/liboqs)
                ```
 
-            3. **Update CHANGELOG.md** with appropriate version entry
+            3. **Review the CHANGELOG entry** — this PR includes an
+               AI-generated `[Unreleased]` entry (when generation succeeded);
+               verify it against the upstream release notes and edit as needed
 
             4. **Run tests to verify:**
                ```bash

@@ -109,6 +109,21 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   native build scripts internally consistent
   (`scripts/check_deployment_targets.dart`); now also enforced in CI (see
   Changed).
+- `make release` — one-command scripted release (`scripts/release.dart`): checks
+  you are on a clean, up-to-date `main`, verifies the native
+  `liboqs-<fullVersion>` GitHub Release exists (fail-closed — the published
+  build hook downloads it), bumps `pubspec.yaml`, finalizes the CHANGELOG
+  `[Unreleased]` section including the bottom compare links, validates with a
+  publish dry-run, then creates a signed commit + signed `vX.Y.Z` tag and
+  pushes to trigger the pub.dev publish. Comes with a `release-package` skill
+  guide and unit tests for the CHANGELOG finalization.
+- `make update-changelog` — AI-drafted CHANGELOG entry for liboqs version bumps
+  (`scripts/update_changelog.dart`, GitHub Models): classifies upstream changes
+  by user visibility (algorithm additions/removals/renames and wire-format
+  changes are breaking and user-visible; CI/docs/build-system churn is not).
+  The liboqs update checker now includes such a draft `[Unreleased]` entry in
+  its automated PRs (requires the `AI_MODELS_TOKEN` repository secret;
+  non-fatal when absent).
 
 #### Changed
 

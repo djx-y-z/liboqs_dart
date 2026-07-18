@@ -47,6 +47,8 @@ fvm dart run scripts/build.dart windows
 | `regenerate_bindings.dart` | Regenerate Dart FFI bindings |
 | `check_updates.dart` | Check for liboqs updates and update files |
 | `combine_artifacts.dart` | Combine CI artifacts (used by GitHub Actions) |
+| `update_changelog.dart` | AI-generated CHANGELOG entry for a liboqs bump (`make update-changelog`) |
+| `release.dart` | Release the Dart package: bump, finalize CHANGELOG, tag, push (`make release`) |
 
 ## Build Commands
 

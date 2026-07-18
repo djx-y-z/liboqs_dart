@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="windows" FVM="cmd //c fvm"
 
-.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version check-release doc publish publish-dry-run
+.PHONY: help setup build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version check-release doc publish publish-dry-run update-changelog release
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -42,6 +42,8 @@ help:
 	@echo "    make check                        - Check for liboqs updates"
 	@echo "                                        Example: make check ARGS=\"--update --version 0.16.0\""
 	@echo "    make combine                      - Combine CI artifacts (used by GitHub Actions)"
+	@echo "    make update-changelog             - Update CHANGELOG.md with AI (liboqs update entry)"
+	@echo "                                        Example: make update-changelog ARGS=\"--version 0.17.0 --from 0.16.0\""
 	@echo ""
 	@echo "  QUALITY ASSURANCE"
 	@echo "    make test                         - Run tests"
@@ -56,6 +58,8 @@ help:
 	@echo "    make doc                          - Generate API documentation"
 	@echo ""
 	@echo "  PUBLISHING"
+	@echo "    make release                      - Release the package (bump, finalize CHANGELOG, tag, push)"
+	@echo "                                        Example: make release ARGS=\"--version 2.0.1\""
 	@echo "    make publish-dry-run              - Validate package before publishing"
 	@echo "    make publish                      - Publish package (CI only, blocked locally)"
 	@echo ""
@@ -104,6 +108,9 @@ regen:
 check:
 	@touch .skip_liboqs_hook
 	@$(FVM) dart run scripts/check_updates.dart $(ARGS); ret=$$?; rm -f .skip_liboqs_hook; exit $$ret
+
+update-changelog:
+	@$(FVM) dart scripts/update_changelog.dart $(ARGS)
 
 combine:
 	@touch .skip_liboqs_hook
@@ -172,6 +179,9 @@ check-release:
 # =============================================================================
 # Publishing
 # =============================================================================
+
+release:
+	@$(FVM) dart scripts/release.dart $(ARGS)
 
 publish-dry-run:
 	$(FVM) dart pub publish --dry-run

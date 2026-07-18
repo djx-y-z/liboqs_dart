@@ -32,6 +32,8 @@ make build macos --arch arm64  # make interprets --arch as its own flag!
 | Generate documentation | `make doc` |
 | Regenerate FFI bindings | `make regen` |
 | Check for updates | `make check` |
+| Update CHANGELOG for a liboqs bump (AI) | `make update-changelog ARGS="--version 0.17.0 --from 0.16.0"` |
+| Release the package | `make release ARGS="--version X.Y.Z"` |
 | Get dependencies | `make get` |
 | Show liboqs version | `make version` |
 
@@ -301,20 +303,19 @@ Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format:
 - Security-related changes
 ```
 
-## Publishing Checklist
+## Publishing
+
+Releases go through `make release` (see the `release-package` skill in
+`.claude/skills/release-package/SKILL.md` for the full guide):
 
 ```bash
-# 1. Run quality checks
-make analyze
-make test
-make format-check
-
-# 2. Update version in pubspec.yaml
-# 3. Update CHANGELOG.md
-
-# 4. Dry run
-make publish-dry-run
-
-# 5. Publish
-make publish
+# Preconditions: clean up-to-date main, native release liboqs-<fullVersion>
+# already built by CI, SSH signing key loaded (ssh-add -l).
+make release ARGS="--version X.Y.Z"
 ```
+
+It bumps `pubspec.yaml`, finalizes the CHANGELOG (`[Unreleased]` → `[X.Y.Z]`),
+validates with `make publish-dry-run`, creates a signed commit + signed tag
+`vX.Y.Z`, and pushes — the tag triggers `publish.yml`, which publishes to
+pub.dev via OIDC. Never run `dart pub publish` manually (`make publish` is
+CI-only and blocked locally).
