@@ -3,6 +3,9 @@ TODO.md
 Makefile
 .fvmrc
 .skip_liboqs_hook
+# Maintainer-only working notes (untracked in git, but pub would still bundle
+# the directory — the root .pubignore replaces .gitignore for pub)
+docs/
 
 # CI/CD
 .github/
@@ -21,8 +24,10 @@ headers/
 
 # Build artifacts
 build/
-# Local native-library build outputs (downloaded at build time via hooks, never bundled)
-bin/
+# Local native-library build outputs (downloaded at build time via hooks, never
+# bundled). Anchored: an unanchored `bin/` would also strip example_cli/bin/,
+# publishing the CLI example without its only source file.
+/bin/
 # The package ships no podspec / plugin scaffolding; the top-level ios/ and macos/
 # dirs hold only local build outputs (Libraries/) and stale Xcode artifacts, none
 # of which belong in the published package (native delivery is via hook/build.dart).

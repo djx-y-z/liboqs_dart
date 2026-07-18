@@ -44,8 +44,9 @@ macos/*.xcworkspace/
 build/
 
 # Native library build outputs (produced by `make build`; downloaded at build
-# time via hooks for consumers — never committed or bundled in the package)
-bin/
+# time via hooks for consumers — never committed or bundled in the package).
+# Anchored: an unanchored `bin/` would also ignore example_cli/bin/.
+/bin/
 macos/Libraries/
 ios/Libraries/
 android/src/main/jniLibs/
@@ -55,3 +56,5 @@ coverage/
 
 # Generated documentation
 doc/
+# Maintainer-only local notes (never commit or publish)
+docs/
