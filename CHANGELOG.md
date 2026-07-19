@@ -136,6 +136,13 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   commits, no branch deletion) and configures the `native-build` environment
   with a required reviewer via `gh` (`scripts/setup_repo_protections.dart`;
   runbook in `.github/rulesets/README.md`).
+- **Build provenance attestation** for the native release archives:
+  `build-liboqs.yml` attests every archive with GitHub Artifact Attestations
+  (Sigstore, SLSA Build L2) and attaches the Sigstore bundle
+  (`liboqs-<fullVersion>.sigstore.jsonl`) to the release, so any downloaded
+  binary can be verified — online or fully offline — with
+  `gh attestation verify` (see SECURITY.md → Authenticity). This breaks the
+  self-trust of the same-release SHA256 checksums file.
 
 #### Changed
 

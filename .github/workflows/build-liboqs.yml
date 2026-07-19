@@ -306,6 +306,8 @@ jobs:
       FULL_VERSION: ${{ needs.read-version.outputs.full_version }}
     permissions:
       contents: write
+      id-token: write       # Sigstore OIDC identity for build provenance
+      attestations: write   # store the attestation in the repo
     steps:
       - uses: actions/checkout@v4
 
@@ -363,6 +365,24 @@ jobs:
 
           ls -lh release-archives/
 
+      # Sigstore build-provenance attestation (SLSA Build L2) for every release
+      # archive. subject-checksums reuses the just-generated SHA256 file, so the
+      # attested digests are exactly the ones the build hook verifies. The
+      # resulting bundle is attached to the release below so consumers can
+      # verify fully offline (see SECURITY.md → Authenticity).
+      - name: Attest build provenance
+        id: attest
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-checksums: release-archives/liboqs-${{ env.FULL_VERSION }}-checksums.sha256
+
+      - name: Attach attestation bundle to release assets
+        env:
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          cp "$BUNDLE_PATH" "release-archives/liboqs-${FULL_VERSION}.sigstore.jsonl"
+          ls -lh "release-archives/liboqs-${FULL_VERSION}.sigstore.jsonl"
+
       - name: Create or Update Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -409,6 +429,13 @@ jobs:
 
           ### Checksums
           SHA256 checksums are available in `liboqs-${{ env.FULL_VERSION }}-checksums.sha256`
+
+          ### Build Provenance
+          Every archive is attested with [GitHub Artifact Attestations](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations) (Sigstore). Verify:
+          ```bash
+          gh attestation verify liboqs-${{ env.FULL_VERSION }}-<platform>.tar.gz --repo ${{ github.repository }}
+          ```
+          Offline verification: use the attached `liboqs-${{ env.FULL_VERSION }}.sigstore.jsonl` bundle with `--bundle` (see SECURITY.md).
           EOF
           )" \
             release-archives/liboqs-${{ env.FULL_VERSION }}-linux-x86_64.tar.gz \
@@ -422,4 +449,5 @@ jobs:
             release-archives/liboqs-${{ env.FULL_VERSION }}-ios-device-arm64.tar.gz \
             release-archives/liboqs-${{ env.FULL_VERSION }}-ios-simulator-arm64.tar.gz \
             release-archives/liboqs-${{ env.FULL_VERSION }}-ios-simulator-x86_64.tar.gz \
-            release-archives/liboqs-${{ env.FULL_VERSION }}-checksums.sha256
+            release-archives/liboqs-${{ env.FULL_VERSION }}-checksums.sha256 \
+            release-archives/liboqs-${{ env.FULL_VERSION }}.sigstore.jsonl

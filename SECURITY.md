@@ -212,12 +212,40 @@ moving branch) — published as GitHub Releases, and downloaded by the build hoo
   native version **and** the platform variant (including the iOS
   device/simulator distinction), so a version bump can never silently reuse a
   stale binary and different targets cannot poison each other's cache.
-- **Authenticity (not yet implemented):** the checksums file lives in the same
-  GitHub Release as the archives, so SHA256 alone does not defend against a
-  release or maintainer-token compromise — an attacker who can replace the
-  archive can replace its checksum too. Cryptographic build provenance
-  (attestation generated in CI and verified by the build hook) is the planned
-  next step and is tracked as future work.
+- **Authenticity (build provenance attestation):** the checksums file lives in
+  the same GitHub Release as the archives, so SHA256 alone does not defend
+  against a release or maintainer-token compromise — an attacker who can
+  replace the archive can replace its checksum too. To break that self-trust,
+  every release archive is attested with [GitHub Artifact
+  Attestations](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations)
+  (Sigstore, SLSA Build L2): CI signs a provenance statement proving each
+  archive was built by this repository's tag-triggered `build-liboqs.yml`
+  workflow from a specific commit. Verify any downloaded archive with the
+  GitHub CLI:
+
+  ```bash
+  gh attestation verify liboqs-<fullVersion>-<platform>.tar.gz \
+    --repo djx-y-z/liboqs_dart
+  ```
+
+  For fully offline verification, each release also attaches the Sigstore
+  bundle as `liboqs-<fullVersion>.sigstore.jsonl`:
+
+  ```bash
+  gh attestation trusted-root > trusted_root.jsonl   # once, from a trusted machine
+  gh attestation verify liboqs-<fullVersion>-<platform>.tar.gz \
+    --repo djx-y-z/liboqs_dart \
+    --bundle liboqs-<fullVersion>.sigstore.jsonl \
+    --custom-trusted-root trusted_root.jsonl
+  ```
+
+  **Known limitation:** verification is manual — the build hook itself does not
+  verify attestations automatically. There is currently no Sigstore/DSSE
+  implementation for Dart, so an in-hook verifier would mean hand-rolling
+  X.509 path validation and transparency-log checks (weeks of security-critical
+  code); no package ecosystem verifies Sigstore attestations client-side by
+  default today. Automatic (opt-in) verification via an installed `gh` CLI is
+  tracked as a possible future hardening step.
 
 Reviewing upstream: each liboqs version bump lands via a pull request that
 links the upstream release notes; upstream changes are reviewed before the
