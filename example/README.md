@@ -24,7 +24,7 @@ The `liboqs` package includes pre-built native libraries for all platforms. Simp
 
 ```yaml
 dependencies:
-  liboqs: ^1.0.0
+  liboqs: ^2.0.0
 ```
 
 No manual library compilation or path configuration needed.

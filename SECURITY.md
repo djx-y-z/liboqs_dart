@@ -234,8 +234,8 @@ Every push and pull request runs, on all supported desktop platforms:
   the native build scripts
 
 CI workflows run with a least-privilege `GITHUB_TOKEN` (`contents: read` by
-default; only the release-publishing job gets `contents: write`), and pub.dev
-publishing uses OIDC — no long-lived publishing tokens exist.
+default; only the release-publishing jobs get the specific writes they need),
+and pub.dev publishing uses OIDC — no long-lived publishing tokens exist.
 
 ## Best Practices
 

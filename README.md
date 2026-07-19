@@ -25,7 +25,7 @@ A Dart FFI wrapper for [liboqs](https://github.com/open-quantum-safe/liboqs), pr
 - **Cryptographically Secure Random**: System-backed random number generation
 - **Zero Configuration**: Pre-built native libraries included via Build Hooks
 - **High Performance**: Direct FFI bindings with minimal overhead
-- **Automated Updates**: Native libraries auto-rebuild when new liboqs versions are released
+- **Automated Updates**: a daily bot opens update PRs for new liboqs releases; native libraries are rebuilt via deliberate, maintainer-signed release tags
 
 ## Installation
 
@@ -46,7 +46,7 @@ void main() {
   LibOQS.init();
 
   // Key Encapsulation (ML-KEM)
-  final kem = KEM.create('ML-KEM-768')!;
+  final kem = KEM.create('ML-KEM-768');
   final keyPair = kem.generateKeyPair();
   final encResult = kem.encapsulate(keyPair.publicKey);
   final sharedSecret = kem.decapsulate(encResult.ciphertext, keyPair.secretKey);
@@ -67,7 +67,7 @@ void main() {
 
 ## Supported Algorithms
 
-> **Note:** The native library is built with all algorithms enabled, including experimental ones.
+> **Note:** The native library is built with the upstream default algorithm set, including experimental ones (stateful signatures XMSS/LMS are excluded at compile time).
 > For production use, we recommend NIST-standardized algorithms (ML-KEM, ML-DSA, SLH-DSA).
 
 ### Key Encapsulation Mechanisms (KEMs)
@@ -77,6 +77,7 @@ void main() {
 | ML-KEM-512, ML-KEM-768, ML-KEM-1024 | NIST Level 1/3/5 | FIPS 203 Standard |
 | Kyber512, Kyber768, Kyber1024 | NIST Level 1/3/5 | Legacy (use ML-KEM) |
 | HQC-1, HQC-3, HQC-5 | NIST Level 1/3/5 | NIST Selected |
+| BIKE-L1, BIKE-L3, BIKE-L5 | NIST Level 1/3/5 | Round 4 candidate (not available on Windows or 32-bit ARM) |
 | Classic McEliece variants | Various | ISO consideration |
 | FrodoKEM-* (salted), eFrodoKEM-* (ephemeral) | Various | ISO consideration |
 | NTRU, NTRU-Prime | Various | Not NIST selected |
@@ -87,7 +88,7 @@ void main() {
 |-----------|----------------|--------|
 | ML-DSA-44, ML-DSA-65, ML-DSA-87 | NIST Level 2/3/5 | FIPS 204 Standard |
 | SLH-DSA variants | Various | FIPS 205 Standard |
-| Falcon-512, Falcon-1024 | NIST Level 1/5 | NIST Selected |
+| Falcon-512, Falcon-1024 (+ `Falcon-padded-*`) | NIST Level 1/5 | NIST Selected |
 | MAYO, CROSS, SNOVA, UOV, MQOM | Various | Under NIST consideration |
 
 ### Listing Available Algorithms
@@ -109,7 +110,7 @@ print('ML-DSA-65 supported: ${LibOQS.isSignatureSupported('ML-DSA-65')}');
 ```dart
 import 'package:liboqs/liboqs.dart';
 
-final kem = KEM.create('ML-KEM-768')!;
+final kem = KEM.create('ML-KEM-768');
 
 // Algorithm properties
 print('Public key length: ${kem.publicKeyLength}');
@@ -189,7 +190,7 @@ OQSRandom.shuffleList(list);
 ### Basic Usage
 
 ```dart
-final kem = KEM.create('ML-KEM-768')!;
+final kem = KEM.create('ML-KEM-768');
 // Use KEM...
 kem.dispose(); // Clean up when done
 ```

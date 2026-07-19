@@ -104,6 +104,12 @@ Future<Map<String, String>> _fetchLatestRelease() async {
 
   final latest = releases[0] as Map<String, dynamic>;
   final version = latest['tag_name'] as String;
+  // The tag name is attacker-controlled upstream data that ends up in
+  // GITHUB_OUTPUT and, from there, in workflow shell commands and branch
+  // names. Reject anything that is not a plain semver-ish tag.
+  if (!RegExp(r'^v?\d+\.\d+\.\d+(-[A-Za-z0-9.]+)?$').hasMatch(version)) {
+    throw Exception('Refusing unexpected upstream tag_name format: "$version"');
+  }
   final isPrerelease = latest['prerelease'] as bool;
   final htmlUrl = latest['html_url'] as String?;
 

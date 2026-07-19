@@ -9,8 +9,8 @@
 - **Dart API unchanged** — `KEM`, `Signature`, and `OQSRandom` are
   source-compatible; every breaking change is in *algorithm availability* or the
   bundled native library, not the class API.
-- **SPHINCS+ removed (breaking)** — `Signature.create('SPHINCS+-…')` now returns
-  `null`; migrate to **SLH-DSA** (FIPS 205) or **ML-DSA** (FIPS 204).
+- **SPHINCS+ removed (breaking)** — `Signature.create('SPHINCS+-…')` now throws
+  `LibOQSException`; migrate to **SLH-DSA** (FIPS 205) or **ML-DSA** (FIPS 204).
 - **HQC renamed and enabled by default (breaking)** — `HQC-128`/`HQC-192`/`HQC-256`
   → `HQC-1`/`HQC-3`/`HQC-5`, updated to the 2025-08-22 spec.
 - **FrodoKEM is now the salted variant (silent breaking)** — keys/ciphertexts are
@@ -33,7 +33,7 @@
   for high-volume encapsulation.
 - HQC identifiers were renamed `HQC-128`/`HQC-192`/`HQC-256` →
   `HQC-1`/`HQC-3`/`HQC-5`. HQC is now enabled by default and updated to the
-  2025-08-22 specification. `KEM.create('HQC-128')` now returns `null`.
+  2025-08-22 specification. `KEM.create('HQC-128')` now throws `LibOQSException`.
 
 #### Changed
 
@@ -57,15 +57,17 @@
   `eFrodoKEM-976-AES`, `eFrodoKEM-976-SHAKE`, `eFrodoKEM-1344-AES`, and
   `eFrodoKEM-1344-SHAKE`.
 - HQC (`HQC-1`, `HQC-3`, `HQC-5`) is now enabled by default.
+- MQOM signature scheme family (12 `mqom2_cat{1,3,5}_gf16_{fast,short}_r{3,5}`
+  parameter sets) — a candidate in NIST's Additional Digital Signatures
+  process, new upstream in liboqs 0.16.0 and enabled by default.
 - Upstream runtime-detection API for stateful signature support (`OQS_SIG_STFL_*`).
 
 #### Removed (Breaking)
 
-- SPHINCS+ signature algorithms
-  (`SPHINCS+-SHA2-128f-simple`, `-128s-simple`, `-192f-simple`, `-192s-simple`,
-  `-256f-simple`, `-256s-simple`) were removed upstream in liboqs 0.16.0.
-  `Signature.create('SPHINCS+-…')` now returns `null`. Migrate to **SLH-DSA**
-  (FIPS 205, `SLH_DSA_PURE_*`) or **ML-DSA** (FIPS 204).
+- SPHINCS+ signature algorithms — all 12 `*-simple` variants of both the
+  `SPHINCS+-SHA2-*` and `SPHINCS+-SHAKE-*` families — were removed upstream in
+  liboqs 0.16.0. `Signature.create('SPHINCS+-…')` now throws `LibOQSException`.
+  Migrate to **SLH-DSA** (FIPS 205, `SLH_DSA_PURE_*`) or **ML-DSA** (FIPS 204).
 - Legacy HQC identifiers `HQC-128`/`HQC-192`/`HQC-256` (renamed; see Changed
   (Breaking)).
 
@@ -140,9 +142,9 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
 - Regenerated FFI bindings for liboqs 0.16.0.
 - **CI hardening & reliability (Phase 4).** Workflows now run with a
   least-privilege `GITHUB_TOKEN` (workflow-level `contents: read`; only the
-  release-publishing job opts up to `contents: write`). The native-library build
-  workflow serializes via a `concurrency` group, so two quick `pubspec.yaml`
-  pushes can no longer race to delete-and-recreate the same release tag. Windows
+  release-publishing jobs opt up to the specific writes they need). The
+  native-library build workflow serializes concurrent runs for the same ref
+  via a `concurrency` group. Windows
   runners install GNU Make from a pinned GitHub release (with retry + size check)
   via a `setup-make` composite action instead of Chocolatey. The
   deployment-target guard (`make check-targets`) runs in the CI quality checks
@@ -150,6 +152,13 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   package-validation (`publish-dry-run`) job that gates publishing. The liboqs
   update checker skips when an open update PR for the same version already
   exists, so scheduled runs no longer force-push over manual commits on that PR.
+- **CI supply-chain hardening (pre-release audit).** The upstream version tag
+  from the liboqs update check is format-validated before it reaches
+  `GITHUB_OUTPUT`, and workflow `run:` blocks read it (and the other step
+  outputs) via `env:` instead of inline `${{ }}` interpolation — closing a
+  shell-injection path from upstream release names. Third-party GitHub Actions
+  are pinned to commit SHAs, and the Windows GNU Make helper binary is verified
+  against a hardcoded SHA256 before use.
 - **Tag-triggered native builds.** `build-liboqs.yml` now triggers on a
   `liboqs-<fullVersion>` tag push (created by `make release-native`) instead of
   every `pubspec.yaml` push to `main`: merging a version bump no longer builds
