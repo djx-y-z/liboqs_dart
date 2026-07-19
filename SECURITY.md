@@ -264,6 +264,9 @@ Every push and pull request runs, on all supported desktop platforms:
 CI workflows run with a least-privilege `GITHUB_TOKEN` (`contents: read` by
 default; only the release-publishing jobs get the specific writes they need),
 and pub.dev publishing uses OIDC — no long-lived publishing tokens exist.
+Third-party GitHub Actions are pinned to commit SHAs (with a `# vX.Y.Z`
+comment); Dependabot (`.github/dependabot.yml`) keeps the pins current via
+weekly grouped update PRs.
 
 ## Best Practices
 

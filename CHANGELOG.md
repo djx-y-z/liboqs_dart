@@ -143,6 +143,10 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   binary can be verified — online or fully offline — with
   `gh attestation verify` (see SECURITY.md → Authenticity). This breaks the
   self-trust of the same-release SHA256 checksums file.
+- Dependabot for GitHub Actions (`.github/dependabot.yml`): weekly grouped
+  update PRs (Monday 06:00 UTC, `chore(deps)` prefix) bump the pinned actions —
+  commit SHA and its version comment — across the workflows and the composite
+  actions, so the SHA pins from the supply-chain audit don't go stale.
 
 #### Changed
 
