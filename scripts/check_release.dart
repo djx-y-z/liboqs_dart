@@ -38,8 +38,19 @@ Future<void> main(List<String> args) async {
     final repository =
         Platform.environment['GITHUB_REPOSITORY'] ?? 'djx-y-z/liboqs_dart';
 
-    // Check if release exists
-    final exists = await _checkReleaseExists(repository, tagName);
+    // Check if release exists. Fail closed: if we cannot tell (API error,
+    // unexpected status, network failure), abort rather than reporting
+    // exists=false, which would let a build proceed on a wrong assumption.
+    final status = await _checkReleaseExists(repository, tagName);
+    if (status == _ReleaseStatus.inconclusive) {
+      logError(
+        'Could not determine whether $tagName exists (GitHub API error or '
+        'network failure). Aborting instead of guessing. Re-run the workflow, '
+        'or verify the release manually.',
+      );
+      exit(1);
+    }
+    final exists = status == _ReleaseStatus.exists;
 
     // Output results
     final outputs = {
@@ -89,12 +100,19 @@ Future<void> main(List<String> args) async {
   }
 }
 
+/// Three-state result of the release-existence probe. `inconclusive` (unexpected
+/// status, network error) is treated as fail-closed by the caller.
+enum _ReleaseStatus { exists, missing, inconclusive }
+
 /// Check if a GitHub release with the given tag exists
-Future<bool> _checkReleaseExists(String repository, String tagName) async {
+Future<_ReleaseStatus> _checkReleaseExists(
+  String repository,
+  String tagName,
+) async {
   final url = 'https://api.github.com/repos/$repository/releases/tags/$tagName';
 
+  final client = HttpClient();
   try {
-    final client = HttpClient();
     final request = await client.getUrl(Uri.parse(url));
 
     // Add GitHub token if available (for higher rate limits)
@@ -108,13 +126,20 @@ Future<bool> _checkReleaseExists(String repository, String tagName) async {
     request.headers.set('User-Agent', 'liboqs-dart-release-checker');
 
     final response = await request.close();
-    client.close();
+    await response.drain<void>();
 
-    return response.statusCode == 200;
+    if (response.statusCode == 200) {
+      return _ReleaseStatus.exists;
+    } else if (response.statusCode == 404) {
+      return _ReleaseStatus.missing;
+    }
+    logWarn('Unexpected response from GitHub API: ${response.statusCode}');
+    return _ReleaseStatus.inconclusive;
   } catch (e) {
     logWarn('Failed to check GitHub API: $e');
-    // If we can't check, assume release doesn't exist to be safe
-    return false;
+    return _ReleaseStatus.inconclusive;
+  } finally {
+    client.close();
   }
 }
 

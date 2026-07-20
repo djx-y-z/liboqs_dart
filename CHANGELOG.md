@@ -80,6 +80,12 @@
   "incompatible platform" at runtime), and (2) omitted the version, so after a
   version bump a stale binary from the previous release could be reused instead
   of downloading the new one.
+- Build hook: download/cache resilience against partial and transient failures.
+  A cache entry is now reused only after a `.download-complete` marker proves
+  the extraction finished, so an interrupted `tar` no longer leaves a truncated
+  library that is registered and reused forever; and both the checksums fetch
+  and the binary download now retry on transient HTTP 5xx/429 instead of failing
+  the build on a single network blip.
 
 #### Security
 
@@ -178,6 +184,20 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
   delete-then-recreate step is gone), and the release-publishing job is gated
   by the `native-build` environment (mirrors the pub.dev publish gate; inert
   until reviewers are configured).
+- **Release notes hardened against changelog injection.** `publish.yml` now
+  passes the version and changelog through `env:` and writes the release notes
+  with `printf` to a `--notes-file`, so a literal `EOF` line in the changelog
+  can no longer terminate the inline heredoc early and execute the remaining
+  text as shell under the `contents: write` token.
+- **Release-exists CI probe fails closed.** `check_release.dart` now
+  distinguishes exists / missing / inconclusive and aborts (exit 1) on an API
+  error or network failure instead of reporting the release as absent and
+  letting a build proceed on a wrong assumption.
+- **Release-script robustness.** `runInherit` fails loud on any non-zero exit
+  (previously swallowed when no failure message was passed), `finalizeChangelog`
+  validates the `--date` (`YYYY-MM-DD`) before stamping the immutable released
+  heading, and the commit-failure message now states the version bump is left
+  staged and how to recover.
 
 #### Removed
 

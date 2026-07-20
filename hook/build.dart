@@ -28,6 +28,12 @@ const _assetId = 'liboqs';
 /// GitHub repository for downloading releases.
 const _githubRepo = 'djx-y-z/liboqs_dart';
 
+/// Marker written into a version-keyed download cache directory as the LAST
+/// step of a successful download+verify+extract. Its absence means the cache
+/// entry is incomplete (e.g. an interrupted extraction left a truncated file),
+/// so the entry must be re-provisioned rather than reused unverified.
+const _cacheCompleteMarker = '.download-complete';
+
 /// Entry point for the build hook.
 void main(List<String> args) async {
   await build(args, (input, output) async {
@@ -76,8 +82,12 @@ void main(List<String> args) async {
     final cacheDir = input.outputDirectoryShared.resolve('$archSubdir/');
     final libFile = File.fromUri(cacheDir.resolve(assetInfo.fileName));
 
-    // Download if not cached
-    if (!libFile.existsSync()) {
+    // Download unless the cache entry is COMPLETE. Existence alone is not
+    // enough: an interrupted extraction can leave a truncated library that
+    // would then be reused (and registered) forever. The completeness marker is
+    // written only after a fully verified extraction, so a missing marker
+    // re-provisions and heals the entry.
+    if (!_isCacheComplete(cacheDir) || !libFile.existsSync()) {
       final baseUrl =
           'https://github.com/$_githubRepo/releases/download/liboqs-$fullVersion';
 
@@ -412,6 +422,28 @@ Future<void> _downloadAndExtract(
       'Extraction failed: $libFileName not found in archive from $url',
     );
   }
+
+  // Mark the cache entry complete only now — after a verified, fully extracted
+  // archive. A crash before this point leaves the marker absent, so the next
+  // build re-provisions instead of reusing a truncated file.
+  _markCacheComplete(outputDir);
+}
+
+/// Whether [cacheDir] holds a fully provisioned download (see
+/// [_cacheCompleteMarker]).
+bool _isCacheComplete(Uri cacheDir) =>
+    File.fromUri(cacheDir.resolve(_cacheCompleteMarker)).existsSync();
+
+/// Records that [cacheDir] was fully provisioned. Best-effort: a write failure
+/// must not fail the build (the next run simply re-provisions).
+void _markCacheComplete(Uri cacheDir) {
+  try {
+    File.fromUri(
+      cacheDir.resolve(_cacheCompleteMarker),
+    ).writeAsStringSync('ok\n');
+  } catch (_) {
+    // Non-fatal.
+  }
 }
 
 /// Downloads a file with retry logic.
@@ -439,6 +471,12 @@ Future<void> _downloadWithRetry(
             'Native library not found at $url (HTTP 404). '
             'Ensure GitHub Release exists with the correct version.',
           );
+        } else if (response.statusCode >= 500 || response.statusCode == 429) {
+          // Transient server-side/rate-limit response — let the retry loop
+          // below handle it (plain Exception is caught and retried; a
+          // HookException would be rethrown immediately and skip the retries).
+          await response.drain<void>();
+          throw Exception('Transient HTTP ${response.statusCode} from $url');
         } else {
           throw HookException(
             'Failed to download from $url: HTTP ${response.statusCode}',
@@ -575,26 +613,55 @@ Future<String?> _resolveExpectedChecksum(
 /// Returns a map of filename -> expected SHA256 hash.
 Future<Map<String, String>> _downloadChecksums(
   String baseUrl,
-  String fullVersion,
-) async {
+  String fullVersion, {
+  int maxRetries = 3,
+  Duration retryDelay = const Duration(seconds: 2),
+}) async {
   final checksumsUrl = '$baseUrl/liboqs-$fullVersion-checksums.sha256';
   final client = HttpClient();
+  Object? lastError;
 
   try {
-    final request = await client.getUrl(Uri.parse(checksumsUrl));
-    final response = await request.close();
+    for (var attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        final request = await client.getUrl(Uri.parse(checksumsUrl));
+        final response = await request.close();
 
-    if (response.statusCode != 200) {
-      throw HookException(
-        'Failed to download checksums from $checksumsUrl: HTTP ${response.statusCode}',
-      );
+        if (response.statusCode == 200) {
+          final content = await response
+              .transform(systemEncoding.decoder)
+              .join();
+          return _parseChecksums(content);
+        }
+
+        await response.drain<void>();
+        // 5xx/429 are transient — fall through to retry. Other codes (404, 4xx)
+        // are permanent, so fail fast without burning retries.
+        if (response.statusCode < 500 && response.statusCode != 429) {
+          throw HookException(
+            'Failed to download checksums from $checksumsUrl: '
+            'HTTP ${response.statusCode}',
+          );
+        }
+        lastError = 'HTTP ${response.statusCode}';
+      } on HookException {
+        rethrow;
+      } catch (e) {
+        lastError = e;
+      }
+
+      if (attempt < maxRetries) {
+        await Future.delayed(retryDelay * attempt);
+      }
     }
-
-    final content = await response.transform(systemEncoding.decoder).join();
-    return _parseChecksums(content);
   } finally {
     client.close();
   }
+
+  throw HookException(
+    'Failed to download checksums from $checksumsUrl after $maxRetries '
+    'attempts. Last error: $lastError',
+  );
 }
 
 /// Parses SHA256 checksums file content.
