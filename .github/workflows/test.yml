@@ -3,7 +3,7 @@
 # Triggers:
 # - Manual dispatch (workflow_dispatch)
 # - Push to main branch (relevant files)
-# - Pull requests (relevant files) - skipped for bot PRs (e.g., liboqs updates)
+# - Pull requests (relevant files) - skipped for liboqs update PRs
 # - After successful build-liboqs workflow
 #
 # Platforms: Linux x86_64, Linux ARM64, macOS ARM64, Windows x86_64
@@ -12,19 +12,26 @@ name: Tests
 
 on:
   workflow_dispatch:
+  # '.github/**' covers CI itself: a PR that only bumps action versions (Dependabot)
+  # or edits the composite actions used to run these tests would otherwise merge
+  # without a single check. A pull_request run resolves test-reusable.yml and
+  # .github/actions/* from the PR's merge ref, so those changes really do execute.
+  # The same filter on push is what keeps it useful: PR runs can read the base
+  # branch's cache scope but never the reverse, so without a main-branch run after
+  # each CI change, every PR's first run starts from a cold FVM cache.
   push:
     branches: [main]
     paths:
       - 'lib/**'
       - 'test/**'
       - 'pubspec.yaml'
-      - '.github/workflows/test.yml'
-      - '.github/workflows/test-reusable.yml'
+      - '.github/**'
   pull_request:
     paths:
       - 'lib/**'
       - 'test/**'
       - 'pubspec.yaml'
+      - '.github/**'
   workflow_run:
     workflows: ["Build liboqs Native Libraries"]
     types:
@@ -40,10 +47,15 @@ jobs:
   test:
     # Skip tests for:
     # - Failed workflow_run triggers
-    # - Bot PRs (automated liboqs updates) - native libraries not yet built
+    # - liboqs update PRs: they raise liboqs.native_version before the native
+    #   libraries for it exist, so the Build Hook has nothing to download. Matched by
+    #   branch name, not by author type, so that other bot PRs (Dependabot) DO run -
+    #   the branch is created by check-liboqs-updates.yml
+    #   (`branch: update-liboqs-<version>`); keep both in sync.
+    #   `github.head_ref` is empty outside pull_request, so startsWith() is false there.
     if: |
       (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') &&
-      (github.event_name != 'pull_request' || github.event.pull_request.user.type != 'Bot')
+      !startsWith(github.head_ref, 'update-liboqs-')
     uses: ./.github/workflows/test-reusable.yml
     with:
       run-coverage: true

@@ -1,6 +1,8 @@
 ## [Unreleased]
 
-### Changed
+### For Contributors
+
+#### Changed
 
 - **GitHub Actions moved to their current majors** — `actions/checkout` v4→v7,
   `actions/upload-artifact` v4→v7, `actions/download-artifact` v4→v8,
@@ -31,6 +33,47 @@
   is load-bearing — these are `fnmatch` patterns in pathname mode, so a bare
   `**` stops at the first `/` and would miss the multi-segment names Dependabot
   actually generates.
+
+#### Fixed
+
+- **The FVM cache in CI never saved anything.** `setup-fvm` cached `~/.fvm`, but
+  `.fvm` is FVM's *project-local* directory name — installed SDKs live in
+  `$HOME/fvm/versions` (`fvmDir = cachePath ?? $HOME/fvm` in FVM 4.x). That path
+  never existed, so `actions/cache` ended every job with `Path Validation Error:
+  … hence no cache is being saved` in a green post-step, the repository held no
+  cache entries at all, and each job on all four platforms reinstalled Flutter
+  from scratch (~80 s apiece). The action now caches `~/fvm/versions` and makes
+  that location a contract rather than a guess: `FVM_CACHE_PATH` is set
+  explicitly, and FVM itself is pinned to 4.1.2 (exposed as the action's
+  `fvm-version` input, since Dependabot cannot see a `dart pub global activate`
+  line) so no unannounced major can relocate the SDKs. A step after
+  `fvm install` then *fails* the job if they land anywhere else —
+  annotate-and-continue is precisely the mode that hid this bug for months, so it
+  is not the safe option but the broken one with a louder log line, and nothing
+  irreversible sits behind the check: setup-fvm runs before the release archives,
+  the tag and the pub.dev publish, so a release is re-run rather than broken.
+  Two latent problems
+  came out with it: the key gained `runner.arch`, because `ubuntu-latest` and
+  `ubuntu-24.04-arm` both report `runner.os == 'Linux'` and shared one key —
+  the first working save would have handed an x86-64 SDK to the ARM64 runner —
+  and `restore-keys` is gone, since a partial hit restores the previous SDK,
+  `fvm install` adds the new one beside it, and the cache would grow by ~2.5 GB
+  with every Flutter bump.
+- **Pull requests that only touch CI ran no checks at all.** `test.yml` filtered
+  on `lib/**`, `test/**` and `pubspec.yaml` (plus its own two workflow files on
+  push), so a Dependabot action bump could merge unverified — #5 had to be
+  validated by hand with `workflow_dispatch` on the PR branch — and even a
+  matching path would then have been skipped by `user.type != 'Bot'`, a guard
+  meant only for the liboqs update PRs. `.github/**` is now covered on both
+  `pull_request` and `push`, and update PRs are matched by branch name
+  (`update-liboqs-*`, created by `check-liboqs-updates.yml`) instead of author
+  type, so Dependabot PRs run the full matrix while `native_version` bumps keep
+  skipping until their native libraries exist. A `pull_request` run resolves
+  `test-reusable.yml` and `.github/actions/*` from the PR's merge ref, so a
+  bumped action really does execute; the `push` filter earns its place too,
+  because PR runs may read the base branch's cache scope but never the reverse —
+  without a run on `main` after each CI change, every PR's first run would start
+  from a cold FVM cache.
 
 ## [2.0.0] - 2026-07-20
 
