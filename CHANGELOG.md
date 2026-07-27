@@ -1,3 +1,37 @@
+## [Unreleased]
+
+### Changed
+
+- **GitHub Actions moved to their current majors** — `actions/checkout` v4→v7,
+  `actions/upload-artifact` v4→v7, `actions/download-artifact` v4→v8,
+  `actions/cache` v4→v6, `actions/create-github-app-token` v2→v3,
+  `android-actions/setup-android` v3.2.2→v4.0.1 and
+  `schneegans/dynamic-badges-action` v1.7.0→v1.9.0. Mostly the Node 20→24
+  runtime migration, which needs no change on GitHub-hosted runners. Two are
+  worth knowing about: `download-artifact` v8 now *fails* a run on an artifact
+  digest mismatch instead of logging a warning, which is a welcome hardening of
+  the `create-release` job that packages the native archives consumers download;
+  and `checkout` v7 refuses to check out a fork PR under `pull_request_target` /
+  `workflow_run`, which does not affect this repo — `pull_request_target` is
+  never used, and the one `workflow_run` trigger (`test.yml`, after
+  `build-liboqs.yml`) fires off a tag push or a dispatch, so the guard short-
+  circuits before it can apply. Artifact layout is unchanged: v5's breaking path
+  fix only covers single downloads by `artifact-ids`, while `create-release`
+  downloads every artifact by name into `artifacts/<name>/`.
+- **Dependabot branches are exempt from the branch rulesets** — `Signing commit`
+  applies `non_fast_forward` to `~ALL` branches with no bypass actors, so
+  Dependabot, which refreshes an open PR by force-pushing a rewritten commit,
+  could never rebase one onto a moved `main`; its first scheduled run gave up
+  with "because the branch … is protected it was unable to do so", leaving the
+  PR frozen at the day it was opened. `refs/heads/dependabot/**/*` is now
+  excluded from that ruleset and from `Delete branches` (which blocked
+  `@dependabot recreate` and branch cleanup for the same reason). Nothing is
+  weakened: Dependabot signs its commits regardless of the rule, and `main`
+  keeps both its pull-request gate and `required_signatures`. The trailing `/*`
+  is load-bearing — these are `fnmatch` patterns in pathname mode, so a bare
+  `**` stops at the first `/` and would miss the multi-segment names Dependabot
+  actually generates.
+
 ## [2.0.0] - 2026-07-20
 
 ### For Users
