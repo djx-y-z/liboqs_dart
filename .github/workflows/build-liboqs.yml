@@ -75,12 +75,12 @@ jobs:
     steps:
       - name: Generate GitHub App Token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -121,7 +121,7 @@ jobs:
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -135,7 +135,7 @@ jobs:
         run: make build ARGS="linux --arch ${{ matrix.arch }}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: liboqs-linux-${{ matrix.arch }}
           path: bin/linux/liboqs.so
@@ -155,7 +155,7 @@ jobs:
             runner: macos-15-intel
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -167,7 +167,7 @@ jobs:
         run: make build ARGS="macos --arch ${{ matrix.arch }}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: liboqs-macos-${{ matrix.arch }}
           path: bin/macos/liboqs.dylib
@@ -195,7 +195,7 @@ jobs:
             dart_target: simulator-x86_64
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -207,7 +207,7 @@ jobs:
         run: make build ARGS="ios --target ${{ matrix.dart_target }}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: liboqs-ios-${{ matrix.target }}-${{ matrix.arch }}
           path: ios/Libraries/${{ matrix.target }}-${{ matrix.arch }}/liboqs.dylib
@@ -223,7 +223,7 @@ jobs:
       matrix:
         abi: [arm64-v8a, armeabi-v7a, x86_64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -234,7 +234,7 @@ jobs:
           sudo apt-get install -y cmake ninja-build
 
       - name: Setup Android NDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
 
       - name: Install NDK
         run: |
@@ -245,7 +245,7 @@ jobs:
         run: make build ARGS="android --abi ${{ matrix.abi }}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: liboqs-android-${{ matrix.abi }}
           path: android/src/main/jniLibs/${{ matrix.abi }}/liboqs.so
@@ -258,7 +258,7 @@ jobs:
     if: needs.read-version.outputs.skip != 'true'
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup FVM and Flutter
         uses: ./.github/actions/setup-fvm
@@ -279,7 +279,7 @@ jobs:
         shell: bash
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: liboqs-windows-x86_64
           path: bin/windows/oqs.dll
@@ -309,10 +309,10 @@ jobs:
       id-token: write       # Sigstore OIDC identity for build provenance
       attestations: write   # store the attestation in the repo
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
