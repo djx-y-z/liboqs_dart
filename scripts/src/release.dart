@@ -74,7 +74,12 @@ Future<void> releasePackage({
   }
 
   logStep('Fetching origin...');
-  await git(['fetch', 'origin', '--tags', '--quiet']);
+  // Fetch only origin/main — all the behind/ahead check below needs. Not tags:
+  // the "tag already on origin?" check right below asks `git ls-remote` directly,
+  // so `--tags` adds nothing, while a single diverged tag anywhere in the
+  // namespace (a rebuilt liboqs-* native tag, say) would fail the fetch and abort
+  // an otherwise valid release.
+  await git(['fetch', 'origin', 'main', '--no-tags', '--quiet']);
   if ((await git(['ls-remote', '--tags', 'origin', tag])).isNotEmpty) {
     throw Exception('Tag $tag already exists on origin.');
   }
@@ -238,18 +243,22 @@ void _finalizeChangelogFile(Directory packageDir, String version, String date) {
 /// [date] (YYYY-MM-DD). Pure; exposed for testing.
 ///
 /// Three edits:
-///  1. Renames the `## [Unreleased]` heading to `## [version] - date`, leaving
-///     a fresh empty `## [Unreleased]` above it (in-progress content becomes the
-///     released section).
+///  1. Renames the `## [Unreleased]` heading to `## [version] - date` in place
+///     (in-progress content becomes the released section). No empty
+///     `## [Unreleased]` is left behind — whoever records the next unreleased
+///     change recreates it, by hand or via `insertChangelogEntry` in
+///     update_changelog.dart, which creates the section when it is absent.
 ///  2. Rewrites the bottom `[Unreleased]:` compare link to span
 ///     `v<version>...HEAD`.
 ///  3. Inserts a `[version]:` compare link spanning `v<previous>...v<version>`.
 ///
 /// The previous version and the repo base URL are read from the existing
 /// `[Unreleased]:` link — the single source of truth for the compare range — so
-/// the function needs no repo slug. Throws if the CHANGELOG lacks a
-/// `## [Unreleased]` heading or an `[Unreleased]:` compare link, or already has a
-/// `## [version]` section.
+/// the function needs no repo slug. That footer link is deliberately kept even
+/// while no `## [Unreleased]` heading references it: this function and the
+/// section-creating scripts both read it, so it must NOT be deleted as stale.
+/// Throws if the CHANGELOG lacks a `## [Unreleased]` heading or an
+/// `[Unreleased]:` compare link, or already has a `## [version]` section.
 String finalizeChangelog(
   String content, {
   required String version,
@@ -306,13 +315,11 @@ String finalizeChangelog(
   lines[linkIdx] = '[Unreleased]: $base/compare/v$version...HEAD';
   lines.insert(linkIdx + 1, '[$version]: $base/compare/v$previous...v$version');
 
-  // Then split the single `## [Unreleased]` heading into a fresh empty
-  // [Unreleased] followed by the finalized `## [version] - date` heading.
-  lines.replaceRange(unreleasedIdx, unreleasedIdx + 1, [
-    '## [Unreleased]',
-    '',
-    '## [$version] - $date',
-  ]);
+  // Then rename the `## [Unreleased]` heading to the finalized
+  // `## [version] - date` heading, in place. No fresh empty [Unreleased] is
+  // emitted: an empty section shipped to pub.dev with every release, and the
+  // scripts that record unreleased changes create it when it is missing.
+  lines[unreleasedIdx] = '## [$version] - $date';
 
   return lines.join('\n');
 }

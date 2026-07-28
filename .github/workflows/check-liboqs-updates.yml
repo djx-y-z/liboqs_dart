@@ -58,6 +58,14 @@ jobs:
           ARGS="--ci"
 
           if [ -n "$TARGET_VERSION" ]; then
+            # The value is interpolated into ARGS and reaches the recipe shell
+            # through `make ARGS=...` before the Dart checker ever validates it,
+            # so a `;` in it would run as a second command. Reject anything that
+            # is not the exact upstream tag form here as well.
+            if [[ ! "$TARGET_VERSION" =~ ^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "::error::target_version must be a plain X.Y.Z liboqs tag (optionally v-prefixed, optionally with a prerelease suffix)."
+              exit 2
+            fi
             ARGS="$ARGS --version $TARGET_VERSION"
           fi
 
@@ -66,7 +74,20 @@ jobs:
           fi
 
           echo "Running: make check ARGS=\"$ARGS\""
+          # `|| true` is unavoidable: the checker exits 1 to signal "update
+          # available", and GNU make collapses any non-zero recipe status into its
+          # own exit 2, so the exit code cannot tell that apart from a crash.
           make check ARGS="$ARGS" || true
+
+          # What can tell them apart is the outputs file: the checker writes it
+          # before signalling, and not at all when it throws. Without this gate a
+          # broken checker (rate limit, API change, network) looks exactly like
+          # "already up to date" and the workflow stays green forever while
+          # silently never opening another update PR.
+          if ! grep -q '^needs_update=' "$GITHUB_OUTPUT"; then
+            echo "::error::Update checker wrote no result — it failed before reporting. Check the step log above; do NOT read this as 'up to date'."
+            exit 1
+          fi
 
           echo "Check completed. Outputs:"
           cat $GITHUB_OUTPUT || true
@@ -103,6 +124,12 @@ jobs:
           ARGS="--update --ci"
 
           if [ -n "$TARGET_VERSION" ]; then
+            # Same guard as the check step above: this step interpolates the input
+            # into a make recipe too, and a job can be re-run from this point.
+            if [[ ! "$TARGET_VERSION" =~ ^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "::error::target_version must be a plain X.Y.Z liboqs tag (optionally v-prefixed, optionally with a prerelease suffix)."
+              exit 2
+            fi
             ARGS="$ARGS --version $TARGET_VERSION"
           fi
 

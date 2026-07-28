@@ -50,27 +50,30 @@ void main() {
       expect(result, contains('## [2.1.0] - 2026-08-01'));
     });
 
-    test('leaves a fresh empty [Unreleased] above the new version', () {
+    test('leaves no empty [Unreleased] heading behind', () {
       final result = finalizeChangelog(
         _changelog,
         version: '2.1.0',
         date: '2026-08-01',
       );
 
-      // Exactly one Unreleased heading remains.
-      expect('## [Unreleased]'.allMatches(result).length, equals(1));
+      // The heading is renamed in place: an empty section would otherwise ship
+      // to pub.dev with every release. Whoever records the next unreleased
+      // change recreates it (insertChangelogEntry does so when absent).
+      expect(result, isNot(contains('## [Unreleased]')));
+    });
 
-      final lines = result.split('\n');
-      final unreleasedIdx = lines.indexWhere(
-        (l) => l.startsWith('## [Unreleased]'),
+    test('keeps the footer [Unreleased] compare link', () {
+      final result = finalizeChangelog(
+        _changelog,
+        version: '2.1.0',
+        date: '2026-08-01',
       );
-      final versionIdx = lines.indexWhere((l) => l.startsWith('## [2.1.0]'));
-      // Unreleased comes first and is empty (only blank lines up to [2.1.0]).
-      expect(unreleasedIdx, lessThan(versionIdx));
-      final between = lines
-          .sublist(unreleasedIdx + 1, versionIdx)
-          .where((l) => l.trim().isNotEmpty);
-      expect(between, isEmpty, reason: 'the new [Unreleased] must be empty');
+
+      // Load-bearing, not stale: finalizeChangelog and the section-creating
+      // scripts read the previous version and the base URL out of this link, so
+      // it stays even while no heading references it.
+      expect(_lineStarting(result, '[Unreleased]:'), isNot(-1));
     });
 
     test('moves in-progress content under the released heading', () {
@@ -153,8 +156,9 @@ void main() {
     test('keeps the version heading awk-extractable and the [Unreleased] '
         'heading skipped', () {
       // publish.yml extracts the release notes with an awk pattern that keys on
-      // `^## \\[?[0-9]...`: the dated version heading must match, and the fresh
-      // empty [Unreleased] must NOT (else it would swallow the extraction).
+      // `^## \\[?[0-9]...`: the dated version heading must match, and no
+      // `[Unreleased]` heading may (a recreated one would swallow the
+      // extraction, and finalizeChangelog must not leave one behind either).
       final result = finalizeChangelog(
         _changelog,
         version: '2.1.0',
@@ -286,6 +290,55 @@ void main() {
       expect('## [Unreleased]'.allMatches(result).length, equals(1));
       expect(result, contains('- $highlight'));
       expect(result, contains(changed));
+    });
+
+    test('creates For Users at the top of an [Unreleased] section that only '
+        'has For Contributors', () {
+      // The shape [Unreleased] has whenever the accumulated changes are CI or
+      // tooling only. Appending at the end of the section would file the
+      // user-facing entry below For Contributors, which no released section does.
+      const contributorsOnly = '''
+## [Unreleased]
+
+### For Contributors
+
+#### Fixed
+
+- Something in CI
+
+## [2.0.0] - 2026-07-13
+
+### For Users
+
+- Bundled liboqs upgraded 0.15.0 → 0.16.0
+
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.1...v2.0.0
+''';
+      final result = insertChangelogEntry(
+        currentChangelog: contributorsOnly,
+        nativeHighlight: highlight,
+        changed: changed,
+      );
+
+      final lines = result.split('\n');
+      final unreleasedIdx = lines.indexWhere(
+        (l) => l.startsWith('## [Unreleased]'),
+      );
+      final forUsersIdx = lines.indexWhere(
+        (l) => l.startsWith('### For Users'),
+      );
+      final contributorsIdx = lines.indexWhere(
+        (l) => l.startsWith('### For Contributors'),
+      );
+      final highlightIdx = lines.indexWhere((l) => l.contains(highlight));
+
+      expect('### For Users'.allMatches(result).length, equals(2));
+      expect(forUsersIdx, greaterThan(unreleasedIdx));
+      expect(forUsersIdx, lessThan(contributorsIdx));
+      expect(highlightIdx, lessThan(contributorsIdx));
+      // The pre-existing subsection survives intact.
+      expect(result, contains('- Something in CI'));
     });
   });
 }

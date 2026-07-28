@@ -53,11 +53,16 @@ void main(List<String> args) async {
     final skipMarkerUri = packageRoot.resolve('.skip_liboqs_hook');
     final skipFile = File.fromUri(skipMarkerUri);
 
-    // Add marker file as dependency for cache invalidation
-    // This ensures hook reruns when marker is created/deleted
-    output.dependencies.add(skipMarkerUri);
-
     if (skipFile.existsSync()) {
+      // Declare the marker only while it exists. hooks_runner reports a declared
+      // file that is absent as modified during the build, so declaring it
+      // unconditionally forced a redundant hook pass on every single build, for
+      // every consumer of this package. Declared here it still invalidates what
+      // it must: when `make build` removes the marker, this dependency goes
+      // missing and the skipped result is dropped. The other direction needs no
+      // dependency — a marker created after a full run leaves that run cached,
+      // and not downloading anything is exactly what the marker asks for.
+      output.dependencies.add(skipMarkerUri);
       return;
     }
 

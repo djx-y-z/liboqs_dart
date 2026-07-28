@@ -19,17 +19,29 @@ on:
   # The same filter on push is what keeps it useful: PR runs can read the base
   # branch's cache scope but never the reverse, so without a main-branch run after
   # each CI change, every PR's first run starts from a cold FVM cache.
+  #
+  # 'hook/**', 'scripts/**' and 'Makefile' are in scope because the suite that
+  # runs here covers them — test/hook/build_hook_test.dart and
+  # test/scripts/release_test.dart — and because `make` is how every check is
+  # invoked: a change to the Build Hook, to the release/update scripts, or to a
+  # Makefile target would otherwise be the one commit its own tests do not run on.
   push:
     branches: [main]
     paths:
       - 'lib/**'
       - 'test/**'
+      - 'hook/**'
+      - 'scripts/**'
+      - 'Makefile'
       - 'pubspec.yaml'
       - '.github/**'
   pull_request:
     paths:
       - 'lib/**'
       - 'test/**'
+      - 'hook/**'
+      - 'scripts/**'
+      - 'Makefile'
       - 'pubspec.yaml'
       - '.github/**'
   workflow_run:

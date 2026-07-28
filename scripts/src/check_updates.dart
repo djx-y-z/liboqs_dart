@@ -10,6 +10,31 @@ import 'dart:io';
 
 import 'common.dart';
 
+/// Accepts exactly `X.Y.Z` with an optional `v` prefix and optional semver
+/// prerelease identifiers — the shape liboqs uses for its release tags.
+///
+/// The `v` stays optional because upstream has used both forms and
+/// [isNewerVersion] strips it when comparing. The numeric groups reject leading
+/// zeros, so `00.1.2` is not silently accepted as a version.
+final _upstreamTagPattern = RegExp(
+  r'^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)'
+  r'(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$',
+);
+
+/// Validates a liboqs version tag before it is used or exported.
+///
+/// Tag values reach `GITHUB_OUTPUT` and from there workflow shell commands, a
+/// `make` recipe and a branch name, so anything that is not the exact expected
+/// form is rejected. Applies to every source alike: the GitHub API response,
+/// the `--version` argument a maintainer passes by hand, and the version
+/// currently recorded in `pubspec.yaml`.
+String validateUpstreamTag(String tag, {String source = 'upstream tag'}) {
+  if (!_upstreamTagPattern.hasMatch(tag)) {
+    throw FormatException('Refusing unexpected $source format: "$tag"');
+  }
+  return tag;
+}
+
 /// Result of version check
 class UpdateCheckResult {
   final String currentVersion;
@@ -40,8 +65,12 @@ Future<UpdateCheckResult> checkForUpdates({
   String? targetVersion,
   bool silent = false,
 }) async {
-  // Read current version
-  final currentVersion = getLiboqsVersion();
+  // Read current version. Validated too: it is compared, exported and written
+  // back, so a hand-edited pubspec must fail here rather than downstream.
+  final currentVersion = validateUpstreamTag(
+    getLiboqsVersion(),
+    source: 'liboqs.native_version in pubspec.yaml',
+  );
   if (!silent) logInfo('Current liboqs version: $currentVersion');
 
   // Get latest version from GitHub
@@ -50,7 +79,12 @@ Future<UpdateCheckResult> checkForUpdates({
   String? releaseUrl;
 
   if (targetVersion != null && targetVersion.isNotEmpty) {
-    latestVersion = targetVersion;
+    // A hand-passed `--version` is as untrusted as the API response: it lands in
+    // GITHUB_OUTPUT, the update PR's branch name and the CHANGELOG command.
+    latestVersion = validateUpstreamTag(
+      targetVersion,
+      source: '--version argument',
+    );
     isPrerelease = latestVersion.contains('-');
     if (!silent) logInfo('Using specified version: $latestVersion');
   } else {
@@ -103,13 +137,13 @@ Future<Map<String, String>> _fetchLatestRelease() async {
   }
 
   final latest = releases[0] as Map<String, dynamic>;
-  final version = latest['tag_name'] as String;
   // The tag name is attacker-controlled upstream data that ends up in
   // GITHUB_OUTPUT and, from there, in workflow shell commands and branch
-  // names. Reject anything that is not a plain semver-ish tag.
-  if (!RegExp(r'^v?\d+\.\d+\.\d+(-[A-Za-z0-9.]+)?$').hasMatch(version)) {
-    throw Exception('Refusing unexpected upstream tag_name format: "$version"');
-  }
+  // names. validateUpstreamTag rejects anything that is not a plain semver tag.
+  final version = validateUpstreamTag(
+    latest['tag_name'] as String,
+    source: 'upstream tag_name',
+  );
   final isPrerelease = latest['prerelease'] as bool;
   final htmlUrl = latest['html_url'] as String?;
 

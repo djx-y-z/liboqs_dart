@@ -70,7 +70,11 @@ Future<void> releaseNative({
   }
 
   logStep('Fetching origin...');
-  await git(['fetch', 'origin', '--tags', '--quiet']);
+  // Fetch only origin/main — all the behind/ahead check below needs. Not tags:
+  // the "tag already on origin?" check right below asks `git ls-remote` directly,
+  // so `--tags` adds nothing, while a single diverged tag anywhere in the
+  // namespace would fail the fetch and abort an otherwise valid native release.
+  await git(['fetch', 'origin', 'main', '--no-tags', '--quiet']);
   if ((await git(['ls-remote', '--tags', 'origin', tag])).isNotEmpty) {
     throw Exception(
       'Tag $tag already exists on origin — this native version is already '

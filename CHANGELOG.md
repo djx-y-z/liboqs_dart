@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### For Users
+
+#### Fixed
+
+- **The Build Hook no longer re-runs on every build.** `hook/build.dart` declared
+  the `.skip_liboqs_hook` marker as a build dependency unconditionally, and
+  `hooks_runner` reports a declared file that does not exist as modified during
+  the build — so every build in a consuming project re-ran the hook instead of
+  reusing its cached result. The marker is now declared only while it exists,
+  which is the only direction that needs invalidation: when `make build` removes
+  it, the skipped result is dropped. A marker created after a full run leaves that
+  run cached, and downloading nothing is exactly what the marker asks for.
+
 ### For Contributors
 
 #### Changed
@@ -52,13 +65,14 @@
   is not the safe option but the broken one with a louder log line, and nothing
   irreversible sits behind the check: setup-fvm runs before the release archives,
   the tag and the pub.dev publish, so a release is re-run rather than broken.
-  Two latent problems
-  came out with it: the key gained `runner.arch`, because `ubuntu-latest` and
-  `ubuntu-24.04-arm` both report `runner.os == 'Linux'` and shared one key —
-  the first working save would have handed an x86-64 SDK to the ARM64 runner —
-  and `restore-keys` is gone, since a partial hit restores the previous SDK,
-  `fvm install` adds the new one beside it, and the cache would grow by ~2.5 GB
-  with every Flutter bump.
+  Two latent problems came out with it: the key gained `runner.arch`, because
+  `ubuntu-latest` and `ubuntu-24.04-arm` both report `runner.os == 'Linux'` and
+  shared one key — the first working save would have handed an x86-64 SDK to the
+  ARM64 runner — and `restore-keys` is gone, since a partial hit restores the
+  previous SDK, `fvm install` adds the new one beside it, and the cache would grow
+  by ~2.5 GB with every Flutter bump. Verified on `main`: four entries saved, one
+  per (OS, arch), 700–710 MiB each (1.2–1.3 GB unpacked), and no more
+  `Path Validation Error`.
 - **Pull requests that only touch CI ran no checks at all.** `test.yml` filtered
   on `lib/**`, `test/**` and `pubspec.yaml` (plus its own two workflow files on
   push), so a Dependabot action bump could merge unverified — #5 had to be
@@ -73,7 +87,43 @@
   bumped action really does execute; the `push` filter earns its place too,
   because PR runs may read the base branch's cache scope but never the reverse —
   without a run on `main` after each CI change, every PR's first run would start
-  from a cold FVM cache.
+  from a cold FVM cache. `hook/**`, `scripts/**` and `Makefile` joined the same
+  filters for the same reason one level down: `test/hook/build_hook_test.dart` and
+  `test/scripts/release_test.dart` cover exactly those, so a change to the Build
+  Hook or to the release scripts was the one commit its own tests never ran on.
+- **A broken liboqs update checker looked exactly like "up to date".** The
+  scheduled check ran `make check … || true`, which it has to: the checker exits 1
+  to signal "update available", and GNU make collapses any non-zero recipe status
+  into its own exit 2, so the exit code cannot tell that apart from a crash (rate
+  limit, API change, network) — an available update and a rejected `--version`
+  argument both come back as `make` exit 2. The step now gates on the artefact
+  instead — the checker writes `needs_update=` to `GITHUB_OUTPUT` before
+  signalling, and not at all when it throws — and fails the run when that line is
+  missing rather than reporting the current version as the latest forever. Both
+  paths were exercised locally through the real target. The manually dispatched
+  `target_version` is shape-checked in the workflow as well, before it is
+  interpolated into `make check ARGS=…` where a `;` would reach the recipe shell.
+- **A release could be aborted by an unrelated diverged tag.** `make release` and
+  `make release-native` fetched `origin --tags`, so a single diverged tag anywhere
+  in the namespace failed the fetch and stopped the release. Both now fetch
+  `origin main --no-tags`: the behind/ahead check needs only `origin/main`, and the
+  "tag already on origin?" check asks `git ls-remote` directly.
+- **Upstream version tags are validated on every path, not just the API
+  response.** `validateUpstreamTag` (exported and covered by
+  `test/scripts/check_updates_test.dart`) now also guards the `--version` argument
+  passed by hand and the version recorded in `pubspec.yaml` — both reach
+  `GITHUB_OUTPUT`, a branch name and a `make` recipe. Its pattern additionally
+  rejects non-canonical segments such as `0.016.0`, which the previous `\d+` groups
+  accepted.
+- **Releasing no longer leaves an empty `## [Unreleased]` behind.**
+  `finalizeChangelog` renames the heading in place, so an empty section stops
+  shipping to pub.dev with every release; the scripts that record unreleased
+  changes create the section when it is absent, and the footer `[Unreleased]:`
+  compare link — load-bearing, it carries the repo URL and the previous version —
+  is deliberately kept. Relatedly, when `## [Unreleased]` exists without a
+  `### For Users` subsection, `insertChangelogEntry` now creates one at the top of
+  the section instead of appending it below `### For Contributors`, and no longer
+  duplicates the `### For Users` heading when the section ends with one.
 
 ## [2.0.0] - 2026-07-20
 

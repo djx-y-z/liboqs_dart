@@ -49,8 +49,8 @@ make release ARGS="--version 2.1.0"
    downloads it, so releasing without it would break consumers.
 3. **Bumps** the `version:` in `pubspec.yaml`.
 4. **Finalizes the CHANGELOG** — renames `## [Unreleased]` to `## [X.Y.Z] -
-   <today>`, opens a fresh empty `## [Unreleased]`, and updates the bottom
-   compare links (`[Unreleased]` → `vX.Y.Z...HEAD` and a new `[X.Y.Z]` →
+   <today>` in place (no empty `## [Unreleased]` is left behind) and updates the
+   bottom compare links (`[Unreleased]` → `vX.Y.Z...HEAD` and a new `[X.Y.Z]` →
    `vPREV...vX.Y.Z`).
 5. **Validates** the package with `make publish-dry-run` (reverts the file
    changes and aborts if it reports errors).
@@ -78,12 +78,18 @@ from a terminal (not an IDE task runner) so the pre-commit hook
 
 ## CHANGELOG convention
 
-Between releases, changes accumulate under a `## [Unreleased]` section
-(`make update-changelog` adds one automatically for liboqs bumps; add one
-manually for other changes if it doesn't exist yet). `make release` requires
-that section and finalizes it. The `[Unreleased]` compare link at the bottom
-of the CHANGELOG must always exist — it is the single source of truth for the
-repo URL and the previous version.
+Between releases, changes accumulate under a `## [Unreleased]` section.
+Releasing consumes that section — the heading is renamed in place — so right
+after a release there is **no** `## [Unreleased]` heading: whoever records the
+next change recreates it (`make update-changelog` does it automatically for
+liboqs bumps; add it by hand for anything else). `make release` requires the
+section and fails without it, which is the intended guard: a release with
+nothing recorded is a mistake.
+
+The `[Unreleased]` compare link at the bottom of the CHANGELOG must always
+exist — it is the single source of truth for the repo URL and the previous
+version, read by `make release` and by the section-creating scripts. It stays
+even while no heading references it; do not delete it as stale.
 
 ## Choosing the version (SemVer for the Dart package)
 
@@ -127,7 +133,7 @@ make analyze && make test && make format-check
 # 2. Bump pubspec.yaml `version:` and finalize CHANGELOG.md:
 #    - rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`
 #      (for 2.0.0: the section already exists — just correct its date)
-#    - add a fresh empty `## [Unreleased]` above it
+#    - do NOT add a fresh empty `## [Unreleased]`; the next change recreates it
 #    - rewrite `[Unreleased]: .../compare/vX.Y.Z...HEAD` and add
 #      `[X.Y.Z]: .../compare/vPREV...vX.Y.Z` at the bottom
 #      (for 2.0.0: both links already exist)
