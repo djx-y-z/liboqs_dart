@@ -348,9 +348,46 @@ String _insertIntoUnreleased(
   var inForUsers = false;
   var insertedHighlights = false;
   var insertedChanged = false;
-  // Index of the `## [Unreleased]` heading within [result], so the fallback
-  // below can splice at the top of the section instead of the bottom.
+  // Index of the `## [Unreleased]` heading within [result], so a missing
+  // `### For Users` can be spliced at the top of the section, not the bottom.
   var unreleasedIdx = -1;
+  // Index of the `### For Users` heading within [result], so a missing
+  // `#### ✨ Highlights` can be spliced at the top of that block.
+  var forUsersIdx = -1;
+  // Where a missing `#### Changed` belongs: just before the first For Users
+  // subsection that follows it in the documented order. -1 until one is seen,
+  // in which case the flush falls back to the end of the block.
+  var changedAnchorIdx = -1;
+
+  // The end of what has been emitted so far, backed up over trailing blanks so
+  // an insertion there keeps the blank line separating it from what follows.
+  int trimmedEnd() {
+    var at = result.length;
+    while (at > 0 && result[at - 1].trim().isEmpty) {
+      at--;
+    }
+    return at;
+  }
+
+  // Splice whichever subsection is still missing into the existing
+  // `### For Users` block. The later index goes first: inserting at the top of
+  // the block would shift `changedAnchorIdx` out from under the second insert.
+  void flushForUsers() {
+    if (!insertedChanged) {
+      final at = changedAnchorIdx >= 0 ? changedAnchorIdx : trimmedEnd();
+      result.insertAll(at, ['', '#### Changed', '', changed]);
+      insertedChanged = true;
+    }
+    if (!insertedHighlights) {
+      result.insertAll(forUsersIdx + 1, [
+        '',
+        '#### ✨ Highlights',
+        '',
+        '- $nativeHighlight',
+      ]);
+      insertedHighlights = true;
+    }
+  }
 
   for (var i = 0; i < lines.length; i++) {
     final line = lines[i];
@@ -369,30 +406,31 @@ String _insertIntoUnreleased(
         !line.contains('Unreleased')) {
       // If we haven't inserted yet, create the structure.
       if (!insertedHighlights || !insertedChanged) {
-        final entry = <String>[
-          '',
-          '#### ✨ Highlights',
-          '',
-          '- $nativeHighlight',
-          '',
-          '#### Changed',
-          '',
-          changed,
-        ];
-        if (inForUsers) {
+        if (forUsersIdx >= 0) {
           // A `### For Users` heading exists and runs to the end of the
-          // section, so its missing subsections belong here, under it. Adding
-          // another `### For Users` would duplicate the heading.
-          result.addAll([...entry, '']);
+          // section, so only its missing subsections have to be created.
+          // Adding another `### For Users` would duplicate the heading.
+          flushForUsers();
         } else {
           // No `### For Users` anywhere in [Unreleased]. Create it at the TOP of
           // the section rather than here at the bottom: appending would file a
           // user-facing entry below every existing subsection (`### For
           // Contributors`), and every released section puts For Users first.
-          result.insertAll(unreleasedIdx + 1, ['', '### For Users', ...entry]);
+          result.insertAll(unreleasedIdx + 1, [
+            '',
+            '### For Users',
+            '',
+            '#### ✨ Highlights',
+            '',
+            '- $nativeHighlight',
+            '',
+            '#### Changed',
+            '',
+            changed,
+          ]);
+          insertedHighlights = true;
+          insertedChanged = true;
         }
-        insertedHighlights = true;
-        insertedChanged = true;
       }
       inUnreleased = false;
       inForUsers = false;
@@ -404,6 +442,7 @@ String _insertIntoUnreleased(
     if (inUnreleased && line.startsWith('### For Users')) {
       inForUsers = true;
       result.add(line);
+      forUsersIdx = result.length - 1;
       continue;
     }
 
@@ -411,19 +450,7 @@ String _insertIntoUnreleased(
     if (inForUsers && line.startsWith('### ') && !line.contains('For Users')) {
       // If we haven't inserted yet, insert before this section.
       if (!insertedHighlights || !insertedChanged) {
-        result.addAll([
-          '',
-          '#### ✨ Highlights',
-          '',
-          '- $nativeHighlight',
-          '',
-          '#### Changed',
-          '',
-          changed,
-          '',
-        ]);
-        insertedHighlights = true;
-        insertedChanged = true;
+        flushForUsers();
       }
       inForUsers = false;
       result.add(line);
@@ -443,13 +470,13 @@ String _insertIntoUnreleased(
       continue;
     }
 
-    // Check for #### Changed in For Users.
-    if (inForUsers && line.startsWith('#### Changed')) {
-      // If Highlights wasn't found, add it before Changed.
-      if (!insertedHighlights) {
-        result.addAll(['', '#### ✨ Highlights', '', '- $nativeHighlight', '']);
-        insertedHighlights = true;
-      }
+    // Check for #### Changed in For Users. Matched exactly, because
+    // `#### Changed (Breaking)` is a different subsection: filing a routine
+    // liboqs bump under it would announce it as a breaking change. A missing
+    // `#### ✨ Highlights` is NOT created here — the flush puts it at the top
+    // of the block, which is where the documented order wants it even when
+    // `#### Changed` is preceded by the breaking one.
+    if (inForUsers && line.trimRight() == '#### Changed') {
       result.addAll([line, '', changed]);
       insertedChanged = true;
       // Skip the next empty line if present.
@@ -457,6 +484,18 @@ String _insertIntoUnreleased(
         i++;
       }
       continue;
+    }
+
+    // Any other `####` heading inside For Users (`#### Security`,
+    // `#### Fixed`, …) follows `#### Changed` in the documented order, so a
+    // `#### Changed` that has to be created belongs just before the first of
+    // them. `#### Changed (Breaking)` precedes it and so does not anchor.
+    if (inForUsers &&
+        !insertedChanged &&
+        changedAnchorIdx < 0 &&
+        line.startsWith('#### ') &&
+        !line.startsWith('#### Changed (')) {
+      changedAnchorIdx = trimmedEnd();
     }
 
     result.add(line);

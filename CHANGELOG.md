@@ -49,6 +49,22 @@
 
 #### Fixed
 
+- **A liboqs bump was filed under `#### Changed (Breaking)`, and filed twice.**
+  `insertChangelogEntry` matched the target subsection with
+  `line.startsWith('#### Changed')`, which also matches
+  `#### Changed (Breaking)`. Because the branch fires once per matching heading,
+  an `[Unreleased]` section carrying both subsections — the shape this
+  CHANGELOG's 2.0.0 section already has — got the routine dependency bump
+  announced as a breaking change *and* repeated under the real `#### Changed`.
+  When only the breaking variant was present, `#### Changed` was never created
+  at all. The heading is now matched exactly, and a `#### Changed` that has to
+  be created is anchored just before the first subsection that follows it in the
+  documented order (`#### Security`, `#### Fixed`, …) instead of being appended
+  below them. Missing `#### ✨ Highlights` likewise moves to the top of the
+  `### For Users` block rather than wherever the scan happened to be. Backported
+  from the copier template, whose generated projects share this script; the two
+  failure shapes are now covered in `test/scripts/release_test.dart`, which had
+  no case with a breaking subsection present.
 - **The FVM cache in CI never saved anything.** `setup-fvm` cached `~/.fvm`, but
   `.fvm` is FVM's *project-local* directory name — installed SDKs live in
   `$HOME/fvm/versions` (`fvmDir = cachePath ?? $HOME/fvm` in FVM 4.x). That path
