@@ -1,4 +1,4 @@
-## [Unreleased]
+## [2.1.0] - 2026-08-01
 
 ### For Users
 
@@ -639,7 +639,8 @@ See the full [liboqs 0.16.0 release notes](https://github.com/open-quantum-safe/
 - Secret keys are automatically zeroed before memory is freed
 - Based on liboqs 0.15.0 with NIST-standardized algorithms (FIPS 203, 204, 205)
 
-[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/djx-y-z/liboqs_dart/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/djx-y-z/liboqs_dart/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.1...v2.0.0
 [1.2.1]: https://github.com/djx-y-z/liboqs_dart/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/djx-y-z/liboqs_dart/compare/v1.1.3...v1.2.0
