@@ -84,6 +84,18 @@ jobs:
         run: make check-targets
         shell: bash
 
+      # The notice inventory is derived from the liboqs sources at the pinned
+      # liboqs.native_version, so a version bump invalidates it. Verified once,
+      # on Linux x86_64: the generator reads the source tree rather than a
+      # configured build, so its output does not depend on the host — which is
+      # the whole reason a byte-exact comparison is possible here at all. The
+      # step clones liboqs (~80 MB, shallow) and so needs network, which every
+      # other step in this job already does.
+      - name: Verify third-party notices
+        if: matrix.name == 'Linux x86_64'
+        run: make verify-third-party-notices
+        shell: bash
+
       # Run tests without coverage (non-Linux or coverage disabled)
       - name: Run tests
         if: matrix.coverage == false || !inputs.run-coverage
@@ -104,7 +116,7 @@ jobs:
         id: coverage
         run: |
           COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | sed 's/.*: //' | sed 's/%.*//')
-          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "percentage=$COVERAGE" >> "$GITHUB_OUTPUT"
           echo "Coverage: $COVERAGE%"
 
   # ============================================

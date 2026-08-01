@@ -73,11 +73,14 @@ jobs:
       full_version: ${{ steps.check.outputs.full_version }}
       skip: ${{ steps.check.outputs.skip }}
     steps:
+      # `client-id` fed from `vars.APP_ID`: see the note in
+      # check-liboqs-updates.yml — the action accepts either value in that claim,
+      # so only the deprecated input key changes, not the variable.
       - name: Generate GitHub App Token
         id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v7
@@ -105,6 +108,16 @@ jobs:
             exit 1
           fi
           echo "Tag matches pubspec version: $EXPECTED_TAG"
+
+      # Every archive built below carries THIRD_PARTY_NOTICES.txt, so the
+      # committed copy has to match the liboqs version those binaries are built
+      # from. `make release-native` checks this too, but a tag pushed by hand
+      # does not go through it — and a published release cannot be taken back.
+      # Checked here rather than at archive time so a stale inventory fails in a
+      # minute instead of after the whole build matrix.
+      - name: Verify third-party notices
+        if: steps.check.outputs.skip != 'true'
+        run: make verify-third-party-notices
 
   # ============================================
   # Linux (x86_64 + arm64 on separate runners)
@@ -239,7 +252,7 @@ jobs:
       - name: Install NDK
         run: |
           sdkmanager --install "ndk;26.3.11579264"
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> "$GITHUB_ENV"
 
       - name: Build liboqs for Android ${{ matrix.abi }}
         run: make build ARGS="android --abi ${{ matrix.abi }}"
@@ -321,42 +334,54 @@ jobs:
           FULL_VERSION=${{ env.FULL_VERSION }}
           mkdir -p release-archives
 
+          # Every archive distributes a binary compiled from the liboqs sources,
+          # so it has to carry liboqs' own licence plus the attribution for the
+          # third-party code compiled into it. THIRD_PARTY_NOTICES.txt was
+          # checked against the pinned liboqs version by the read-version job
+          # before any of these binaries were built, so the committed copy is
+          # authoritative here. Adding members is safe for consumers: the Build
+          # Hook extracts each archive whole and only asserts that the library
+          # file is present.
+          for dir in artifacts/*/; do
+            cp LICENSE.liboqs THIRD_PARTY_NOTICES.txt "$dir"
+          done
+
           # Linux x86_64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-linux-x86_64.tar.gz \
-            -C artifacts/liboqs-linux-x86_64 liboqs.so
+            -C artifacts/liboqs-linux-x86_64 liboqs.so LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # Linux arm64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-linux-arm64.tar.gz \
-            -C artifacts/liboqs-linux-arm64 liboqs.so
+            -C artifacts/liboqs-linux-arm64 liboqs.so LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # macOS arm64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-macos-arm64.tar.gz \
-            -C artifacts/liboqs-macos-arm64 liboqs.dylib
+            -C artifacts/liboqs-macos-arm64 liboqs.dylib LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # macOS x86_64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-macos-x86_64.tar.gz \
-            -C artifacts/liboqs-macos-x86_64 liboqs.dylib
+            -C artifacts/liboqs-macos-x86_64 liboqs.dylib LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # Windows x86_64 (zip format)
-          cd artifacts/liboqs-windows-x86_64 && zip ../../release-archives/liboqs-${FULL_VERSION}-windows-x86_64.zip oqs.dll && cd ../..
+          cd artifacts/liboqs-windows-x86_64 && zip ../../release-archives/liboqs-${FULL_VERSION}-windows-x86_64.zip oqs.dll LICENSE.liboqs THIRD_PARTY_NOTICES.txt && cd ../..
 
           # Android ABIs
           for abi in arm64-v8a armeabi-v7a x86_64; do
             tar -czvf release-archives/liboqs-${FULL_VERSION}-android-${abi}.tar.gz \
-              -C artifacts/liboqs-android-${abi} liboqs.so
+              -C artifacts/liboqs-android-${abi} liboqs.so LICENSE.liboqs THIRD_PARTY_NOTICES.txt
           done
 
           # iOS device arm64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-ios-device-arm64.tar.gz \
-            -C artifacts/liboqs-ios-device-arm64 liboqs.dylib
+            -C artifacts/liboqs-ios-device-arm64 liboqs.dylib LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # iOS simulator arm64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-ios-simulator-arm64.tar.gz \
-            -C artifacts/liboqs-ios-simulator-arm64 liboqs.dylib
+            -C artifacts/liboqs-ios-simulator-arm64 liboqs.dylib LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # iOS simulator x86_64
           tar -czvf release-archives/liboqs-${FULL_VERSION}-ios-simulator-x86_64.tar.gz \
-            -C artifacts/liboqs-ios-simulator-x86_64 liboqs.dylib
+            -C artifacts/liboqs-ios-simulator-x86_64 liboqs.dylib LICENSE.liboqs THIRD_PARTY_NOTICES.txt
 
           # Generate SHA256 checksums
           cd release-archives

@@ -1,0 +1,31 @@
+# actionlint configuration. Run it with `make lint-workflows`.
+
+# Empty on purpose: every runner this repo uses — including `ubuntu-24.04-arm`
+# and `macos-15-intel` — is in actionlint's built-in label list, verified against
+# the pinned version. Declaring them here would hide a genuine typo in a label.
+self-hosted-runner:
+  labels: []
+
+# Off by default, and free to turn on: with this list set, actionlint reports a
+# `vars.*` reference that is not in it. A misspelled repository variable
+# otherwise expands to the empty string and fails at runtime, deep inside a
+# release. Every new repository variable has to be added here.
+config-variables:
+  - APP_ID
+  - COVERAGE_GIST_ID
+
+paths:
+  .github/workflows/**/*.yml:
+    ignore:
+      # actionlint ships a snapshot of popular actions' metadata, and this
+      # version's predates `actions/create-github-app-token` v3.1.0, which added
+      # `client-id` and marked `app-id` deprecated (and not required). The
+      # workflows are correct and actionlint is out of date; drop these two
+      # entries when the bundled snapshot catches up.
+      #
+      # Worth knowing about the same mechanism in the other direction: on an
+      # action ref the snapshot does NOT know, actionlint silently disables
+      # these checks rather than reporting anything. That is why the reference
+      # pins are resolved separately, by `make check-action-pins`.
+      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
+      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'

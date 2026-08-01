@@ -365,6 +365,53 @@ make build ARGS="all"
 
 For more details, see `scripts/README.md`.
 
+### Third-Party Notices
+
+The native library is compiled from the liboqs sources, which vendor code under
+licences other than liboqs' own MIT. `THIRD_PARTY_NOTICES.txt` records what that
+code is and reproduces the notices those licences require. It is generated, so
+never edit it by hand:
+
+```bash
+make third-party-notices          # regenerate (clones liboqs at the pinned version)
+make verify-third-party-notices   # verify the committed copy matches
+```
+
+The verify step runs in CI, before the native build, and in both release
+preflights, and compares byte for byte. If it fails, the message names the first
+differing line; regenerate and commit the result.
+
+Two things make this more than a directory walk, and are worth knowing before you
+change the generator:
+
+- **Most sources have no licence file of their own.** 2532 of the 5957 sources
+  under `src/` — 43% — have no LICENSE anywhere between them and the repository
+  root, so each
+  source is resolved through its own SPDX tag first, then the nearest licence
+  file, then `docs/algorithms/<class>/<family>.yml`, then an explicit override.
+  A source matched by none of the four is a hard error — that is deliberate, and
+  it is what makes a liboqs upgrade that vendors a new licence stop and ask for
+  a person.
+- **Upstream data is not uniform.** Two files carry mangled SPDX tags, one file
+  inside the Keccak tree is under a licence with no SPDX identifier at all, and
+  two algorithms state their licence only in `docs/algorithms/`. The generator
+  encodes each of these with the evidence for it; see
+  `scripts/src/third_party_notices.dart`.
+
+### Pins Dependabot Cannot See
+
+Two versions in CI are pinned by hand, because they are not declared in any
+manifest Dependabot scans. Both need a deliberate bump and a look at what it
+changes:
+
+- **`fvm-version` in `.github/actions/setup-fvm/action.yml`** — installed with
+  `dart pub global activate`, which is not a manifest. The action hardcodes where
+  FVM stores SDKs, and a guard step fails the job if they land elsewhere, so after
+  a bump confirm the new FVM still resolves its cache to `$FVM_CACHE_PATH/versions`.
+- **`ACTIONLINT_VERSION` in the `Makefile`** — pinned by version *and* SHA256,
+  because GitHub release assets are mutable. Take the new checksums from the
+  `actionlint_<version>_checksums.txt` asset of the release you are moving to.
+
 ## Security Considerations
 
 This is a **cryptographic library**. Security is paramount.

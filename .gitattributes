@@ -1,0 +1,15 @@
+# THIRD_PARTY_NOTICES.txt is generated and then compared byte for byte by
+# `make verify-third-party-notices`, so git has to round-trip it unchanged.
+#
+# `-text` rather than `text eol=lf`, for two reasons. The first applies today:
+# under git's text handling a checkout with `core.autocrlf=true` — the Windows
+# default — materialises LF as CRLF, so the committed file would never match a
+# freshly generated one on a Windows contributor's machine while passing
+# everywhere else. The second is insurance: the file embeds third-party licence
+# texts verbatim, and `text eol=lf` would strip CRs on the way into the blob, so
+# a future liboqs vendoring a CRLF licence text would break the check on every
+# clean checkout. (Checked against liboqs 0.16.0: none of its 153 licence files
+# carries CRLF today, so only the first reason is live.)
+#
+# `-text` disables end-of-line conversion in both directions and covers both.
+THIRD_PARTY_NOTICES.txt -text

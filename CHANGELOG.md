@@ -2,6 +2,29 @@
 
 ### For Users
 
+#### Added
+
+- **`THIRD_PARTY_NOTICES.txt` — attribution for the code inside the native
+  library.** liboqs is MIT "in general", and its own `LICENSE.txt` says the rest
+  out loud: "liboqs includes some third party libraries or modules that are
+  licensed differently; the corresponding subfolder contains the license that
+  applies in that case." This package was shipping a compiled binary containing
+  that code while carrying only the top-level MIT — so the notices Apache-2.0,
+  BSD-3-Clause and the various public-domain dedications require were not
+  travelling with it. Flutter's `LicenseRegistry` does not close this: it
+  collects LICENSE files of pub packages, not of C code compiled into a native
+  library. The file now ships at the root of the package and inside every native
+  release archive, and the README explains how to surface it in an app.
+
+  Two findings from building it are worth stating, because they are what the
+  inventory is actually for. `src/common/common.c` is `Apache-2.0 AND MIT` — a
+  conjunction, not a choice — and it is linked into all eleven artifacts, so
+  Apache-2.0's terms bind every binary this package ships. And one file in the
+  Keccak tree, `KeccakP-1600-AVX2.S`, is under the CRYPTOGAMS licence rather
+  than the CC0 waiver the directory around it carries; it has no SPDX identifier
+  and no licence file, so nothing short of reading the header would have found
+  it.
+
 #### Fixed
 
 - **The Build Hook no longer re-runs on every build.** `hook/build.dart` declared
@@ -15,8 +38,50 @@
 
 ### For Contributors
 
+#### Added
+
+- **`make third-party-notices` / `make verify-third-party-notices`** generate and
+  check the notice inventory. The generator resolves each liboqs source through
+  its own SPDX tag, then the nearest licence file, then
+  `docs/algorithms/<class>/<family>.yml`, then an explicit override — and fails
+  on a source matched by none of them, so a liboqs release that vendors an
+  unfamiliar licence stops for a person instead of being filed under MIT.
+  A single walk up to the nearest LICENSE, which is the obvious implementation,
+  would have been wrong about 43% of the sources: 2532 of the 5957 files under
+  `src/` have no licence file anywhere between them and the repository root. Verification is byte-exact
+  and runs in the test workflow, before the native build, and in both release
+  preflights; `.gitattributes` marks the file `-text` so a clean checkout
+  materialises the same bytes the generator wrote.
+
+  The inventory covers the whole liboqs tree minus `src/sig_stfl/`, which is not
+  a shortcut: the union of the real link lines across all eleven shipped
+  artifacts implicates 151 of the tree's 153 licence files, and the two it omits
+  are exactly the stateful-signature ones. Deriving it from the sources rather
+  than from a configured build is what lets the check be byte-exact at all — an
+  inventory built from CMake would depend on whether the host had Xcode and an
+  NDK.
+- **`make lint-workflows` and `make check-action-pins`** run in CI as one fast
+  job, covering the two workflows nothing else touches before a release.
+  actionlint reads the workflows statically — expressions, `needs`/`steps`
+  references, runner labels, the reusable-workflow contract, and shellcheck over
+  every `run:` block — and is pinned by version *and* SHA256, because release
+  assets are mutable. `check-action-pins` resolves every third-party `uses:`
+  against the GitHub API, which actionlint cannot do: it is entirely offline, and
+  on an action ref its bundled snapshot does not recognise it silently switches
+  its checks off rather than reporting one, so a fabricated `@v999` or a made-up
+  40-character SHA passes it without a word. Adopting actionlint also required
+  suppressing two of its findings in `.github/actionlint.yaml` — its snapshot
+  predates `create-github-app-token`'s `client-id`, so it is wrong about the very
+  change made above.
+
 #### Changed
 
+- **Quoted every `>> "$GITHUB_OUTPUT"`-style redirect** across the workflows and
+  the `setup-fvm` composite action, and grouped the three step-summary blocks
+  into a single redirect. All 25 were shellcheck `SC2086` findings surfaced by
+  the new lint job. None could actually misbehave — GitHub sets those paths to
+  space-free values — but they are fixed rather than suppressed, so the rule stays
+  live to catch a word-splitting bug that would matter.
 - **GitHub Actions moved to their current majors** — `actions/checkout` v4→v7,
   `actions/upload-artifact` v4→v7, `actions/download-artifact` v4→v8,
   `actions/cache` v4→v6, `actions/create-github-app-token` v2→v3,
@@ -33,6 +98,17 @@
   circuits before it can apply. Artifact layout is unchanged: v5's breaking path
   fix only covers single downloads by `artifact-ids`, while `create-release`
   downloads every artifact by name into `artifacts/<name>/`.
+- **`create-github-app-token` is called with `client-id`** — the v2→v3 bump above
+  made every run that mints an App token annotate `Input 'app-id' has been
+  deprecated with message: Use 'client-id' instead.` The rename is the entire
+  change: the action collapses `client-id || app-id` into a single value and
+  passes it as the JWT `iss` claim, and GitHub has accepted either the numeric
+  App ID or the `Iv23…` client ID there since May 2024 — so `vars.APP_ID` keeps
+  both its name and its value, and no repository variable had to be created.
+  `app-id` is deprecated by annotation only, with no removal scheduled, so this
+  is cosmetic; it is worth doing because the warning was otherwise printed by
+  `check-liboqs-updates.yml` on every daily run and by `build-liboqs.yml` on
+  every native release.
 - **Dependabot branches are exempt from the branch rulesets** — `Signing commit`
   applies `non_fast_forward` to `~ALL` branches with no bypass actors, so
   Dependabot, which refreshes an open PR by force-pushing a rewritten commit,
