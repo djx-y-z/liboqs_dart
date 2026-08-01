@@ -25,6 +25,12 @@ on:
   # test/scripts/release_test.dart — and because `make` is how every check is
   # invoked: a change to the Build Hook, to the release/update scripts, or to a
   # Makefile target would otherwise be the one commit its own tests do not run on.
+  #
+  # 'THIRD_PARTY_NOTICES.txt' and '.gitattributes' carry `make
+  # verify-third-party-notices`: the notices file is what that check compares,
+  # and .gitattributes decides which bytes a checkout materialises for it. Without
+  # them, the one commit able to break — or repair — that check would be the one
+  # commit that never runs it.
   push:
     branches: [main]
     paths:
@@ -34,6 +40,8 @@ on:
       - 'scripts/**'
       - 'Makefile'
       - 'pubspec.yaml'
+      - 'THIRD_PARTY_NOTICES.txt'
+      - '.gitattributes'
       - '.github/**'
   pull_request:
     paths:
@@ -43,6 +51,8 @@ on:
       - 'scripts/**'
       - 'Makefile'
       - 'pubspec.yaml'
+      - 'THIRD_PARTY_NOTICES.txt'
+      - '.gitattributes'
       - '.github/**'
   workflow_run:
     workflows: ["Build liboqs Native Libraries"]
@@ -74,3 +84,37 @@ jobs:
       update-badge: ${{ github.ref == 'refs/heads/main' }}
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+
+  # publish.yml and build-liboqs.yml only ever execute during a release, so
+  # nothing else looks at them beforehand. These two checks are what stands in
+  # for that, and they cover different halves: actionlint reads the workflows
+  # statically (expressions, needs/steps references, runner labels, the
+  # reusable-workflow contract, and shellcheck over every `run:` block), while
+  # check-action-pins resolves each third-party `uses:` against the GitHub API.
+  # Neither substitutes for the other — actionlint is entirely offline and
+  # silently disables its action checks on a ref its bundled snapshot does not
+  # know, so a fabricated version or SHA passes it without a word.
+  lint-workflows:
+    name: Lint workflows
+    # Deliberately not carrying the `update-liboqs-` skip the test job has: that
+    # exists because those PRs raise native_version before the libraries exist,
+    # which has nothing to do with linting YAML. Dependabot's action bumps must
+    # be linted — they are much of the reason this job exists. A workflow_run
+    # re-run would only re-lint an unchanged main.
+    if: github.event_name != 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup FVM and Flutter
+        uses: ./.github/actions/setup-fvm
+
+      # shellcheck is preinstalled on the ubuntu runner image; actionlint picks
+      # it up off PATH and lints every `run:` block with it.
+      - name: Lint workflows
+        run: make lint-workflows
+
+      - name: Check action pins resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: make check-action-pins

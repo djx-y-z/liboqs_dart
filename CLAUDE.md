@@ -29,6 +29,10 @@ make build macos --arch arm64  # make interprets --arch as its own flag!
 | Strict analysis | `make analyze ARGS="--fatal-infos"` |
 | Format code | `make format` |
 | Check deployment targets (iOS/macOS) | `make check-targets` |
+| Regenerate third-party notices | `make third-party-notices` |
+| Verify third-party notices | `make verify-third-party-notices` |
+| Lint GitHub Actions workflows | `make lint-workflows` |
+| Verify every action pin resolves | `make check-action-pins` |
 | Generate documentation | `make doc` |
 | Regenerate FFI bindings | `make regen` |
 | Check for updates | `make check` |
@@ -85,7 +89,16 @@ make format                              # Format Dart code
 make format-check                        # Check formatting without changes
 make check-targets                       # Check iOS/macOS deployment target consistency
 make check-targets ARGS="--update"       # Fix deployment target drift in-place
+make third-party-notices                 # Regenerate THIRD_PARTY_NOTICES.txt from the liboqs sources
+make verify-third-party-notices          # Verify the committed notices match (byte-exact)
+make lint-workflows                      # actionlint + shellcheck over .github/workflows
+make check-action-pins                   # Resolve every third-party `uses:` via the GitHub API
 ```
+
+**Note:** `THIRD_PARTY_NOTICES.txt` is generated — never edit it by hand. It is
+regenerated after every liboqs version bump (the update PR does this
+automatically) and verified in CI, before the native build, and in both release
+preflights.
 
 ### Utilities
 ```bash

@@ -251,6 +251,37 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 The bundled liboqs library is also licensed under MIT - see [LICENSE.liboqs](LICENSE.liboqs) for the Open Quantum Safe project license.
 
+### Third-party notices
+
+liboqs is MIT "in general", but it vendors code from many upstream projects under
+other licences — Apache-2.0, BSD-3-Clause, CC0-1.0, public-domain dedications and
+more — and that code is compiled into the native library this package ships. Those
+licences require their notices to travel with a binary distribution, and Flutter's
+`LicenseRegistry` does not cover them: it collects the LICENSE files of pub
+packages, not of C code inside a native library.
+
+[`THIRD_PARTY_NOTICES.txt`](THIRD_PARTY_NOTICES.txt) is that inventory. It ships at
+the root of this package **and inside every native release archive**. It is
+generated from the liboqs sources at the pinned `liboqs.native_version`, and CI
+verifies the committed copy still matches them.
+
+The file is deliberately **not** declared as a Flutter asset — a package-declared
+asset is bundled into every consuming app whether it is used or not. To surface the
+notices in your own app, copy the file into your assets and register it:
+
+```yaml
+flutter:
+  assets:
+    - assets/THIRD_PARTY_NOTICES.txt
+```
+
+```dart
+LicenseRegistry.addLicense(() async* {
+  final text = await rootBundle.loadString('assets/THIRD_PARTY_NOTICES.txt');
+  yield LicenseEntryWithLineBreaks(const ['liboqs'], text);
+});
+```
+
 ## Related Projects
 
 - [liboqs](https://github.com/open-quantum-safe/liboqs) - The underlying C library

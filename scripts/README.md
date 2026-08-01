@@ -51,6 +51,8 @@ fvm dart run scripts/build.dart windows
 | `release_native.dart` | Release the native libraries: signed tag `liboqs-<fullVersion>`, push — triggers the CI build (`make release-native`) |
 | `release.dart` | Release the Dart package: bump, finalize CHANGELOG, tag, push (`make release`) |
 | `setup_repo_protections.dart` | Apply `.github/rulesets/*.json` + the `native-build` environment to GitHub (`make setup-repo-protections`) |
+| `generate_third_party_notices.dart` | Generate or verify `THIRD_PARTY_NOTICES.txt` from the liboqs sources (`make third-party-notices`, `make verify-third-party-notices`) |
+| `check_action_pins.dart` | Resolve every third-party `uses:` in `.github` against the GitHub API (`make check-action-pins`) |
 
 ## Build Commands
 

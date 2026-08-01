@@ -15,6 +15,7 @@ library;
 
 import 'common.dart';
 import 'release_common.dart';
+import 'third_party_notices.dart';
 
 /// Creates and pushes the signed tag `liboqs-<fullVersion>` for the version
 /// currently in pubspec.yaml, which triggers the native build workflow.
@@ -48,6 +49,12 @@ Future<void> releaseNative({
       'Working tree is not clean. Commit or stash changes first.',
     );
   }
+
+  // Every archive built from this tag embeds THIRD_PARTY_NOTICES.txt, and a
+  // pushed release tag cannot be taken back. The build workflow checks this too,
+  // but failing here costs seconds instead of a whole build matrix.
+  logStep('Verifying third-party notices match the pinned liboqs sources...');
+  await assertNoticesCurrent();
 
   final version = getLiboqsVersion();
   final build = getNativeBuild();

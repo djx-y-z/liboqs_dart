@@ -34,11 +34,16 @@ jobs:
       contents: read
 
     steps:
+      # `client-id` fed from `vars.APP_ID` is not a mismatch: the action collapses
+      # `client-id || app-id` into one value and passes it as the JWT `iss` claim,
+      # which GitHub accepts as either the numeric App ID or the `Iv23…` client ID.
+      # So the variable keeps its name and value; only the deprecated input key
+      # changes. Same edit in build-liboqs.yml — keep both in sync.
       - name: Generate GitHub App Token
         id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v7
@@ -90,7 +95,7 @@ jobs:
           fi
 
           echo "Check completed. Outputs:"
-          cat $GITHUB_OUTPUT || true
+          cat "$GITHUB_OUTPUT" || true
 
       # Idempotency gate: if an open update PR for this exact version already
       # exists, do nothing. peter-evans/create-pull-request force-pushes the PR
@@ -108,10 +113,10 @@ jobs:
           BRANCH="update-liboqs-${LATEST_VERSION}"
           OPEN_PRS=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
           if [ "$OPEN_PRS" != "0" ] && [ "$FORCE_UPDATE" != "true" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Open update PR for branch $BRANCH already exists — skipping to avoid force-pushing over it."
           else
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Update pubspec.yaml
@@ -140,6 +145,29 @@ jobs:
           echo "Running: make check ARGS=\"$ARGS\""
           make check ARGS="$ARGS"
 
+      # The notice inventory is derived from the liboqs sources at
+      # liboqs.native_version, so the bump above invalidates it. Regenerated
+      # here because this is the only place it can be: test.yml deliberately
+      # skips `update-liboqs-*` branches (they raise the version before the
+      # native libraries exist), so the verify step never runs on this PR and
+      # would otherwise first fail on main after the merge.
+      #
+      # Not fatal on its own: a failure here still leaves a reviewable PR, and
+      # the notice says what to run. It is a hard gate before the native build
+      # and before either release, which is where a stale file would matter.
+      - name: Regenerate third-party notices
+        if: steps.check.outputs.needs_update == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          if ! make third-party-notices; then
+            echo "::warning::THIRD_PARTY_NOTICES.txt is now STALE: it still describes the previous liboqs version. The generator failed above — most likely this liboqs release vendors a licence it does not recognise, which is deliberate and needs a person. Run 'make third-party-notices' on this branch and read the error. Do NOT merge as-is: the native build and both releases refuse a stale inventory, and the failure will surface two workflows away from this one."
+            {
+              echo "## Third-party notices are stale"
+              echo ""
+              echo "\`THIRD_PARTY_NOTICES.txt\` could not be regenerated for this bump and still describes the previous liboqs version."
+              echo "Run \`make third-party-notices\` on this branch and read the error before merging."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       # Records the liboqs dependency change in the CHANGELOG (Highlights +
       # Changed entry under [Unreleased]) so the update PR ships with a draft
       # entry for the maintainer to review. Does NOT bump the Dart package
@@ -154,9 +182,9 @@ jobs:
           CURRENT_VERSION: ${{ steps.check.outputs.current_version }}
         run: |
           if make update-changelog ARGS="--version $LATEST_VERSION --from $CURRENT_VERSION --ci"; then
-            echo "success=true" >> $GITHUB_OUTPUT
+            echo "success=true" >> "$GITHUB_OUTPUT"
           else
-            echo "success=false" >> $GITHUB_OUTPUT
+            echo "success=false" >> "$GITHUB_OUTPUT"
             echo "::warning::AI changelog update failed. Please update CHANGELOG.md manually."
           fi
 
@@ -200,16 +228,24 @@ jobs:
                [![liboqs](https://img.shields.io/badge/liboqs-${{ steps.check.outputs.latest_version }}-blue.svg)](https://github.com/open-quantum-safe/liboqs)
                ```
 
-            3. **Review the CHANGELOG entry** — this PR includes an
+            3. **Check `THIRD_PARTY_NOTICES.txt`** — this PR regenerates it for
+               the new liboqs sources. Review the diff: a new or changed licence
+               there is a real change in what the shipped binary contains. If the
+               step failed, run it yourself:
+               ```bash
+               make third-party-notices
+               ```
+
+            4. **Review the CHANGELOG entry** — this PR includes an
                AI-generated `[Unreleased]` entry (when generation succeeded);
                verify it against the upstream release notes and edit as needed
 
-            4. **Run tests to verify:**
+            5. **Run tests to verify:**
                ```bash
                make test
                ```
 
-            5. **Commit and push to this branch:**
+            6. **Commit and push to this branch:**
                ```bash
                git add .
                git commit -m "chore: regenerate bindings and update docs for liboqs ${{ steps.check.outputs.latest_version }}"
@@ -247,23 +283,25 @@ jobs:
           NEEDS_UPDATE: ${{ steps.check.outputs.needs_update }}
           SKIP_EXISTING: ${{ steps.existing.outputs.skip }}
         run: |
-          if [ "$SKIP_EXISTING" = "true" ]; then
-            echo "## Update PR Already Open" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "An open PR for **$LATEST_VERSION** already exists — nothing to do." >> $GITHUB_STEP_SUMMARY
-            echo "Re-run with \`force_update\` to regenerate it (this force-pushes the PR branch)." >> $GITHUB_STEP_SUMMARY
-          elif [ "$NEEDS_UPDATE" = "true" ]; then
-            echo "## Update Available" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Current liboqs | $CURRENT_VERSION |" >> $GITHUB_STEP_SUMMARY
-            echo "| New liboqs | $LATEST_VERSION |" >> $GITHUB_STEP_SUMMARY
-            echo "| Pre-release | $IS_PRERELEASE |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "A pull request has been created for review." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## Up to Date" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Current version **$CURRENT_VERSION** is the latest." >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            if [ "$SKIP_EXISTING" = "true" ]; then
+              echo "## Update PR Already Open"
+              echo ""
+              echo "An open PR for **$LATEST_VERSION** already exists — nothing to do."
+              echo "Re-run with \`force_update\` to regenerate it (this force-pushes the PR branch)."
+            elif [ "$NEEDS_UPDATE" = "true" ]; then
+              echo "## Update Available"
+              echo ""
+              echo "| Property | Value |"
+              echo "|----------|-------|"
+              echo "| Current liboqs | $CURRENT_VERSION |"
+              echo "| New liboqs | $LATEST_VERSION |"
+              echo "| Pre-release | $IS_PRERELEASE |"
+              echo ""
+              echo "A pull request has been created for review."
+            else
+              echo "## Up to Date"
+              echo ""
+              echo "Current version **$CURRENT_VERSION** is the latest."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

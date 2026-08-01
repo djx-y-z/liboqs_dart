@@ -19,6 +19,7 @@ import 'dart:io';
 
 import 'common.dart';
 import 'release_common.dart';
+import 'third_party_notices.dart';
 
 /// Cut a Dart package release for [version] (plain `X.Y.Z`).
 ///
@@ -72,6 +73,14 @@ Future<void> releasePackage({
   if ((await git(['tag', '--list', tag])).isNotEmpty) {
     throw Exception('Tag $tag already exists locally.');
   }
+
+  // THIRD_PARTY_NOTICES.txt ships inside the published package, and a pub.dev
+  // version cannot be replaced once published. Checked here rather than trusting
+  // the last CI run, which may predate a local change to the generator. Placed
+  // after the checks above because it clones liboqs: a mistyped version should
+  // fail instantly rather than after a download.
+  logStep('Verifying third-party notices match the pinned liboqs sources...');
+  await assertNoticesCurrent();
 
   logStep('Fetching origin...');
   // Fetch only origin/main — all the behind/ahead check below needs. Not tags:

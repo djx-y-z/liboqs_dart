@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="windows" FVM="cmd //c fvm"
 
-.PHONY: help setup setup-repo-protections build regen check combine test coverage analyze format format-check get clean version get-version get-build get-full-version check-release doc publish publish-dry-run update-changelog release release-native
+.PHONY: help setup setup-repo-protections build regen check combine test coverage analyze format format-check check-targets third-party-notices verify-third-party-notices check-action-pins lint-workflows get clean version get-version get-build get-full-version check-release doc publish publish-dry-run update-changelog release release-native
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -56,6 +56,10 @@ help:
 	@echo "    make format-check                 - Check Dart code formatting"
 	@echo "    make check-targets                - Check deployment target consistency (iOS/macOS)"
 	@echo "                                        Example: make check-targets ARGS=\"--update\""
+	@echo "    make third-party-notices          - Regenerate THIRD_PARTY_NOTICES.txt from the liboqs sources"
+	@echo "    make verify-third-party-notices   - Verify THIRD_PARTY_NOTICES.txt is up to date"
+	@echo "    make lint-workflows               - Lint GitHub Actions workflows (actionlint + shellcheck)"
+	@echo "    make check-action-pins            - Verify every third-party action ref exists (needs gh)"
 	@echo "    make doc                          - Generate API documentation"
 	@echo ""
 	@echo "  PUBLISHING"
@@ -150,6 +154,80 @@ format-check:
 
 check-targets:
 	@$(FVM) dart scripts/check_deployment_targets.dart $(ARGS)
+
+# Regenerate the third-party notice inventory for the shipped native library.
+# Run after every liboqs version bump; CI verifies the committed file matches
+# the pinned sources, and both release stages refuse to proceed without it.
+third-party-notices:
+	@$(FVM) dart scripts/generate_third_party_notices.dart $(ARGS)
+
+verify-third-party-notices:
+	@$(FVM) dart scripts/generate_third_party_notices.dart --check
+
+# Resolve every third-party `uses:` in .github against the GitHub API. This is
+# the check actionlint cannot do: it is offline, and on a ref its bundled
+# snapshot does not know it silently turns its checks off rather than reporting
+# one. publish.yml and build-liboqs.yml never run outside a release, so without
+# this a typo in either surfaces mid-release.
+check-action-pins:
+	@$(FVM) dart scripts/check_action_pins.dart $(ARGS)
+
+# actionlint — static checks over .github/workflows: YAML schema, ${{ }}
+# expression types, runner labels, action and reusable-workflow input contracts,
+# and shellcheck over every `run:` block. Pinned by version AND SHA256, because
+# GitHub release assets are mutable and the checksum is the real lock (same rule
+# as .github/actions/setup-make). Dependabot cannot see this pin — see
+# CONTRIBUTING.md, "Pins Dependabot Cannot See".
+ACTIONLINT_VERSION ?= 1.7.12
+ACTIONLINT_OS   := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ACTIONLINT_ARCH := $(shell uname -m | sed -e 's/^x86_64$$/amd64/' -e 's/^aarch64$$/arm64/')
+ACTIONLINT_BIN  := build/tools/actionlint-$(ACTIONLINT_VERSION)
+
+ACTIONLINT_SHA256_darwin_arm64 := aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f
+ACTIONLINT_SHA256_darwin_amd64 := 5b44c3bc2255115c9b69e30efc0fecdf498fdb63c5d58e17084fd5f16324c644
+ACTIONLINT_SHA256_linux_amd64  := 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+ACTIONLINT_SHA256_linux_arm64  := 325e971b6ba9bfa504672e29be93c24981eeb1c07576d730e9f7c8805afff0c6
+ACTIONLINT_SHA256 := $(ACTIONLINT_SHA256_$(ACTIONLINT_OS)_$(ACTIONLINT_ARCH))
+
+# Hard-fails without shellcheck rather than running: actionlint skips every
+# `run:` block when shellcheck is absent and still exits 0, so a green local run
+# would prove nothing and CI — where shellcheck is installed — would disagree.
+lint-workflows: $(ACTIONLINT_BIN)
+	@command -v shellcheck >/dev/null 2>&1 || { \
+	  echo "ERROR: shellcheck not found. actionlint silently SKIPS every run: block"; \
+	  echo "       without it and still exits 0, so this would prove nothing."; \
+	  echo "       Install it (brew install shellcheck); CI runners already have it."; \
+	  exit 1; }
+	@$(ACTIONLINT_BIN) $(ARGS)
+
+$(ACTIONLINT_BIN):
+ifeq ($(ACTIONLINT_SHA256),)
+	@echo "ERROR: no pinned actionlint checksum for $(ACTIONLINT_OS)/$(ACTIONLINT_ARCH)."
+	@echo "       Add one to the Makefile, or run this check on Linux or macOS."
+	@exit 1
+else
+	@mkdir -p $(dir $@)
+	@set -eu; \
+	tmp="$$(mktemp -d)"; trap 'rm -rf "$$tmp"' EXIT; \
+	url="https://github.com/rhysd/actionlint/releases/download/v$(ACTIONLINT_VERSION)/actionlint_$(ACTIONLINT_VERSION)_$(ACTIONLINT_OS)_$(ACTIONLINT_ARCH).tar.gz"; \
+	echo "Downloading $$url"; \
+	curl -fsSL --retry 3 --retry-delay 5 -o "$$tmp/actionlint.tar.gz" "$$url"; \
+	if command -v sha256sum >/dev/null 2>&1; then \
+	  actual="$$(sha256sum "$$tmp/actionlint.tar.gz" | cut -d' ' -f1)"; \
+	else \
+	  actual="$$(shasum -a 256 "$$tmp/actionlint.tar.gz" | cut -d' ' -f1)"; \
+	fi; \
+	if [ "$$actual" != "$(ACTIONLINT_SHA256)" ]; then \
+	  echo "ERROR: SHA256 mismatch for actionlint $(ACTIONLINT_VERSION) ($(ACTIONLINT_OS)/$(ACTIONLINT_ARCH)):"; \
+	  echo "  expected $(ACTIONLINT_SHA256)"; \
+	  echo "  actual   $$actual"; \
+	  exit 1; \
+	fi; \
+	tar -xzf "$$tmp/actionlint.tar.gz" -C "$$tmp" actionlint; \
+	mv "$$tmp/actionlint" "$@"; \
+	chmod +x "$@"; \
+	echo "actionlint $(ACTIONLINT_VERSION) -> $@"
+endif
 
 doc:
 	rm -rf doc
