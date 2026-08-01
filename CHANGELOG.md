@@ -2,6 +2,18 @@
 
 ### For Users
 
+#### ✨ Highlights
+
+- **Third-party notices now ship with the package** — `THIRD_PARTY_NOTICES.txt`
+  carries the attribution for the third-party code compiled into the native
+  library, both at the package root and inside every native release archive.
+  Redistributors of an app embedding this package need it; see *Third-party
+  notices* in the README for how to surface it in-app.
+- **Consuming projects build faster** — the Build Hook stopped re-running on
+  every single build and now reuses its cached result.
+- **Dart API unchanged** — nothing to migrate. `KEM`, `Signature` and
+  `OQSRandom` are exactly as in 2.0.0, and the bundled liboqs is still 0.16.0.
+
 #### Added
 
 - **`THIRD_PARTY_NOTICES.txt` — attribution for the code inside the native
@@ -48,10 +60,10 @@
   unfamiliar licence stops for a person instead of being filed under MIT.
   A single walk up to the nearest LICENSE, which is the obvious implementation,
   would have been wrong about 43% of the sources: 2532 of the 5957 files under
-  `src/` have no licence file anywhere between them and the repository root. Verification is byte-exact
-  and runs in the test workflow, before the native build, and in both release
-  preflights; `.gitattributes` marks the file `-text` so a clean checkout
-  materialises the same bytes the generator wrote.
+  `src/` have no licence file anywhere between them and the repository root.
+  Verification is byte-exact and runs in the test workflow, before the native
+  build, and in both release preflights; `.gitattributes` marks the file `-text`
+  so a clean checkout materialises the same bytes the generator wrote.
 
   The inventory covers the whole liboqs tree minus `src/sig_stfl/`, which is not
   a shortcut: the union of the real link lines across all eleven shipped
@@ -125,7 +137,19 @@
 
 #### Fixed
 
-- **A liboqs bump was filed under `#### Changed (Breaking)`, and filed twice.**
+- **`make release` failed its own validation step, so no release could be cut.**
+  It bumped `pubspec.yaml` and finalized the CHANGELOG, then ran
+  `make publish-dry-run` on that bumped-but-uncommitted tree — and pub answers a
+  modified tracked file with "checked-in files are modified in git", which is a
+  *warning*, and `dart pub publish --dry-run` exits 65 on any warning at all.
+  The step's own comment asserted the opposite ("pub exits 0 on warnings"), so
+  the release aborted and reverted every time, on a state it had created itself.
+  The dry-run now runs before the bump, on the clean tree, which is where the
+  sibling template has had it since it introduced the two-stage flow. Catching
+  power is unchanged: the dry-run validates package structure — files present,
+  archive size, pubspec validity — and neither a version bump nor a CHANGELOG
+  edit can affect that. Nothing is modified at that point either, so the revert
+  path it needed is gone with it.
   `insertChangelogEntry` matched the target subsection with
   `line.startsWith('#### Changed')`, which also matches
   `#### Changed (Breaking)`. Because the branch fires once per matching heading,

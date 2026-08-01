@@ -23,9 +23,10 @@ import 'third_party_notices.dart';
 
 /// Cut a Dart package release for [version] (plain `X.Y.Z`).
 ///
-/// Verifies the native release exists, bumps `pubspec.yaml`, finalizes the
-/// CHANGELOG, runs `make publish-dry-run`, creates a signed commit + signed
-/// tag `vX.Y.Z`, and (unless [push] is false) pushes `main` and the tag.
+/// Verifies the native release exists, runs `make publish-dry-run` (on the
+/// clean, pre-bump tree), bumps `pubspec.yaml`, finalizes the CHANGELOG,
+/// creates a signed commit + signed tag `vX.Y.Z`, and (unless [push] is false)
+/// pushes `main` and the tag.
 /// Prompts for confirmation before committing unless [assumeYes]. Set
 /// [skipReleaseCheck] only if you have manually verified the native release
 /// exists. [date] defaults to today (YYYY-MM-DD) and is used for the
@@ -141,6 +142,20 @@ Future<void> releasePackage({
     }
   }
 
+  // ---- Validate (pub.dev dry-run) ------------------------------------------
+  // Deliberately before the bump, on the clean tree. `dart pub publish
+  // --dry-run` exits 65 on ANY warning, and dry-running the
+  // bumped-but-uncommitted tree raises a "checked-in files are modified in git"
+  // warning of its own — a self-inflicted failure that made every release abort
+  // here. The dry-run only validates package structure (files present, archive
+  // size, pubspec validity), which a version bump or a CHANGELOG edit cannot
+  // change, so checking before the bump catches exactly as much. Nothing has
+  // been modified yet either, so there is nothing to revert on failure.
+  logStep('Validating the package (make publish-dry-run)...');
+  await runInherit('make', [
+    'publish-dry-run',
+  ], failMessage: 'publish-dry-run reported errors');
+
   // ---- Prepare files -------------------------------------------------------
   logStep('Bumping pubspec.yaml version: $current -> $version');
   _bumpPubspecVersion(packageDir, version);
@@ -156,21 +171,6 @@ Future<void> releasePackage({
     'pubspec.yaml',
     'CHANGELOG.md',
   ]);
-
-  // ---- Validate (pub.dev dry-run) ------------------------------------------
-  // Runs on the bumped-but-uncommitted tree. pub exits 0 on warnings; only a
-  // real error (invalid pubspec, missing files, oversized package) exits
-  // non-zero and aborts here.
-  logStep('Validating the package (make publish-dry-run)...');
-  try {
-    await runInherit('make', [
-      'publish-dry-run',
-    ], failMessage: 'publish-dry-run reported errors');
-  } catch (e) {
-    await git(['checkout', '--', 'pubspec.yaml', 'CHANGELOG.md']);
-    logWarn('Reverted pubspec.yaml and CHANGELOG.md.');
-    rethrow;
-  }
 
   // ---- Confirm -------------------------------------------------------------
   final action = push
