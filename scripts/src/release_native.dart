@@ -69,13 +69,6 @@ Future<void> releaseNative({
       '`make release-native`. To ship a new build of the same liboqs '
       'version, bump liboqs.native_build in pubspec.yaml instead.';
 
-  if ((await git(['tag', '--list', tag])).isNotEmpty) {
-    throw Exception(
-      'Tag $tag already exists locally — this native version is already '
-      'tagged (did the update PR land and did you pull?). $rebuildHint',
-    );
-  }
-
   logStep('Fetching origin...');
   // Fetch only origin/main — all the behind/ahead check below needs. Not tags:
   // the "tag already on origin?" check right below asks `git ls-remote` directly,
@@ -105,6 +98,36 @@ Future<void> releaseNative({
     );
   }
 
+  // ---- Resume an interrupted previous run ----------------------------------
+  // This script commits nothing, so its half-finished state is narrower than a
+  // package release's: the tag was created and the push failed (a Ctrl-C, a
+  // closed terminal). Re-running then hit the "already tagged" throw below,
+  // leaving `git push origin <tag>` by hand as the only way forward.
+  //
+  // Deliberately placed after the checks above, all of which the safety of this
+  // argument depends on: the tag is NOT on origin (else the throw above fired),
+  // and `ahead == 0` pins HEAD to origin/main. A local-only tag on that commit
+  // can therefore only have come from this script's own failed push, so pushing
+  // it is exactly what the interrupted run was about to do. A tag of the same
+  // name anywhere else is still a conflict and still throws.
+  var tagCreated = false;
+  if ((await git(['tag', '--list', tag])).isNotEmpty) {
+    final tagged = await git(['rev-list', '-n', '1', tag]);
+    if (tagged == await git(['rev-parse', 'HEAD'])) {
+      tagCreated = true;
+      logWarn(
+        'Tag $tag already exists on HEAD and is not on origin — resuming an '
+        'interrupted release at the push step.',
+      );
+    } else {
+      throw Exception(
+        'Tag $tag already exists locally, on ${tagged.substring(0, 7)}, which '
+        'is not the commit to release — this native version is already tagged '
+        '(did the update PR land and did you pull?). $rebuildHint',
+      );
+    }
+  }
+
   // ---- Secondary gate: the release must NOT already exist ------------------
   // Normally implied by the tag checks above (the release lives on the tag),
   // but a release can exist without its tag after a partial manual cleanup.
@@ -132,24 +155,57 @@ Future<void> releaseNative({
   }
 
   // ---- Confirm -------------------------------------------------------------
+  if (tagCreated && !push) {
+    logSuccess('Nothing left to do: tag $tag already exists on HEAD.');
+    logInfo('When ready: git push origin $tag');
+    return;
+  }
+
   final head = await git(['rev-parse', '--short', 'HEAD']);
-  logInfo('Will tag origin/main commit $head as $tag.');
+  logInfo(
+    tagCreated
+        ? 'Tag $tag already points at origin/main commit $head; only the push '
+              'is left.'
+        : 'Will tag origin/main commit $head as $tag.',
+  );
+  final steps = [
+    if (!tagCreated) 'create signed tag $tag',
+    if (push) 'PUSH',
+  ].join(' + ');
   final action = push
-      ? 'create signed tag $tag + PUSH (this triggers the native build)'
-      : 'create signed tag $tag (no push)';
+      ? '$steps (this triggers the native build)'
+      : '$steps (no push)';
   if (!assumeYes && !confirm('Proceed to $action?')) {
-    logWarn('Aborted. Nothing was created.');
+    logWarn(
+      tagCreated
+          ? 'Aborted. The local tag $tag is left in place — re-run the same '
+                'command to push it.'
+          : 'Aborted. Nothing was created.',
+    );
     return;
   }
 
   // ---- Tag + push (signed via ssh-agent) -----------------------------------
-  logStep('Creating signed tag $tag (requires your key in ssh-agent)...');
-  await runInherit(
-    'git',
-    ['tag', '-s', tag, '-m', 'liboqs $version (build $build) native libraries'],
-    failMessage:
-        'git tag failed (signing?). Nothing was pushed; fix and re-run.',
-  );
+  // Both steps go through `runInheritRetry`: a mistyped passphrase is not
+  // re-prompted by the signing tool, and aborting between them would leave the
+  // tag created but unpushed.
+  if (!tagCreated) {
+    logStep('Creating signed tag $tag (requires your key in ssh-agent)...');
+    await runInheritRetry(
+      'git',
+      [
+        'tag',
+        '-s',
+        tag,
+        '-m',
+        'liboqs $version (build $build) native libraries',
+      ],
+      what: 'git tag',
+      alreadyDone: () async => (await git(['tag', '--list', tag])).isNotEmpty,
+      failMessage:
+          'git tag failed (signing?). Nothing was pushed; fix and re-run.',
+    );
+  }
 
   if (!push) {
     logSuccess('Created tag $tag locally (not pushed).');
@@ -158,12 +214,14 @@ Future<void> releaseNative({
   }
 
   logStep('Pushing tag $tag...');
-  await runInherit(
+  await runInheritRetry(
     'git',
     ['push', 'origin', tag],
+    what: 'git push origin $tag',
     failMessage:
-        'git push failed. The local tag exists; push it manually '
-        '(git push origin $tag) or delete it (git tag -d $tag).',
+        'git push failed. The local tag exists; re-run the same command to '
+        'push it, push it manually (git push origin $tag), or delete it '
+        '(git tag -d $tag).',
   );
 
   logSuccess(

@@ -10,7 +10,10 @@
 ///
 /// The commit and tag are signed with your SSH signing key — load it into
 /// ssh-agent first (`ssh-add -l` to check). The git subprocesses inherit this
-/// terminal, so interactive prompts work during the command.
+/// terminal, so interactive prompts work during the command. A failed signing
+/// or push step is retried automatically — the error is printed and the
+/// passphrase is asked for again, with Ctrl-C as the way out — and a run
+/// interrupted after its commit is resumed by re-running the same command.
 ///
 /// Usage:
 ///   make release ARGS="--version X.Y.Z"
@@ -96,6 +99,12 @@ What it does:
   6. Creates a SIGNED commit and SIGNED tag "vX.Y.Z" (your SSH signing key
      must be loaded in ssh-agent).
   7. Pushes main and the tag, which triggers the pub.dev publish workflow.
+
+If a signing or push step fails — a mistyped passphrase is the usual cause, and
+signing tools do not re-prompt on their own — it is simply run again, so the
+passphrase prompt comes back. Press Ctrl-C to give up. Interrupting after the
+commit was created is recoverable: re-run the same command and it resumes at the
+tag/push step.
 
 The native libraries must already be published: after the version bump merges
 into main, `make release-native` pushes the liboqs-<fullVersion> tag, which

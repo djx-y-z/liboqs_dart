@@ -62,10 +62,28 @@ make release ARGS="--version 2.1.0"
 ### Signing
 
 Commits and tags are signed with the SSH signing key from your git config.
-The key must be loaded into `ssh-agent` **before** running `make release`
-(`ssh-add -l` to check) — otherwise the commit/tag step hangs or fails. Run
-from a terminal (not an IDE task runner) so the pre-commit hook
-(`format-check` + `analyze`) and any interactive prompt work.
+Loading the key into `ssh-agent` before running `make release` (`ssh-add -l` to
+check) avoids the passphrase prompt entirely. Run from a terminal (not an IDE
+task runner) so the pre-commit hook (`format-check` + `analyze`) and any
+interactive prompt work.
+
+**Get the passphrase wrong and it just asks again.** `ssh-keygen` does not
+re-prompt on its own, so a mistyped passphrase used to abort the release
+outright. Every signing and push step now prints the error and runs itself
+again, so the passphrase prompt comes straight back — no question to answer, no
+attempt limit. **Ctrl-C is how you give up.** From the third failure in a row it
+pauses 2s between attempts and says so, so a step failing for a reason no
+passphrase will fix cannot scroll past you. With a non-interactive stdin (CI)
+there is no retry at all: the step throws on its first failure, as before.
+
+**A run that died anyway is resumed by re-running the exact same command.** If
+you Ctrl-C out or lose the terminal after the release commit was created,
+`make release` detects that commit and continues from the tag/push step — it
+does not bump the version or edit the CHANGELOG a second time, and interrupting
+it *before* the commit gets you the one command that discards the half-applied
+edits. `make release-native` does the same for its own stranded state (tag
+created, push failed): re-running pushes the existing tag. Nothing has to be
+reverted or tagged by hand.
 
 ### Options
 

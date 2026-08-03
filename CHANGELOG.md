@@ -1,3 +1,65 @@
+## [Unreleased]
+
+### For Contributors
+
+#### Fixed
+
+- **A mistyped signing passphrase no longer aborts a release**
+  (`scripts/src/release_common.dart`, `scripts/src/release.dart`,
+  `scripts/src/release_native.dart`) — git signs a commit or a tag by shelling
+  out to `ssh-keygen -Y sign`, which reads the passphrase exactly once and gives
+  up on a failed load rather than re-prompting. One typo therefore aborted the
+  release wherever it happened. Both release scripts now route every signing and
+  push step through a new `runInheritRetry`, which prints the failure and runs
+  the step again, so the passphrase prompt simply comes back the way `ssh` and
+  `sudo` behave — no question to answer. **Ctrl-C is the way out**, and it
+  works: with `inheritStdio` the interrupt reaches the whole foreground group,
+  verified at the passphrase prompt itself. The loop is uncapped, because a cap
+  would reinstate the very failure it exists to prevent, so the two things
+  bounding it carry the weight. **A non-interactive stdin throws on the first
+  failure**, CI behaviour unchanged: nobody is there to retype anything or to
+  interrupt, so a structurally broken step would otherwise spin forever. That
+  test is `stdin.echoMode` and not `stdin.hasTerminal`, which reports `terminal`
+  for any character device and so calls a run redirected from `/dev/null`
+  interactive. **From the third consecutive failure the loop paces itself** at
+  2s and says so; the first retries stay immediate, so a typo is never slowed,
+  while a step failing in milliseconds cannot scroll past faster than it can be
+  read.
+
+- **An interrupted release is resumed by re-running the same command**
+  (`scripts/src/release.dart`, `scripts/src/release_native.dart`) — the retry
+  covers a typo, but not a Ctrl-C or a closed terminal. The two scripts strand
+  differently, so each gets its own condition. `release.dart`
+  dies between its commit and its tag: the bump is committed, no tag exists, and
+  re-running trips its own "must be greater than the current version" check. It
+  now resumes at the tag/push step when — and only when — the tree is clean, the
+  pubspec already reads exactly the requested version, and `HEAD`'s subject
+  equals the exact subject the release writes (held in one `commitSubject`
+  variable passed both to `git commit -m` and to the check, so the two cannot
+  drift). `release_native.dart` commits nothing, so its stranded state is the
+  narrower "tag created, push failed", which re-running met with *"this native
+  version is already tagged"*; it now pushes that tag instead. Its tag decision
+  moved below the fetch and the behind/ahead checks, which is what makes it
+  safe: with the tag absent from origin and `ahead == 0` pinning `HEAD` to
+  `origin/main`, a local-only tag on that commit can only have come from this
+  script's own failed push. In both scripts a same-name tag on any other commit
+  is refused by name and sha, and a tag already on origin still fails closed.
+  Interrupting `release.dart` *before* its commit is the one case nothing can
+  report at the time — Ctrl-C kills the script mid-step — so its next run's
+  "working tree is not clean" recognises when the only modified paths are the
+  release's own files and names the single `git restore` that discards them.
+  Verified end-to-end against real `ssh-keygen` signing with a
+  passphrase-protected key.
+
+#### Added
+
+- **`test/scripts/release_common_test.dart`** — covers `isResumableRelease`,
+  the one predicate in the release scripts whose false positive is
+  unrecoverable, over each condition that must individually block a resume; and
+  `onlyTheseFilesDirty`, which decides whether the not-clean message may name a
+  `git restore` — it declines on an untracked path and on a rename rather than
+  suggest a command that would not work, or would discard something else.
+
 ## [2.1.0] - 2026-08-01
 
 ### For Users

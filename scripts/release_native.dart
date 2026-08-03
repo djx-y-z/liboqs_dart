@@ -13,7 +13,10 @@
 ///
 /// The tag is signed with your SSH signing key — load it into ssh-agent first
 /// (`ssh-add -l` to check). The git subprocesses inherit this terminal, so
-/// interactive prompts work during the command.
+/// interactive prompts work during the command. A failed step is retried
+/// automatically — the error is printed and the passphrase is asked for again,
+/// with Ctrl-C as the way out — and a run interrupted after the tag was created
+/// is resumed by re-running the same command, which pushes it.
 ///
 /// Usage:
 ///   make release-native
@@ -79,6 +82,12 @@ What it does:
      be loaded in ssh-agent) and pushes it.
   4. The tag triggers build-liboqs.yml, which builds all platforms and
      publishes the GitHub Release consumed by the build hook.
+
+If the signing or push step fails — a mistyped passphrase is the usual cause,
+and signing tools do not re-prompt on their own — it is simply run again, so the
+passphrase prompt comes back. Press Ctrl-C to give up. Interrupting after the tag
+was created is recoverable: re-run the same command and it pushes the existing
+tag.
 
 There is no version bump and no commit here: run this after the liboqs
 update PR (which bumps pubspec.yaml) has merged to main. To rebuild an
