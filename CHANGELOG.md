@@ -4,6 +4,23 @@
 
 #### Fixed
 
+- **The release's `git restore` hint never appeared**
+  (`scripts/src/release_common.dart`, `scripts/src/release.dart`,
+  `test/scripts/release_common_test.dart`) — interrupting a release before its
+  commit leaves only the release's own files modified, and the not-clean
+  message is supposed to recognise that and name the single `git restore` that
+  discards them. It never fired. The status was read through `git()`, which
+  trims its output; `git status --porcelain` has two positional status columns,
+  so an unstaged modification is `' M path'`, and trimming ate the leading space
+  of the *first* line and shifted that path by one character. `onlyTheseFilesDirty`
+  then matched nothing and rejected the whole status, so every interrupted
+  release got the generic "commit or stash changes first" instead — in exactly
+  the case the hint was written for, since a release edits its files without
+  staging them. The status now goes through a `gitStatus()` that strips only
+  trailing newlines, and a test pins the raw and trimmed shapes against each
+  other so a future trim cannot pass unnoticed. `release_native.dart` reads the
+  same command but only asks whether it is empty, which trimming cannot change.
+
 - **A mistyped signing passphrase no longer aborts a release**
   (`scripts/src/release_common.dart`, `scripts/src/release.dart`,
   `scripts/src/release_native.dart`) — git signs a commit or a tag by shelling
