@@ -51,6 +51,23 @@
   Verified end-to-end against real `ssh-keygen` signing with a
   passphrase-protected key.
 
+- **`make setup-repo-protections` now turns on automatic head-branch deletion**
+  (`scripts/setup_repo_protections.dart`) — the script applied the rulesets
+  and the `native-build` environment but never touched repo settings, so
+  `delete_branch_on_merge` sat at GitHub's default of off and every merged pull
+  request left its branch behind. The automation is what makes that a slow leak
+  rather than an annoyance: `check-liboqs-updates.yml` opens one branch per
+  upstream version. `delete-branch: true` on `peter-evans/create-pull-request`
+  does not cover it — that only removes branches the action itself closes as
+  obsolete, not the ones a merge leaves behind. The script now also sends
+  `PATCH repos/<slug>` with `delete_branch_on_merge=true`, warning rather than
+  failing when it cannot, as the environment step does, and `--no-environment`
+  does not skip it. Note that GitHub performs the deletion as whoever merged the
+  pull request, so the `Delete branches` ruleset confines it to that ruleset's
+  bypass actors — repository admins here; for anyone else it quietly does
+  nothing, which leaves the branch exactly where the setting being off would
+  have left it.
+
 #### Added
 
 - **`test/scripts/release_common_test.dart`** — covers `isResumableRelease`,
